@@ -152,3 +152,10 @@ tools/run.sh baseline
 の資料から学んだ。実装は自前。
 
 どうぶつしょうぎは北尾まどか・藤田麻衣子による作品。
+
+## ライセンス
+
+**MIT OR Apache-2.0** のデュアルライセンス（[`LICENSE-MIT`](LICENSE-MIT) / [`LICENSE-APACHE`](LICENSE-APACHE)）。
+使う側がどちらか好きな方を選べる。
+
+外部依存は無い。ベースラインは Python 標準ライブラリと gcc だけで動く。

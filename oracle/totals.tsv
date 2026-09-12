@@ -1,0 +1,9 @@
+# key	value	説明
+reachable_total	246803167	初期盤面から到達可能な全局面数 (鏡面正規化後)
+win_total	196773087	先手勝ちが確定した局面数
+lose_total	47347380	先手負けが確定した局面数
+decided_total	244120467	win_total + lose_total
+draw_total	2682700	勝敗がつかない (引き分け) 局面数
+catch_win_depth1	140298614	depth=1 の勝ちのうち「キャッチ」局面数 (distribution.tsv には含まれない)
+lose_depth0	7018985	depth=0 の負け局面数 (distribution.tsv には含まれない)
+max_depth	173	勝敗が確定する最大手数 (174手負けは 0 局面)

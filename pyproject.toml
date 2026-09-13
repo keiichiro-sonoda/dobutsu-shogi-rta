@@ -74,7 +74,7 @@ exclude = '^(baseline|runs|results)/'
 testpaths = ["tests"]
 # tools/verify_log.py をパッケージ化せずに import するため
 pythonpath = ["tools"]
-addopts = "-ra --strict-markers --strict-config"
+addopts = "-ra --strict-markers --strict-config --cov"
 markers = [
     "slow: 実行に時間が掛かるテスト (通常は -m 'not slow' で除外)",
 ]

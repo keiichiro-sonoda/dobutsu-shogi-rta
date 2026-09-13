@@ -63,14 +63,16 @@ def test_matching_log_passes(
     assert run_main(monkeypatch, log) == 0
 
 
-def test_recorded_baseline_log_passes(monkeypatch: pytest.MonkeyPatch) -> None:
-    """記録済みの実測ログ (results/00_baseline/main.log) は今も PASS すること。
+def test_every_recorded_log_still_passes(monkeypatch: pytest.MonkeyPatch) -> None:
+    """results/ に置いた実測ログはすべて今も PASS すること。
 
     verify_log.py をいじって実際のログ形式を読めなくする回帰を防ぐ。
+    記録が増えるたびに自動で対象に入る。
     """
-    log = RESULTS_DIR / "00_baseline" / "main.log"
-    assert log.exists(), "記録済みログが無い"
-    assert run_main(monkeypatch, log) == 0
+    logs = sorted(RESULTS_DIR.glob("*/main.log"))
+    assert logs, "results/ に記録済みログが無い"
+    for log in logs:
+        assert run_main(monkeypatch, log) == 0, f"{log} が PASS しなくなっている"
 
 
 def test_single_wrong_count_fails(

@@ -30,7 +30,7 @@ cp "$ROOT"/baseline/{animal_shogi.py,animal_shogi.c,animal_shogi.h,Makefile} "$W
     echo "label:       $LABEL"
     echo "started:     $(date --iso-8601=seconds)  (TZ=$(date +%Z))"
     echo "started_jst: $(TZ=Asia/Tokyo date --iso-8601=seconds)"
-    echo "host:        $(hostname)"
+    # ホスト名は記録しない。計測機の同一性は cpu / cores / mem_total で足りる
     echo "kernel:      $(uname -srm)"
     echo "cpu:         $(grep -m1 'model name' /proc/cpuinfo | cut -d: -f2- | sed 's/^ *//')"
     echo "cores:       $(nproc) (論理)"

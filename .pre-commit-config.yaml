@@ -1,0 +1,53 @@
+# make hooks で git フックとして仕掛ける。make check と同じものがコミット時に走る。
+# pre-commit は言語非依存なので、改善の梯子で C / Rust が増えたら
+# clang-format / clippy のフックをここに足せば同じ導線に乗る。
+
+# 触ってはいけない場所:
+#   baseline/ … 2021年11月のまま凍結 (末尾空白の自動修正すら不可)
+#   results/  … 記録済みの実行ログ。証拠なので改変しない
+#   oracle/   … 答えを固定している不変量
+#   runs/     … 計測の作業ディレクトリ (git 管理外)
+exclude: '^(baseline/|results/|oracle/|runs/)'
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=2048]
+      - id: mixed-line-ending
+        # .gitattributes で LF 固定。shebang が CRLF で壊れるのを防ぐ
+        args: [--fix=lf]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.7
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.11.0.1
+    hooks:
+      - id: shellcheck
+
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy
+        entry: uv run mypy
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: pytest
+        name: pytest (オラクル整合 / baseline 凍結 / verify_log)
+        entry: uv run pytest -q
+        language: system
+        pass_filenames: false
+        always_run: true

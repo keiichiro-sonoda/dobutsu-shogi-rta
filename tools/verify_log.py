@@ -6,9 +6,9 @@
 
 終了コード 0 = 一致 / 1 = 不一致。
 """
+
 from __future__ import annotations
 
-import io
 import pathlib
 import re
 import sys
@@ -29,7 +29,7 @@ def load_oracle() -> list[tuple[int, str, int]]:
 
 def parse_log(path: str) -> list[tuple[int, str, int]]:
     rows = []
-    with io.open(path, encoding="utf-8", errors="replace") as f:
+    with pathlib.Path(path).open(encoding="utf-8", errors="replace") as f:
         for line in f:
             m = LINE_RE.match(line.strip())
             if m:
@@ -55,7 +55,7 @@ def main() -> int:
         print("      → 完走していない可能性が高い")
         return 1
 
-    bad = [(e, g) for e, g in zip(expected, got) if e != g]
+    bad = [(e, g) for e, g in zip(expected, got, strict=True) if e != g]
     if bad:
         print(f"FAIL: {len(bad)} 行が不一致")
         for e, g in bad[:20]:

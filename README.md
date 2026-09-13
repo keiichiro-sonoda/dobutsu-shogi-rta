@@ -134,6 +134,41 @@ tools/run.sh baseline
 ⚠️ **ピークで 40GB 程度の空きディスクが必要**（最終成果物 4.5GB + 探索中の中間ファイル）。
 実行後 `runs/*/dat/` は消してよい。
 
+## 開発
+
+改善の実装とツールを触るとき用。**計測そのものには要らない**
+（ベースラインは Python 標準ライブラリと gcc だけで走る）。
+
+```bash
+make setup   # .venv を作って開発ツールを入れる (uv)
+make hooks   # コミット時に自動チェックを掛ける (pre-commit)
+make check   # CI と同じ一式: ruff / shellcheck / mypy / pytest
+make help    # 全ターゲット
+```
+
+| ツール | 役割 |
+|---|---|
+| ruff | 整形 (black 相当) と lint (flake8 + isort 相当) |
+| mypy | 型検査 (strict) |
+| pytest + coverage | テスト。`tools/` は 95% 以上を必須 |
+| shellcheck | `tools/run.sh` |
+| pre-commit | 上をコミット時に自動実行 |
+
+C / Rust へ移行しても導線は変わらない。`make lint-<lang>` / `make test-<lang>` を足して
+`check` に繋ぎ、pre-commit にフックを1つ追加すればよい。
+
+### テストが守っているもの
+
+- **`oracle/` の内部整合** — 分布174行 + キャッチ + depth0負け = 確定数、
+  それに引き分けを足すと到達可能数 246,803,167 になる。この鎖が1つでも切れたら記録は無効
+- **`baseline/` の凍結** — ソース3ファイルの sha256 と、`-O0` のままの Makefile。
+  RTA の出発点が動いたらタイムの意味が消える
+- **`tools/verify_log.py` の回帰** — 記録済みの実測ログ
+  （[`results/00_baseline/main.log`](results/00_baseline/main.log)）を今も PASS させられること
+
+`baseline/` `oracle/` `results/` にはフォーマッタも自動修正フックも掛からない。
+**末尾空白の除去すら禁止**にしてある。改善実装は `baseline/` の外に新しいディレクトリを作って置く。
+
 ## 計測環境
 
 | | |
@@ -158,4 +193,6 @@ tools/run.sh baseline
 **MIT OR Apache-2.0** のデュアルライセンス（[`LICENSE-MIT`](LICENSE-MIT) / [`LICENSE-APACHE`](LICENSE-APACHE)）。
 使う側がどちらか好きな方を選べる。
 
-外部依存は無い。ベースラインは Python 標準ライブラリと gcc だけで動く。
+ランタイムの外部依存は無い。ベースラインは Python 標準ライブラリと gcc だけで動く。
+開発ツール（ruff / mypy / pytest / pre-commit）は `make setup` で `.venv` に入るだけで、
+計測には一切関与しない。

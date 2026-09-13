@@ -1,9 +1,23 @@
+# 計測の作業ディレクトリと生ログ
 runs/
 runs.out
+
+# ビルド生成物
 *.so
 *.o
 *.pickle
+
+# Python
 __pycache__/
+.venv/
+
+# 開発ツールのキャッシュ・レポート
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
 
 # Claude Code のローカル生成物
 .claude/.cc-writes/

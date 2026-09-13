@@ -1,0 +1,36 @@
+name: CI
+
+# 計測本体 (数時間 / 空き 40GB / 固定の計測機) は CI では回さない。
+# ここで守るのは「答えを固定しているもの」と「それを検証する道具が壊れていないこと」:
+#   - oracle/ の内部整合
+#   - baseline/ が2021年11月のまま凍結されていること
+#   - tools/verify_log.py が実測ログを今も正しく判定すること
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v10.1.0
+        with:
+          enable-cache: true
+
+      - name: 依存を uv.lock 通りに入れる
+        # 計測機と同じ Python 3.12 に揃える
+        run: uv sync --locked --python 3.12
+
+      - name: lint / type / test
+        run: make check

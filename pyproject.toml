@@ -1,0 +1,97 @@
+[project]
+name = "dobutsu-shogi-rta"
+version = "0.0.0"
+description = "どうぶつしょうぎ完全解析 RTA — 計測ハーネスと検証ツール"
+requires-python = ">=3.12"
+license = "MIT OR Apache-2.0"
+
+# ランタイム依存はゼロを維持する。
+# ベースラインは Python 標準ライブラリと gcc だけで動く、という README の約束を壊さない。
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14",
+    "mypy>=1.18",
+    "pytest>=8.4",
+    "pytest-cov>=7.0",
+    "pre-commit>=4.3",
+    "shellcheck-py>=0.11",  # tools/run.sh 用。system への shellcheck 導入を不要にする
+]
+
+[tool.uv]
+# 配布パッケージではないのでビルドしない
+package = false
+
+# --------------------------------------------------------------------------
+# ruff — format (black 相当) と lint (flake8 + isort 相当) の両方
+# --------------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+# baseline/ は2021年のコードを一切変更せずに置く場所なので、
+# フォーマットも lint も掛けない。凍結は tests/test_baseline_frozen.py が守る。
+extend-exclude = ["baseline", "runs", "results", ".claude", ".venv"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle error
+    "W",    # pycodestyle warning
+    "F",    # pyflakes
+    "I",    # isort
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "SIM",  # flake8-simplify
+    "PTH",  # flake8-use-pathlib
+    "RUF",  # ruff 固有
+]
+ignore = [
+    # このリポジトリは日本語が主で、ログ形式にも全角の「：」を正しく使っている。
+    # ambiguous-unicode 系は ASCII 前提のホモグリフ検出なので無効にする。
+    "RUF001",  # 文字列中の全角記号
+    "RUF002",  # docstring 中の全角記号
+    "RUF003",  # コメント中の全角記号
+]
+
+[tool.ruff.lint.per-file-ignores]
+# テストの assert と、マジックナンバー的な期待値はそのまま書きたい
+"tests/*" = ["S101"]
+
+# --------------------------------------------------------------------------
+# mypy
+# --------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["tools", "tests"]
+exclude = '^(baseline|runs|results)/'
+
+# --------------------------------------------------------------------------
+# pytest
+# --------------------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# tools/verify_log.py をパッケージ化せずに import するため
+pythonpath = ["tools"]
+addopts = "-ra --strict-markers --strict-config"
+markers = [
+    "slow: 実行に時間が掛かるテスト (通常は -m 'not slow' で除外)",
+]
+
+# --------------------------------------------------------------------------
+# coverage
+# --------------------------------------------------------------------------
+[tool.coverage.run]
+source = ["tools"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+# 検証ツールは記録の正当性を担保する唯一の門番なので、未テストのまま増やさない
+fail_under = 95
+skip_covered = false
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+]

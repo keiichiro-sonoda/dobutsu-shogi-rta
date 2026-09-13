@@ -1,5 +1,10 @@
 runs/
+runs.out
 *.so
 *.o
 *.pickle
 __pycache__/
+
+# Claude Code のローカル生成物
+.claude/.cc-writes/
+.claude/settings.local.json

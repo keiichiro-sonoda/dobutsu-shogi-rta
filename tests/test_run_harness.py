@@ -108,3 +108,21 @@ def test_analysis_exit_code_is_not_ignored() -> None:
 def test_verify_failure_does_not_abort_the_script() -> None:
     """set -e の下で検証を直接呼ぶと、落ちた瞬間に打ち切られて成果物の場所が出なくなる。"""
     assert "|| VERDICT=$?" in run_sh()
+
+
+def test_every_implementation_is_runnable() -> None:
+    """impl/*/ は impl.env を持つか、ベースラインと同じ構成であること。
+
+    どちらでもないディレクトリはハーネスが走らせられない。
+    """
+    impl_root = ROOT / "impl"
+    if not impl_root.is_dir():
+        return
+    for d in sorted(p for p in impl_root.iterdir() if p.is_dir()):
+        if (d / "impl.env").exists():
+            continue
+        for name in ("animal_shogi.py", "Makefile"):
+            assert (d / name).exists(), (
+                f"{d.relative_to(ROOT)} に impl.env も {name} も無い。"
+                f"ハーネスの既定値で走らせられない"
+            )

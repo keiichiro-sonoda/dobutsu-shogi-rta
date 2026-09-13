@@ -32,7 +32,10 @@ target-version = "py312"
 
 # baseline/ は2021年のコードを一切変更せずに置く場所なので、
 # フォーマットも lint も掛けない。凍結は tests/test_baseline_frozen.py が守る。
-extend-exclude = ["baseline", "runs", "results", ".claude", ".venv"]
+#
+# impl/ も同じ。各実装は baseline からの差分そのものが計測の単位なので、
+# 整形が入ると「1試行1変数」が崩れて、タイム差が何の効果なのか言えなくなる。
+extend-exclude = ["baseline", "impl", "runs", "results", ".claude", ".venv"]
 
 [tool.ruff.lint]
 select = [

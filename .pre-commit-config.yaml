@@ -4,10 +4,12 @@
 
 # 触ってはいけない場所:
 #   baseline/ … 2021年11月のまま凍結 (末尾空白の自動修正すら不可)
+#   impl/     … 各実装。baseline からの差分が計測の単位なので、
+#               末尾空白1つでも自動で直されると「1試行1変数」が崩れる
 #   results/  … 記録済みの実行ログ。証拠なので改変しない
 #   oracle/   … 答えを固定している不変量
 #   runs/     … 計測の作業ディレクトリ (git 管理外)
-exclude: '^(baseline/|results/|oracle/|runs/)'
+exclude: '^(baseline/|impl/|results/|oracle/|runs/)'
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks

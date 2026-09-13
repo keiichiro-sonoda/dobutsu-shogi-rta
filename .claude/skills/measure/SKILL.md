@@ -12,10 +12,17 @@ description: どうぶつしょうぎ完全解析 RTA のアテンプトを1本�
 
 ## 0. 何を測るか決める
 
-`tools/run.sh <ラベル>` の `<ラベル>` が `runs/<日時>_<ラベル>/` の名前になる。
-現行の `tools/run.sh` は常に `baseline/` をコピーして実行する。ラベルでは実装を選べない。
-改善実装を測るときは、先にハーネスを対応させ、コピー元・ビルドフラグ・実行対象を確認する。
-ベースラインならラベルは `baseline`、改善実装なら `o3` などとする。
+```
+tools/run.sh [実装ディレクトリ] [ラベル]
+```
+
+第1引数が計測する実装ディレクトリ。無指定なら `baseline/`。
+ラベルを省くとディレクトリ名がそのままラベルになり、`runs/<日時>_<ラベル>/` の名前になる。
+
+改善実装は `impl/<番号>_<名前>/` に置く。ビルド・実行・ログ出力先がベースラインと違うなら、
+その実装ディレクトリに `impl.env` を置いて `BUILD_CMD` / `RUN_CMD` / `MAIN_LOG` を上書きする
+（README の「実行方法」参照）。
+**走らせる前に `impl.env` を読んで、何がビルドされ何が実行されるかを確認する。**
 
 記録番号はラベルとは別に採番し、`results/<番号>_<ラベル>/` と README の `#` 列を揃える。
 
@@ -38,7 +45,7 @@ Claude Code でサンドボックス内のバックグラウンドプロセス�
 他の実行環境では、その環境が提供する長時間実行の仕組みと権限設定に従う。
 
 ```bash
-setsid nohup tools/run.sh <ラベル> > runs.out 2>&1 < /dev/null & disown
+setsid nohup tools/run.sh <実装ディレクトリ> > runs.out 2>&1 < /dev/null & disown
 ```
 
 `setsid nohup ... & disown` だけでは実行環境によるプロセス終了を防げない場合がある。
@@ -90,8 +97,10 @@ NN時間NN分NN秒で全探索終了
 PASS: 174 行すべて一致
 ```
 
-**解析の `exit=0` と検証の `PASS` が両方必要。** `time.txt` の `Exit status: 0` も確認する。
-ハーネスは解析が失敗しても検証を続けるため、`PASS` だけでは成功と判定しない。
+**解析の `exit=0` と検証の `PASS` が両方必要。**
+`tools/run.sh` 自身が両方を見て終了コードを決めるので、`runs.out` の末尾に
+`⚠ 解析プロセスが exit=N で終わっている` が出ていないことを確認する。
+`time.txt` の `Exit status: 0` も裏取りに使う。`PASS` だけでは成功と判定しない。
 
 `time.txt` から拾っておくと報告が厚くなるもの:
 
@@ -110,7 +119,7 @@ PASS: 174 行すべて一致
 R=runs/<日時>_<ラベル>
 mkdir -p results/<番号>_<ラベル>
 cp "$R/env.txt"                          results/<番号>_<ラベル>/env.txt
-cp "$R/kaiseki_log/kaizenkaiseki1.txt"   results/<番号>_<ラベル>/main.log
+cp "$R/kaiseki_log/kaizenkaiseki1.txt"   results/<番号>_<ラベル>/main.log  # = MAIN_LOG
 cp "$R/time.txt"                         results/<番号>_<ラベル>/time.txt
 python3 tools/verify_log.py results/<番号>_<ラベル>/main.log > results/<番号>_<ラベル>/verify.txt 2>&1
 ```

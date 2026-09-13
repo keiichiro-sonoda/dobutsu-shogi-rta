@@ -29,10 +29,12 @@
 
 - README に記載した計測機上の作業コピーでは、SSH や再 clone は不要。
   他の環境に clone した場合は実機を照合する。別の計測機なら README のルールどおり記録表を分ける。
+- 第1引数が計測する実装ディレクトリ。無指定なら `baseline/`。
+  ビルドと実行のコマンドは実装側の `impl.env` で差し替える（詳細は README）。
 - **数時間かかる**（ベースラインで約9時間）。フォアグラウンドで待たない。
 
   ```bash
-  setsid nohup tools/run.sh <ラベル> > runs.out 2>&1 < /dev/null & disown
+  setsid nohup tools/run.sh <実装ディレクトリ> > runs.out 2>&1 < /dev/null & disown
   ```
 
 - Claude Code のサンドボックス内で、呼び出し終了時にデタッチしたプロセスも終了した事例がある。

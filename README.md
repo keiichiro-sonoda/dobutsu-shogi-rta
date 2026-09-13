@@ -119,12 +119,36 @@ Python が集合演算とファイル分割を担当し、C が指し手生成�
 Linux 前提（`u_long` と `.so` に依存）。Python 3 と gcc があれば動く。
 
 ```bash
-tools/run.sh baseline
+tools/run.sh                    # baseline/ を計測
+tools/run.sh impl/01_wrapper    # 改善実装を計測
+tools/run.sh impl/01_wrapper w1 # ラベルだけ変える
 ```
 
-`runs/<日時>_<ラベル>/` を作り、その中でビルドから検証までやる。
-ベースラインのソースは書き換えない（`./dat/` と `./kaiseki_log/` をカレント相対で
-使う実装なので、作業ディレクトリを切って `cd` している）。
+第1引数が**計測する実装ディレクトリ**。無指定なら `baseline/`。
+`runs/<日時>_<ラベル>/` を作り、そこへ実装ディレクトリの中身を丸ごとコピーしてから、
+ビルド・実行・検証までをその中で完結させる。実装のソースは書き換えない
+（`./dat/` と `./kaiseki_log/` をカレント相対で使う実装があるので、作業ディレクトリを切って `cd` している）。
+
+改善実装は `impl/<番号>_<名前>/` に置く。記録表の `#` 列と番号を揃える。
+
+ビルドと実行のコマンドは、実装ディレクトリに `impl.env` を置けば差し替えられる。
+
+```bash
+# impl/07_rust/impl.env の例
+BUILD_CMD="cargo build --release"
+RUN_CMD="./target/release/solver"
+MAIN_LOG="kaiseki_log/main.log"
+```
+
+`impl.env` が無ければベースラインと同じ既定値
+（`make animal_shogi.so` / `python3 ./animal_shogi.py` / `kaiseki_log/kaizenkaiseki1.txt`）を使う。
+`baseline/` は凍結されていてファイルを足せないので、**既定値は常に `baseline/` が動く値に保つ**。
+`tests/test_run_harness.py` がベースラインの実際のログ出力先と既定値の一致を検査している。
+
+成功と見なすのは、**解析プロセスの終了コードが 0** かつ **オラクル検証が PASS** の両方が揃ったときだけ。
+どちらか一方でも欠けたら `tools/run.sh` は非ゼロで終わる。
+
+`env.txt` には何を測ったのか（`impl` / `impl_sha256` / `build_cmd` / `run_cmd`）も記録される。
 
 完走実績（2026-09-13）: gcc 13.3 / Python 3.12.3 で無警告ビルド、**8時間55分31秒**で完走・検証 PASS。
 内訳は全探索 1:42:56 / 後退解析 7:12:35。ピーク RSS 4.65GiB、ディスク書き込み約 102GiB、CPU 使用率 99%（＝1スレッド）。

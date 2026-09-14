@@ -177,3 +177,25 @@ def test_missing_second_directory_returns_2(
     monkeypatch.setattr(sys, "argv", ["fingerprint_dat.py", str(a), str(tmp_path / "nope")])
     assert fingerprint_dat.main(sys.argv) == 2
     capsys.readouterr()
+
+
+@pytest.mark.parametrize("empty_side", ["first", "second", "both", "single", "empty_set"])
+def test_empty_artifacts_are_not_successful(tmp_path: pathlib.Path, empty_side: str) -> None:
+    layout = {"win001te_000.pickle": [1]}
+    a = write_dat(tmp_path / "a", layout if empty_side == "second" else {})
+    b = write_dat(tmp_path / "b", layout if empty_side == "first" else {})
+    if empty_side == "empty_set":
+        a = write_dat(tmp_path / "a", {"win001te_000.pickle": []})
+    args = ["fingerprint_dat.py", str(a)]
+    if empty_side != "single":
+        args.append(str(b))
+    assert fingerprint_dat.main(args) == 2
+
+
+def test_colliding_fingerprints_do_not_claim_exact_equality(
+    tmp_path: pathlib.Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    a = write_dat(tmp_path / "a", {"win001te_000.pickle": [1, 6]})
+    b = write_dat(tmp_path / "b", {"win001te_000.pickle": [2, 5]})
+    assert fingerprint_dat.main(["fingerprint_dat.py", str(a), str(b)]) == 0
+    assert "集合の完全一致を証明するものではない" in capsys.readouterr().out

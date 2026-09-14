@@ -6,11 +6,13 @@
 
 `tools/verify_log.py` は手数別の「局面数」しか見ない。実装を書き換えたとき、
 数が合っていて中身が違う、という壊れ方は検出できない。ここでは
-**どの局面がどの手数か**まで照合する。
+深さごとの局面集合の指紋を比較し、そのような不一致の検出を補助する。
 
 指紋は深さごとの (件数, 総和 mod 2^64, XOR)。3つとも要素の順序に依存しないので、
 チャンクの分かれ方が違っても同じ値になる。同じ答えでも win003te_000 と _001 の
 分割は集合の pop 順で変わるため、バイト比較や件数比較では足りない。
+異なる集合でも同じ指紋になりうるため、PASS は集合の完全一致を証明しない。
+完走とオラクル一致を別途確認した、自分で生成した pickle データに使う。
 """
 
 from __future__ import annotations
@@ -123,6 +125,9 @@ def main(argv: list[str]) -> int:
         return 2
 
     fp_a = fingerprint(first)
+    if not any(count for count, _, _ in fp_a.values()):
+        print("照合対象の局面が無い (1つ目)", file=sys.stderr)
+        return 2
     if len(argv) == 2:
         print(render(fp_a))
         return 0
@@ -133,6 +138,9 @@ def main(argv: list[str]) -> int:
         return 2
 
     fp_b = fingerprint(second)
+    if not any(count for count, _, _ in fp_b.values()):
+        print("照合対象の局面が無い (2つ目)", file=sys.stderr)
+        return 2
     bad = compare(fp_a, fp_b)
     if bad:
         print(f"FAIL: {len(bad)} 項目が不一致")
@@ -140,7 +148,7 @@ def main(argv: list[str]) -> int:
         return 1
 
     total = sum(c for c, _, _ in fp_a.values())
-    print(f"PASS: {len(fp_a)} 項目すべて一致")
+    print(f"PASS: {len(fp_a)} 項目の指紋が一致 (集合の完全一致を証明するものではない)")
     print(f"  照合した局面数の合計: {total:,}")
     return 0
 

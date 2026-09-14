@@ -69,7 +69,7 @@ rm -f "$WORK/impl.env"
 # 何を計測したのかが後から辿れるように、実装の素性もここに残す。
 # ホスト名は記録しない。計測機の同一性は cpu / cores / mem_total で足りる
 IMPL_SHA="$(cd "$IMPL_DIR" && find . -type f ! -name impl.env -print0 \
-    | sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1)"
+    | LC_ALL=C sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1)"
 {
     echo "label:       $LABEL"
     echo "impl:        $(basename "$IMPL_DIR")"

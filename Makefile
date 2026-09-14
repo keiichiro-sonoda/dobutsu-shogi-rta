@@ -8,7 +8,8 @@
 # 言語が増えたら lint-<lang> / test-<lang> を足して check に繋ぐこと。
 
 UV ?= uv
-LABEL ?= baseline
+IMPL ?= baseline
+LABEL ?= $(notdir $(patsubst %/,%,$(IMPL)))
 
 .DEFAULT_GOAL := help
 
@@ -46,8 +47,8 @@ check: lint lint-sh type test  ## CI と同じ一式を回す
 hooks:  ## pre-commit を git フックとして仕掛ける
 	$(UV) run pre-commit install
 
-measure:  ## ベースラインを計測する (数時間 / 要 40GB 空き)
-	tools/run.sh $(LABEL)
+measure:  ## 実装を計測する (IMPL=baseline / LABEL は省略可、要 40GB 空き)
+	tools/run.sh "$(IMPL)" "$(LABEL)"
 
 clean:  ## キャッシュ類を消す (.venv と runs/ は消さない)
 	rm -rf .ruff_cache .mypy_cache .pytest_cache htmlcov .coverage

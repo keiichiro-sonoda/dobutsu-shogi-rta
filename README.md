@@ -73,6 +73,20 @@ max_depth              173
 python3 tools/verify_log.py <実行ログ>
 ```
 
+### 成果物どうしの照合
+
+オラクルが見ているのは手数別の**局面数**だけで、「どの局面がどの手数か」までは見ていない。
+実装の集計経路を書き換えたときは、`dat/` そのものを突き合わせる。
+
+```bash
+python3 tools/fingerprint_dat.py <dat>          # 指紋を出す
+python3 tools/fingerprint_dat.py <datA> <datB>  # 2つを照合
+```
+
+指紋は深さごとの `(件数, 総和 mod 2^64, XOR)`。3つとも要素の順序に依存しないので、
+チャンクの分かれ方が違っても一致する（同じ答えでも `win003te_000` と `_001` の分割は
+集合の pop 順で変わるため、バイト比較では判定できない）。
+
 ## 記録
 
 | # | 実装 | カテゴリ | タイム | 対ベースライン | 日付 | 備考 |
@@ -203,6 +217,7 @@ make help    # 全ターゲット
 | mypy | 型検査 (strict) |
 | pytest + coverage | テスト。`tools/` は 95% 以上を必須 |
 | shellcheck | `tools/run.sh` |
+| `tools/fingerprint_dat.py` | 成果物の集合レベルの照合 |
 | pre-commit | 上をコミット時に自動実行 |
 
 C / Rust へ移行しても導線は変わらない。`make lint-<lang>` / `make test-<lang>` を足して

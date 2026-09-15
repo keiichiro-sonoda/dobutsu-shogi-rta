@@ -61,6 +61,26 @@ def test_recorded_env_files_have_no_hostname() -> None:
             assert not line.startswith("host:"), f"{path}:{lineno} にホスト名が残っている"
 
 
+def test_run_sh_samples_the_hardware_alongside_the_measurement() -> None:
+    """同一コードでもタイムが 3% ばらついた (記録 #4)。原因が分かるまで材料を残す。
+
+    結論には使わない。数本ぶん溜まってから見るためのもの。
+    """
+    script = run_sh()
+    assert "scaling_cur_freq" in script, "CPU 周波数を取っていない"
+    assert "thermal_zone" in script, "温度を取っていない"
+    assert "package_throttle_count" in script, "サーマルスロットル回数を取っていない"
+    assert "> freq.log" in script, "freq.log に書いていない"
+
+    # ビルドは含めず、計測している区間だけを見る
+    assert script.index("=== 計測開始") < script.index("sample_hw_loop >> freq.log")
+    # 1本目を同期で書く (短い実行でヘッダだけにならないように)
+    assert script.index("{ sample_hw_header; sample_hw_row; }") < script.index("sample_hw_loop >>")
+    # 途中で落ちてもサンプラを残さない
+    assert "trap stop_sampler EXIT" in script
+    assert 'kill "$SAMPLER_PID" 2>/dev/null || true' in script
+
+
 def test_implementation_is_selectable_and_defaults_to_baseline() -> None:
     """第1引数で実装ディレクトリを選ぶ。無指定はベースライン。"""
     assert 'IMPL_ARG="${1:-baseline}"' in run_sh()

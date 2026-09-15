@@ -65,6 +65,58 @@ mkdir -p "$WORK"/{dat,kaiseki_log}
 cp -R "$IMPL_DIR"/. "$WORK/"
 rm -f "$WORK/impl.env"
 
+# --- ハードウェアのサンプラ -------------------------------------------------
+# 記録 #4 で、同一コードの全探索が 2430 / 2436 / 2503 秒とばらついた (幅 3.0%)。
+# 原因は未解明。調査はせず、後から判断材料になる値だけ1分おきに残す。
+#
+# 1スレッドの負荷なので、意味があるのは全 CPU の「最大」周波数。
+# 平均は他コアのアイドルに引きずられるが、比較のために両方出す。
+# 読めない環境 (別の計測機、CI) では "-" を書いて先へ進む。
+
+# hw_field <awk プログラム> <ファイル...>  読めなければ "-"
+hw_field() {
+    local prog="$1"
+    shift
+    local out=""
+    out="$(awk "$prog" "$@" 2>/dev/null)" || out=""
+    printf '%s' "${out:--}"
+}
+
+# awk の中の $1 はフィールド番号なので、シェルには展開させない
+# shellcheck disable=SC2016
+sample_hw_row() {
+    printf '%s\t%s\t%s\t%s\t%s\n' \
+        "$(TZ=Asia/Tokyo date +%Y-%m-%dT%H:%M:%S)" \
+        "$(hw_field '{if ($1>m) m=$1} END {if (NR) printf "%.0f", m/1000}' \
+            /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq)" \
+        "$(hw_field '{s+=$1; n++} END {if (n) printf "%.0f", s/n/1000}' \
+            /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq)" \
+        "$(hw_field '{if ($1>m) m=$1} END {if (NR) printf "%.1f", m/1000}' \
+            /sys/class/thermal/thermal_zone*/temp)" \
+        "$(hw_field '{print $1}' \
+            /sys/devices/system/cpu/cpu0/thermal_throttle/package_throttle_count)"
+}
+
+sample_hw_header() {
+    printf 'time_jst\tfreq_max_mhz\tfreq_mean_mhz\tpkg_temp_c\tthrottle\n'
+}
+
+sample_hw_loop() {
+    while :; do
+        sleep 60
+        sample_hw_row
+    done
+}
+
+SAMPLER_PID=""
+stop_sampler() {
+    if [ -n "$SAMPLER_PID" ]; then
+        kill "$SAMPLER_PID" 2>/dev/null || true
+        SAMPLER_PID=""
+    fi
+}
+trap stop_sampler EXIT
+
 # --- 環境の記録 -----------------------------------------------------------
 # 何を計測したのかが後から辿れるように、実装の素性もここに残す。
 # ホスト名は記録しない。計測機の同一性は cpu / cores / mem_total で足りる
@@ -91,10 +143,16 @@ cd "$WORK"
 eval "$BUILD_CMD" 2>&1 | tee build.log
 
 echo "=== 計測開始 $(date --iso-8601=seconds) ==="
+# ビルドは含めず、計測している区間だけを見る
+# 1本目は同期で書く。短い実行でもヘッダだけにならないようにするため
+{ sample_hw_header; sample_hw_row; } > freq.log 2>/dev/null
+sample_hw_loop >> freq.log 2>/dev/null &
+SAMPLER_PID=$!
 set +e
 /usr/bin/time -v bash -c "$RUN_CMD" > stdout.txt 2> time.txt
 RC=$?
 set -e
+stop_sampler
 echo "=== 計測終了 $(date --iso-8601=seconds) (exit=$RC) ==="
 
 echo

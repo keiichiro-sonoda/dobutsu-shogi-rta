@@ -60,6 +60,18 @@ def test_harness_reports_analysis_and_verification_failures(
     assert (work / "solver.py").read_text(encoding="utf-8") == script
     assert not (impl / "custom.log").exists(), "実装元へログを書いてはいけない"
     assert f"Exit status: {analysis_exit}" in (work / "time.txt").read_text(encoding="utf-8")
+
+    # ハードウェアのサンプラ。1本目は同期で書くので、一瞬で終わる実行でも残る
+    freq_lines = (work / "freq.log").read_text(encoding="utf-8").splitlines()
+    assert freq_lines[0].split("\t") == [
+        "time_jst",
+        "freq_max_mhz",
+        "freq_mean_mhz",
+        "pkg_temp_c",
+        "throttle",
+    ]
+    assert len(freq_lines) >= 2, "データ行が1本も無い"
+    assert len(freq_lines[1].split("\t")) == 5
     if log_kind == "valid":
         assert "PASS: 174 行すべて一致" in result.stdout
     elif log_kind == "invalid":

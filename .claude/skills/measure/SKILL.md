@@ -121,8 +121,12 @@ mkdir -p results/<番号>_<ラベル>
 cp "$R/env.txt"                          results/<番号>_<ラベル>/env.txt
 cp "$R/kaiseki_log/kaizenkaiseki1.txt"   results/<番号>_<ラベル>/main.log  # = MAIN_LOG
 cp "$R/time.txt"                         results/<番号>_<ラベル>/time.txt
+cp "$R/freq.log"                         results/<番号>_<ラベル>/freq.log
 python3 tools/verify_log.py results/<番号>_<ラベル>/main.log > results/<番号>_<ラベル>/verify.txt 2>&1
 ```
+
+`freq.log` は `run.sh` が計測と並走して取る CPU 周波数・温度・スロットル回数。
+**個々の記録の結論には使わない**（同一コードのばらつきの原因を追うための蓄積）。
 
 新規の `env.txt` には `runs.out` の `計測終了` にある実際の終了時刻を追記する
 （`run.sh` は開始時刻しか書かない）。保存作業時の現在時刻で代用しない。

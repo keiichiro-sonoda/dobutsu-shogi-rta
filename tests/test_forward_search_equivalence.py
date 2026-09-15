@@ -26,6 +26,7 @@ SMALL_BOARD_NUM_MAX = 3000
 PAIRS = [
     ("02_resident_wins", "03_resident_seen"),
     ("03_resident_seen", "04_resident_unknown"),
+    ("04_resident_unknown", "05_batch_wl_write"),
 ]
 
 
@@ -56,7 +57,7 @@ def test_the_forward_search_is_unchanged_from_the_previous_impl(
 def split_run(shared_library: pathlib.Path, tmp_path: pathlib.Path) -> tuple[object, pathlib.Path]:
     """チャンク分割が何度も起きる状態まで impl/04 (＝最新) を進める。"""
     work = tmp_path / "split"
-    module = load_impl("04_resident_unknown", work, shared_library)
+    module = load_impl(PAIRS[-1][1], work, shared_library)
     run_forward(module, work, rounds=40, board_num_max=SMALL_BOARD_NUM_MAX)
     return module, work
 

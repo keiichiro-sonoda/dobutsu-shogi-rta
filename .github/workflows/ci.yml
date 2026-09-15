@@ -23,6 +23,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          # tests/test_recorded_impls_frozen.py が記録時のコミットと比べるので、
+          # 浅いクローンだと検査できずスキップになる
+          fetch-depth: 0
 
       - uses: astral-sh/setup-uv@v10.1.0
         with:

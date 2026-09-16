@@ -139,7 +139,8 @@ def test_the_dictionary_is_dropped_before_the_predecessors_are_allocated() -> No
     body = top_level_functions(SOURCE)["retreatAnalysis"]
     assert "del idx" in body, "辞書を捨てていない"
     assert body.index("del idx") < body.index("buildPredecessors("), (
-        "前任リストを確保してから辞書を捨てている。ピークが 24 GiB ぶん上がる"
+        "前任リストを確保してから辞書を捨てている。辞書と前任配列が同時に常駐するので、"
+        "P4 の常駐が 24 GiB ぶん増える"
     )
 
 

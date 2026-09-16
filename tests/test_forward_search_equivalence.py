@@ -27,6 +27,7 @@ PAIRS = [
     ("02_resident_wins", "03_resident_seen"),
     ("03_resident_seen", "04_resident_unknown"),
     ("04_resident_unknown", "05_batch_wl_write"),
+    ("05_batch_wl_write", "06_csr_counter"),
 ]
 
 

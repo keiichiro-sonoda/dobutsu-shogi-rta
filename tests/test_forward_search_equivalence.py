@@ -28,6 +28,7 @@ PAIRS = [
     ("03_resident_seen", "04_resident_unknown"),
     ("04_resident_unknown", "05_batch_wl_write"),
     ("05_batch_wl_write", "06_csr_counter"),
+    ("06_csr_counter", "07_batch_forward_write"),
 ]
 
 

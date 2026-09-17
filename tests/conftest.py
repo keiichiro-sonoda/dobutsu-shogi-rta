@@ -121,6 +121,10 @@ def run_forward(
 
     searchAll() ではなくこちらを使うのは、ログに時刻と経過秒が混ざると
     2つの実装を突き合わせられないため。
+
+    impl/07 以降は終端盤面をメモリに貯めて searchAll() の最後に1回書くので、
+    ラウンドを回しただけではディスクに出ない。searchAll() と同じ状態にするため、
+    その書き出しだけ最後に呼ぶ (持っていない実装では何もしない)。
     """
     if board_num_max is not None:
         # モジュールの定数を差し替える (実行時に読まれるので後からで効く)
@@ -129,6 +133,9 @@ def run_forward(
         for _ in range(rounds):
             if module.searchNext():
                 break
+        flush = getattr(module, "flushTerminalBoards", None)
+        if flush is not None:
+            flush()
 
 
 def run_retreat(module: types.ModuleType, work: pathlib.Path) -> None:

@@ -27,7 +27,13 @@ FORWARD_ROUNDS = 7
 SMALL_BOARD_NUM_MAX = 2000
 
 # 後退解析をメモリ常駐にしていった順。隣り合う2つを突き合わせる。
-IMPLS = ("03_resident_seen", "04_resident_unknown", "05_batch_wl_write", "06_csr_counter")
+IMPLS = (
+    "03_resident_seen",
+    "04_resident_unknown",
+    "05_batch_wl_write",
+    "06_csr_counter",
+    "07_batch_forward_write",
+)
 PAIRS = list(itertools.pairwise(IMPLS))
 
 # 未知盤面を常駐させている実装 (loadAllUnknownBoards を持つ)

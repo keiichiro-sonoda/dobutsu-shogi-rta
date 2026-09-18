@@ -1,0 +1,823 @@
+#!/usr/bin/python3
+
+import datetime
+import pickle
+import os
+import time
+import re
+import shutil
+import itertools
+import random
+from array import array
+from ctypes import c_int32, c_uint64, CDLL
+
+# 次の盤面を受け取るための配列型
+c_uint64_array48 = c_uint64 * 48
+
+INITIAL_BOARD = 0x000a003c914b002
+
+# 1ファイルに格納する盤面数の最大値
+# 1000万は2Gメモリがあふれるらしい
+BOARD_NUM_MAX = 5000000
+
+# ディレクトリのパス
+DIR_PATH = "./dat/"
+
+# 負け盤面のパス
+LOSE_PATH_FORMAT = DIR_PATH + "lose{:03d}te_{:03d}.pickle"
+
+# 勝ち盤面のパス
+WIN_PATH_FORMAT = DIR_PATH + "win{:03d}te_{:03d}.pickle"
+
+# 未知盤面のパス
+UK_PATH_FORMAT = DIR_PATH + "unknown{:03d}.pickle"
+
+# 未探索盤面のパス
+UNEXP_PATH_FORMAT = DIR_PATH + "unexplored{:03d}.pickle"
+
+# バックアップフラグ (真ならファイル上書きの度にバックアップ)
+BACK_UP = False
+
+# 適当なループ数 (break前提)
+LOOP_MAX = 10000
+
+# 前向き探索で「すでに見つけた盤面」を全部持つ常駐集合
+# searchNext() は毎ラウンドこれを引く
+# 初回だけディスクから組み立てるので, 途中で落ちても次の起動で作り直せる
+# (全探索が終わったら searchAll() で解放する)
+seen_boards = None
+
+# 前向き探索で見つけた終端局面. 全探索の最後に1回だけ書き出す
+#
+# updateWLFile() はラウンドごとに呼ばれ, 毎回その深さの末尾ファイルを丸ごと
+# 読み直して書き戻していた. 名簿に載るのは 147,317,599 局面なのに, 書き写した
+# 延べ要素は 639,329,035 で 4.3 倍ある. 貯めて最後に1回書けば読み直しが消える
+# (記録 #5 で後退解析側にやったのと同じことを, 残っていた前向き側にも入れる)
+#
+# 途中で落ちるとこのリストごと消えるが, それでよい. ディスクに中途半端な名簿が
+# 残らないので「再開できそうに見えて中身が古い」状態にはならない
+# (CLAUDE.md の「途中で落ちたら再走」と整合する)
+catch_wins = []
+try_loses = []
+
+# 各盤面の総数
+# 以前は重複排除でファイルを読み直すついでに数えていた
+# ループを消したのでカウンタとして持ち回る
+tbn_uk = 0
+tbn_win = 0
+tbn_lose = 0
+
+# 出力ファイル
+LOG_PATH_SUB = "./kaiseki_log/kaiseki_log7.txt"
+# LOG_PATH_SUB = ""
+# LOG_PATH_MAIN = "./kaiseki_log/kaiseki_log6.txt"
+LOG_PATH_MAIN = "./kaiseki_log/kaizenkaiseki1.txt"
+
+lib = CDLL("./animal_shogi.so")
+
+showBoard = lib.showBoard
+showBoard.restype = None
+showBoard.argtypes = (c_uint64,)
+
+nextBoardInvNormal = lib.nextBoardInvNormal
+nextBoardInvNormal.restype = c_int32
+nextBoardInvNormal.argtypes = (c_uint64, c_uint64_array48)
+
+normalBoard = lib.normalBoard
+normalBoard.restype = c_uint64
+normalBoard.argtypes = (c_uint64,)
+
+# ラッパー関数
+def nextBoardInvNormalWrap(b) -> tuple:
+    nba = c_uint64_array48()
+    nbn = nextBoardInvNormal(b, nba)
+    nbl = []
+    if nbn > 0:
+        nbl = nba[:nbn]
+    return nbn, nbl
+
+# バックアップして書き込み (グローバル変数依存)
+# .pickle のみ対応
+def writeAndBackup(fnamew, obj):
+    # バックアップ
+    if BACK_UP and os.path.exists(fnamew):
+        m = re.match(r"(.*)(\.pickle)", fnamew)
+        fnamew_bu = m.groups()[0] + "_backup.pickle"
+        shutil.copyfile(fnamew, fnamew_bu)
+    
+    # 書き込み
+    with open(fnamew, "wb") as f:
+        pickle.dump(obj, f)
+
+# 秒を時間分秒のタプルで返す
+def s2hms(s):
+    s = int(s)
+    return s // 3600, s % 3600 // 60, s % 60
+
+# 勝ち盤面, 負け盤面をその深さのぶんまとめて書き出す (後退解析用)
+#
+# updateWLFile() は未知盤面チャンクごとに呼ばれるので, 毎回その深さの末尾ファイルを
+# 読み直して書き直していた. 深さごとに1回だけ書くなら追記が要らないので,
+# 読み出しは完全に無くなる. 空いている副番号から新しいファイルとして書くだけ.
+#
+# 副番号を 0 から連番に保つこと. loadAllWinBoards() も searchWinBoard() の
+# 負け盤面ロードも「最初に見つからない番号で break」している.
+def writeWLFilesForDepth(wlbl: list, wl_depth: int, win: bool) -> None:
+    if win:
+        wl_path_format = WIN_PATH_FORMAT
+    else:
+        wl_path_format = LOSE_PATH_FORMAT
+
+    # 空いている副番号を探す
+    # 1手勝ちは前向き探索が書いたファイルの続きになる (その末尾は上限未満のまま残る)
+    wl_sub = 0
+    while os.path.exists(wl_path_format.format(wl_depth, wl_sub)):
+        wl_sub += 1
+
+    # 0件でもファイルは作る
+    # 次の手数の導出が win{N}te_000 / lose{N}te_000 の存在を見ているため
+    if not wlbl:
+        if wl_sub == 0:
+            writeAndBackup(wl_path_format.format(wl_depth, 0), set())
+        return
+
+    while wlbl:
+        writeAndBackup(wl_path_format.format(wl_depth, wl_sub), set(wlbl[:BOARD_NUM_MAX]))
+        wlbl = wlbl[BOARD_NUM_MAX:]
+        wl_sub += 1
+
+# 未知盤面 (探索済み) ファイルの更新
+def updateUKFile(ukl: list):
+    uk_sub = 0
+    # 副番号探索
+    for i in range(LOOP_MAX):
+        fnamer_uk = UK_PATH_FORMAT.format(i)
+        if os.path.exists(fnamer_uk):
+            uk_sub = i
+        else:
+            break
+    
+    # ファイルが存在しない場合は作成 (空ファイルから)
+    if i == 0:
+        fnamer_uk = UK_PATH_FORMAT.format(i)
+        writeAndBackup(fnamer_uk, [])
+    
+    # 最新の副番号のファイルに書き込む
+    fnamew_uk = UK_PATH_FORMAT.format(uk_sub)
+    # ひとつ前の未知盤面
+    with open(fnamew_uk, "rb") as f:
+        known_uk = list(pickle.load(f))
+    # 新しい未知盤面の集合と結合
+    ukl = known_uk + ukl
+
+    # ファイルの上限を上回ったら, 分割
+    # 3個以上の分割は考慮しない
+    if len(ukl) > BOARD_NUM_MAX:
+        # 上限まで元ファイルに書き出し
+        writeAndBackup(fnamew_uk, set(ukl[:BOARD_NUM_MAX]))
+        # リストとファイル名を変更
+        ukl = ukl[BOARD_NUM_MAX:]
+        uk_sub += 1
+        fnamew_uk = UK_PATH_FORMAT.format(uk_sub)
+
+    # 元のファイルに書き戻し (または新ファイルに書き出し)
+    writeAndBackup(fnamew_uk, set(ukl))
+
+# 発見済み盤面の集合をディスクから組み立てる (searchNext の初回だけ)
+# 未知・1手勝ち・0手負け・未探索 の4つで, これまでに見つけた盤面の全体になる
+# unexplored{offset} を読まないのは, 中身がすでに未知/勝ち/負けへ移っているため
+# 毎回やらずにこれだけディスクを見るのは, 再開可能性を壊さないため
+# (計測中に電源が落ちても, 次の起動でディスクの状態から作り直せる)
+def buildSeenBoards(offset: int) -> tuple:
+    t1 = time.time()
+    seen = set()
+    n_uk = 0
+    n_win = 0
+    n_lose = 0
+    # 未知盤面
+    for i in range(LOOP_MAX):
+        fnamer_uk = UK_PATH_FORMAT.format(i)
+        if os.path.exists(fnamer_uk):
+            with open(fnamer_uk, "rb") as f:
+                past_boards = pickle.load(f)
+            seen |= past_boards
+            n_uk += len(past_boards)
+        else:
+            break
+
+    # 勝ち盤面
+    for i in range(LOOP_MAX):
+        fnamer_win = WIN_PATH_FORMAT.format(1, i)
+        if os.path.exists(fnamer_win):
+            with open(fnamer_win, "rb") as f:
+                past_boards = pickle.load(f)
+            seen |= past_boards
+            n_win += len(past_boards)
+        else:
+            break
+
+    # 負け盤面
+    for i in range(LOOP_MAX):
+        fnamer_lose = LOSE_PATH_FORMAT.format(0, i)
+        if os.path.exists(fnamer_lose):
+            with open(fnamer_lose, "rb") as f:
+                past_boards = pickle.load(f)
+            seen |= past_boards
+            n_lose += len(past_boards)
+        else:
+            break
+
+    # 他の未探索盤面
+    for i in range(offset + 1, LOOP_MAX):
+        fnamer_unexp_another = UNEXP_PATH_FORMAT.format(i)
+        if os.path.exists(fnamer_unexp_another):
+            with open(fnamer_unexp_another, "rb") as f:
+                seen |= pickle.load(f)
+        else:
+            break
+
+    printLogMain("ディスクから読んだ発見済み盤面：%d" % len(seen))
+    printLogMain("再構築時間：{0:02d}時間{1:02d}分{2:02d}秒".format(*s2hms(time.time() - t1)))
+    return seen, n_uk, n_win, n_lose
+
+# まずは全盤面を洗い出したい
+# 葉ノード (一手で勝てる盤面) は別ファイルに書き出す
+# 初期盤面からの手数は考慮せず, 勝ち, 負け, 未知の3種に分けて保存
+def searchNext():
+    global seen_boards, tbn_uk, tbn_win, tbn_lose, catch_wins, try_loses
+    if not os.path.isdir(DIR_PATH):
+        print("ディレクトリ「%s」を作成してください" % DIR_PATH)
+        return True
+    
+    offset = -1
+    latest = 0
+    # 未探索盤面の検索
+    for i in range(LOOP_MAX):
+        fnamer_unexp = UNEXP_PATH_FORMAT.format(i)
+        # 最初に見つけたファイルの番号をオフセットとし, そのファイルを探索
+        if os.path.exists(fnamer_unexp):
+            if offset < 0:
+                offset = i
+            # 存在する最新の番号も保存
+            latest = i
+        elif offset >= 0:
+            break
+    
+    # 未探索盤面ファイルが存在しない
+    if offset < 0:
+        fnamer_uk = UK_PATH_FORMAT.format(0)
+        # 未探索盤面が存在しないが未知盤面が存在した場合, 解析終了と判断する
+        if os.path.exists(fnamer_uk):
+            print("探索済み")
+            return True
+        # 初期盤面だけの集合をファイルに書き込む
+        offset = 0
+        fnamer_unexp = UNEXP_PATH_FORMAT.format(0)
+        writeAndBackup(fnamer_unexp, set([INITIAL_BOARD]))
+    else:
+        fnamer_unexp = UNEXP_PATH_FORMAT.format(offset)
+
+    printLogSub(fnamer_unexp + " を探索")
+    # 集合をロード
+    with open(fnamer_unexp, "rb") as f:
+        unexp_boards = pickle.load(f)
+    printLogSub("探索盤面数：{:d}".format(len(unexp_boards)))
+
+    win_boards = []
+    lose_boards = []
+    uk_boards = []
+    new_unexp_boards = []
+
+    # 次の状態を計算
+    # 末端であれば勝ちか負けのリストに追加
+    while unexp_boards:
+        board = unexp_boards.pop()
+        nbn, nbl = nextBoardInvNormalWrap(board)
+        # 勝ち盤面
+        if nbn == 0:
+            win_boards.append(board)
+        # 負け盤面
+        elif nbn == -1:
+            lose_boards.append(board)
+        # 未知盤面
+        # 次の盤面は未探索盤面に追加
+        else:
+            uk_boards.append(board)
+            new_unexp_boards += nbl
+    
+    printLogSub("勝ち盤面数：{:d}, 負け盤面数：{:d}, 未知盤面数：{:d}".format(
+        len(win_boards), len(lose_boards), len(uk_boards)
+    ))
+
+    # 末端は貯めるだけ. 書き出しは searchAll() の最後に1回
+    #
+    # ⚠️ ここで書かなくなったぶん, 次の buildSeenBoards() は win001te_* /
+    #    lose000te_* を読めない. 初回ラウンドは初期局面1個しか見ず終端が0個なので
+    #    新規の走行では影響しない (n_win = n_lose = 0 が正しい初期値になる).
+    #    途中の dat/ から再開した場合は終端が seen に入らないが, それは再走する場面
+    catch_wins += win_boards
+    try_loses += lose_boards
+    # 未知盤面の更新
+    updateUKFile(uk_boards)
+
+    printLogSub("新状態数 (重複排除前)：{:d}".format(len(new_unexp_boards)))
+
+    # 集合に変換
+    new_unexp_boards = set(new_unexp_boards)
+
+    # 発見済み盤面との重複排除
+    # 以前は unknown / win001te / lose000te / 他の unexplored を毎回読み直していた
+    # この4つは発見済み集合の分割なので, 順に引くことと和集合を1回引くことは同値
+    if seen_boards is None:
+        seen_boards, tbn_uk, tbn_win, tbn_lose = buildSeenBoards(offset)
+    else:
+        # このラウンドで振り分けた分は既存ファイルの中身と互いに素なので, 足すだけでよい
+        tbn_uk += len(uk_boards)
+        tbn_win += len(win_boards)
+        tbn_lose += len(lose_boards)
+
+    new_unexp_boards -= seen_boards
+    seen_boards |= new_unexp_boards
+
+    # 一旦リストに戻す (結合のため)
+    new_unexp_boards = list(new_unexp_boards)
+    printLogSub("新状態数 (重複排除後)：{:d}".format(len(new_unexp_boards)))
+    printLogSub("総未知盤面数：{:d}, 総勝ち盤面数：{:d}, 総負け盤面数：{:d}".format(
+        tbn_uk, tbn_win, tbn_lose
+    ))
+
+    # 全探索終了
+    if not new_unexp_boards:
+        printLogSub("探索終了")
+        # メインに書き込み
+        printLogMain("総未知盤面数：{:d}, 総勝ち盤面数：{:d}, 総負け盤面数：{:d}".format(
+            tbn_uk, tbn_win, tbn_lose
+        ))
+        # ファイル削除
+        os.remove(fnamer_unexp)
+        return True
+    
+    # 書き込みファイルが読み込みファイルと同じなら, 空集合で初期化
+    if offset == latest:
+        writeAndBackup(fnamer_unexp, set())
+    # 異なればファイル削除
+    else:
+        os.remove(fnamer_unexp)
+    
+    # 書き込み先ファイル
+    fnamew_unexp = UNEXP_PATH_FORMAT.format(latest)
+    # 読み込んでリストに変換
+    with open(fnamew_unexp, "rb") as f:
+        old_unexp_boards = list(pickle.load(f))
+    # 結合
+    new_unexp_boards = old_unexp_boards + new_unexp_boards
+    # 分割してファイルに保存
+    while len(new_unexp_boards) > BOARD_NUM_MAX:
+        # 集合に変換
+        writeAndBackup(fnamew_unexp, set(new_unexp_boards[:BOARD_NUM_MAX]))
+        # 分割した残り
+        new_unexp_boards = new_unexp_boards[BOARD_NUM_MAX:]
+        # 最新番号の更新
+        latest += 1
+        fnamew_unexp = UNEXP_PATH_FORMAT.format(latest)
+    
+    # 残り
+    if new_unexp_boards:
+        writeAndBackup(fnamew_unexp, set(new_unexp_boards))
+
+    return False
+
+# 貯めた終端局面を書き出す (全探索の最後に1回)
+# writeWLFilesForDepth() は既存ファイルを一切読まないので, 読み直しはゼロになる
+def flushTerminalBoards():
+    global catch_wins, try_loses
+    writeWLFilesForDepth(catch_wins, 1, True)
+    writeWLFilesForDepth(try_loses, 0, False)
+    # 後退解析が始まる前に手放す (147,317,599 件ぶん)
+    catch_wins = []
+    try_loses = []
+
+# 全盤面が出るまで探索
+def searchAll():
+    global seen_boards
+    t0 = time.time()
+    for _ in range(LOOP_MAX):
+        flag = searchNext()
+        dt_now = datetime.datetime.now()
+        printLogSub(dt_now.strftime('%Y-%m-%d %H:%M:%S'))
+        delta_t = int(time.time() - t0)
+        printLogSub("%02d時間%02d分%02d秒経過" % (delta_t // 3600, delta_t % 3600 // 60, delta_t % 60))
+        if flag:
+            break
+    # 貯めた終端盤面を書き出す (書き出し時間は全探索側に計上)
+    flushTerminalBoards()
+    # 発見済み集合を解放する
+    # 後退解析の勝ち盤面と同時に抱えないため, ここで手放す (解放時間は全探索側に計上)
+    seen_boards = None
+    delta_t = int(time.time() - t0)
+    printLogMain("%02d時間%02d分%02d秒で全探索終了" % (delta_t // 3600, delta_t % 3600 // 60, delta_t % 60))
+
+# 全盤面の数を出力 (全盤面計算後のテスト用)
+def countTotalBoardNum():
+    tbn_uk = 0
+    tbn_win = 0
+    tbn_lose = 0
+    for i in range(LOOP_MAX):
+        fnamer = UK_PATH_FORMAT.format(i)
+        if os.path.exists(fnamer):
+            print(fnamer, "を読み込み")
+            with open(fnamer, "rb") as f:
+                tbn_uk += len(pickle.load(f))
+        else:
+            break
+    for i in range(LOOP_MAX):
+        fnamer = WIN_PATH_FORMAT.format(1, i)
+        if os.path.exists(fnamer):
+            print(fnamer, "を読み込み")
+            with open(fnamer, "rb") as f:
+                tbn_win += len(pickle.load(f))
+        else:
+            break
+    for i in range(LOOP_MAX):
+        fnamer = LOSE_PATH_FORMAT.format(0, i)
+        if os.path.exists(fnamer):
+            print(fnamer, "を読み込み")
+            with open(fnamer, "rb") as f:
+                tbn_lose += len(pickle.load(f))
+        else:
+            break
+    print("未知盤面数：{:d}".format(tbn_uk))
+    print("勝ち盤面数：{:d}".format(tbn_win))
+    print("負け盤面数：{:d}".format(tbn_lose))
+    print("末端盤面数：{:d}".format(tbn_win + tbn_win))
+    print("全盤面数　：{:d}".format(tbn_uk + tbn_win + tbn_lose))
+
+# 標準出力でなくファイルに出力
+# 引数は文字列一つであることに注意
+# moji は文字列じゃなくてもいい
+def printLog(fnamea, moji):
+    with open(fnamea, "a", encoding="utf-8") as f:
+        print(moji, file=f)
+
+# サブログファイル (高頻度出力)
+def printLogSub(moji):
+    if LOG_PATH_SUB:
+        printLog(LOG_PATH_SUB, moji)
+
+# メインログファイル (低頻度出力)
+def printLogMain(moji):
+    printLog(LOG_PATH_MAIN, moji)
+
+# 未知盤面を全てメモリへ
+# ディスクに置いていたのは 2021 年当時のメモリ制約の名残
+# 所属判定には使われず pop() と len() だけなので, 集合である必要も無い
+# (リストなら 40B/要素. 集合だと 2^28 の表で 77B/要素かかる)
+#
+# 読んだファイルはその場で消す
+# 途中で落ちたときに古い未知盤面が残っていると,
+# 「再開できそうに見えて中身が古い」という一番たちの悪い壊れ方をする
+# 途中落ちは再走なので, 紛らわしい残骸を残さないのが正しい
+# 進捗は win{N}te_* / lose{N}te_* が深さごとに書かれるので, そちらで分かる
+def loadAllUnknownBoards() -> list:
+    t1 = time.time()
+    uk_chunks = []
+    for i in range(LOOP_MAX):
+        fnamer_uk = UK_PATH_FORMAT.format(i)
+        if not os.path.exists(fnamer_uk):
+            break
+        with open(fnamer_uk, "rb") as f:
+            uk_chunks.append(list(pickle.load(f)))
+        os.remove(fnamer_uk)
+    printLogMain("常駐させた未知盤面：%d (%d チャンク)" % (
+        sum(len(c) for c in uk_chunks), len(uk_chunks)
+    ))
+    printLogMain("未知盤面の読み込み時間：{0:02d}時間{1:02d}分{2:02d}秒".format(*s2hms(time.time() - t1)))
+    return uk_chunks
+
+# 最後まで未知だった盤面 (＝引き分け) を成果物として書き出す
+# 到達可能な全局面を成果物に含めるための最後の一手間で,
+# tools/fingerprint_dat.py の照合もここを見る
+def writeUnknownChunks(uk_chunks: list) -> None:
+    t1 = time.time()
+    rest = []
+    for chunk in uk_chunks:
+        rest += chunk
+    total = len(rest)
+    files_num = 0
+    # 空でも1ファイルは作る (後退解析が全部を確定させた場合)
+    while True:
+        writeAndBackup(UK_PATH_FORMAT.format(files_num), set(rest[:BOARD_NUM_MAX]))
+        rest = rest[BOARD_NUM_MAX:]
+        files_num += 1
+        if not rest:
+            break
+    printLogMain("書き出した未知盤面：%d (%d ファイル)" % (total, files_num))
+    printLogMain("未知盤面の書き出し時間：{0:02d}時間{1:02d}分{2:02d}秒".format(*s2hms(time.time() - t1)))
+
+# ---- 後退解析: 連番化 + CSR 前任リスト + カウンタ ----------------------------
+#
+# #5 までは未確定局面を174ラウンド舐め直し, そのたびに指し手を作り直していた.
+# 延べ訪問 1,479,788,351 回 (局面 246,803,167 の6倍) のうち,
+# 48.1% は同一ラウンド内の作り直し, 31.5% は引き分けの空振りだった.
+# 原因は「前任局面を引けないこと」の一点.
+#
+# 前任リストがあれば, 辺 938,671,869 本をちょうど1回ずつ通るだけで済む.
+# 引き分け 2,682,700 は cnt が 0 にならず勝ち後続も来ないので, 特別扱いのコード無しに
+# 一度も触られずに残る (#5 の空振り 31.5% が構造として消える).
+#
+# 連番の並びは3群を連続させる:
+#     [0, n_uk)                  未知      (辺はここからしか出ない)
+#     [n_uk, n_uk + n_win)       キャッチ  (1手勝ち)
+#     [n_uk + n_win, n_all)      トライ負け (0手負け)
+# 連番は全単射でありさえすればよく順序に意味は無いので, パック値のソートはしない.
+# 群を連続させておくと cnt[] と succ_off[] が未知のぶんだけで済み,
+# 深さ0と深さ1の初期フロンティアが range() になる.
+
+# ---- 実験: 採番順が P2 / P4 にどれだけ効くかを測る (記録試行ではない) ----------
+#
+# 記録 #7 は後退解析に1行も触っていないのに P2 が +66 秒動いた。勝ち/負けファイルの
+# 中身が変わって packed[] の並びが変わり, 24.41 GiB の辞書のエントリ配置が変わったため。
+# 偶然変わっただけで 6.4% 動くなら, 意図的に選べばもっと動くのか, それとも天井なのか。
+# その振れ幅を測るためのコード。
+#
+# ⚠️ 記録 #7 の実装との違い (並び順そのものとは別のコスト):
+#   - cnt[] と succ_off[] を全局面ぶん (n_all) に広げた
+#   - 深さ0/深さ1のフロンティアを range() ではなく走査で作る
+#   どちらも「未知盤面が先頭に固まっている」前提を外すため。C と D がその前提を壊す。
+#   この改修のコストは A にも同じだけ乗るので, 並び順どうしの比較は公平になる。
+#   A 現状 (未知チャンク逆順 → キャッチ → トライ負け)
+#   B 未知チャンク正順
+#   C 全件を固定シードでシャッフル
+#   D パック値でソート
+#   E 上位ビットで計数ソート (D の近似。1パスで済むので安い)
+#   F E を3群の中だけで行う (未知/キャッチ/トライ負けの連続配置を保つ)
+ORDER = os.environ.get("ORDER", "A")
+SHUFFLE_SEED = 20260917
+
+# E / F のバケット幅. 60bit のうち上位 (60 - BUCKET_SHIFT) ビットで分ける
+# 40 なら 2^20 = 1,048,576 バケットで, 1バケットあたり平均 235 局面
+BUCKET_SHIFT = int(os.environ.get("BUCKET_SHIFT", "40"))
+
+# [lo, hi) を上位ビットで計数ソートする (安定・2パス)
+# パック値は「近い値 = 似た局面」なので, 上位を揃えるだけで局所性がかなり戻るはず
+def bucketSort(packed, kind, lo: int, hi: int) -> None:
+    n = hi - lo
+    if n <= 1:
+        return
+    nb = 1 << (60 - BUCKET_SHIFT)
+    counts = array("I", bytes(4)) * (nb + 1)
+    for i in range(lo, hi):
+        counts[(packed[i] >> BUCKET_SHIFT) + 1] += 1
+    cur = array("I", itertools.accumulate(counts))
+    del counts
+    out_p = array("Q", bytes(8)) * n
+    out_k = bytearray(n)
+    for i in range(lo, hi):
+        v = packed[i]
+        b = v >> BUCKET_SHIFT
+        j = cur[b]
+        out_p[j] = v
+        out_k[j] = kind[i]
+        cur[b] = j + 1
+    del cur
+    packed[lo:hi] = out_p
+    kind[lo:hi] = out_k
+
+# kind[] と dtm[] は同じ配列。255=未知, 1=キャッチ(1手勝ち), 0=トライ負け(0手負け)
+UNKNOWN, CATCH, TRYLOSE = 255, 1, 0
+
+# 指定した手数のファイルを packed の末尾へ足して, 足した数を返す
+def appendFamily(packed, kind, code: int, path_format, depth: int) -> int:
+    before = len(packed)
+    for i in range(LOOP_MAX):
+        fnamer = path_format.format(depth, i)
+        if not os.path.exists(fnamer):
+            break
+        with open(fnamer, "rb") as f:
+            packed.extend(pickle.load(f))
+    n = len(packed) - before
+    kind.extend(bytes([code]) * n)
+    return n
+
+# 前向き探索の成果物を読んで, 連番を振った packed[] と種別 kind[] にする
+def loadForwardResult() -> tuple:
+    t1 = time.time()
+    packed = array("Q")
+    kind = bytearray()
+    # 未知盤面 (読んだファイルはその場で消える)
+    uk_chunks = loadAllUnknownBoards()
+    if ORDER == "B":
+        # pop() は末尾から取るので, 先に反転しておくとチャンクが正順になる
+        uk_chunks.reverse()
+    while uk_chunks:
+        chunk = uk_chunks.pop()
+        packed.extend(chunk)
+        kind.extend(b"\xff" * len(chunk))
+    n_uk = len(packed)
+    # キャッチ (1手勝ち) と トライ負け (0手負け) は前向き探索が確定させている
+    n_win = appendFamily(packed, kind, CATCH, WIN_PATH_FORMAT, 1)
+    n_lose = appendFamily(packed, kind, TRYLOSE, LOSE_PATH_FORMAT, 0)
+    printLogMain("読み込んだ局面：%d (未知 %d / キャッチ %d / トライ負け %d)" % (
+        len(packed), n_uk, n_win, n_lose
+    ))
+    printLogMain("P0 読み込み：{0:02d}時間{1:02d}分{2:02d}秒".format(*s2hms(time.time() - t1)))
+    return packed, kind, n_uk, n_win, n_lose
+
+# ORDER に従って packed[] と kind[] を同じ置換で並べ替える
+def reorderPacked(packed, kind) -> None:
+    t1 = time.time()
+    n = len(packed)
+    if ORDER == "C":
+        # 局所性を意図的に壊す。固定シードなので再現できる
+        rnd = random.Random(SHUFFLE_SEED)
+        rand = rnd.random
+        for i in range(n - 1, 0, -1):
+            j = int(rand() * (i + 1))
+            packed[i], packed[j] = packed[j], packed[i]
+            kind[i], kind[j] = kind[j], kind[i]
+    elif ORDER == "D":
+        # (パック値 << 2 | 種別) で1本のキーにまとめてから並べ替える
+        # パック値は 60bit なので 62bit に収まる
+        codes = {UNKNOWN: 2, CATCH: 1, TRYLOSE: 0}
+        rev = {2: UNKNOWN, 1: CATCH, 0: TRYLOSE}
+        tmp = [(packed[i] << 2) | codes[kind[i]] for i in range(n)]
+        tmp.sort()
+        for i, v in enumerate(tmp):
+            packed[i] = v >> 2
+            kind[i] = rev[v & 3]
+        del tmp
+    elif ORDER == "E":
+        # 全件をまとめて1回。3群は混ざる
+        bucketSort(packed, kind, 0, n)
+    elif ORDER == "F":
+        # 3群それぞれの中だけ。連続配置が保たれるので、記録実装にするなら
+        # impl/07 の構造のまま載せられる (全局面ぶんに広げる +82 秒が要らない)
+        lo = 0
+        for code in (UNKNOWN, CATCH, TRYLOSE):
+            hi = lo
+            while hi < n and kind[hi] == code:
+                hi += 1
+            bucketSort(packed, kind, lo, hi)
+            lo = hi
+    printLogMain("並べ替え (%s)：%s" % (
+        ORDER, "{0:02d}時間{1:02d}分{2:02d}秒".format(*s2hms(time.time() - t1))
+    ))
+
+# パック値 → 連番 の辞書
+# 構築でしか使わない. pred[] を確保する前に捨てるのがピークを決める
+def buildIndex(packed) -> dict:
+    t1 = time.time()
+    idx = {v: i for i, v in enumerate(packed)}
+    if len(idx) != len(packed):
+        raise RuntimeError("局面が重複している：%d / %d" % (len(idx), len(packed)))
+    printLogMain("P1 索引：{0:02d}時間{1:02d}分{2:02d}秒".format(*s2hms(time.time() - t1)))
+    return idx
+
+# 未知局面の後続を連番で並べた CSR (succ, succ_off) と, 出次数 cnt を作る
+# ⚠️ 未知が先頭に固まっている前提を置かず, 全局面を走査して dtm で判定する
+def buildSuccessors(packed, kind, idx: dict) -> tuple:
+    t1 = time.time()
+    n_all = len(packed)
+    succ = array("I")
+    succ_off = array("I", bytes(4))
+    cnt = bytearray(n_all)
+    get = idx.__getitem__
+    get_or = idx.get
+    extend = succ.extend
+    append_succ = succ.append
+    append_off = succ_off.append
+    total = 0
+    outside = 0
+    for i in range(n_all):
+        if kind[i] == UNKNOWN:
+            nbn, nbl = nextBoardInvNormalWrap(packed[i])
+            if nbn <= 0:
+                raise RuntimeError("未知盤面に終端が混ざっている：%d 番目 (%d)" % (i, nbn))
+            if nbn > 255:
+                raise RuntimeError("出次数が大きすぎる：%d" % nbn)
+            base = len(succ)
+            try:
+                extend(map(get, nbl))
+            except KeyError:
+                del succ[base:]
+                for nb in nbl:
+                    j = get_or(nb, -1)
+                    if j >= 0:
+                        append_succ(j)
+                outside += nbn - (len(succ) - base)
+            cnt[i] = nbn
+            total += len(succ) - base
+        append_off(total)
+        if i % 20000000 == 0:
+            printLogSub("P2 後続生成 {0:d}/{1:d} 辺 {2:d} {4:02d}分{5:02d}秒経過".format(
+                i, n_all, total, *s2hms(time.time() - t1)
+            ))
+    printLogMain("辺の総数：%d (未発見の後続 %d)" % (total, outside))
+    printLogMain("P2 後続生成：{0:02d}時間{1:02d}分{2:02d}秒".format(*s2hms(time.time() - t1)))
+    return succ, succ_off, cnt
+
+# 辺の向きを逆にして CSR に詰め直す (計数ソート)
+def buildPredecessors(succ, succ_off, n_all: int) -> tuple:
+    t1 = time.time()
+    indeg = array("I", bytes(4)) * (n_all + 1)
+    for q in succ:
+        indeg[q + 1] += 1
+    pred_off = array("I", itertools.accumulate(indeg))
+    del indeg
+    printLogSub("P4 入次数まで {0:02d}時間{1:02d}分{2:02d}秒".format(*s2hms(time.time() - t1)))
+    cur = pred_off[:n_all]
+    pred = array("I", bytes(4)) * len(succ)
+    for src in range(n_all):
+        lo = succ_off[src]
+        hi = succ_off[src + 1]
+        if lo == hi:
+            continue
+        for q in succ[lo:hi]:
+            j = cur[q]
+            pred[j] = src
+            cur[q] = j + 1
+        if src % 20000000 == 0:
+            printLogSub("P4 散らし {0:d}/{1:d} {3:02d}分{4:02d}秒経過".format(
+                src, n_all, *s2hms(time.time() - t1)
+            ))
+    del cur
+    if pred_off[n_all] != len(succ):
+        raise RuntimeError("前任リストの総数が合わない：%d / %d" % (pred_off[n_all], len(succ)))
+    printLogMain("P4 前任リスト：{0:02d}時間{1:02d}分{2:02d}秒".format(*s2hms(time.time() - t1)))
+    return pred, pred_off
+
+def retreatAnalysis():
+    """全探索の成果物から後退解析だけを走らせる (この実験の本体)"""
+    for fnamer in (WIN_PATH_FORMAT.format(3, 0), LOSE_PATH_FORMAT.format(2, 0)):
+        if os.path.exists(fnamer):
+            raise RuntimeError("途中まで進んだ dat/ からは再開できない：%s" % fnamer)
+
+    packed, kind, n_uk, n_win, n_lose = loadForwardResult()
+    n_all = len(packed)
+    reorderPacked(packed, kind)
+    # ⚠️ kind[] と dtm[] は分ける。kind は「前向き探索が付けた種別」で書き換えない。
+    #    深さ0で見つけた1手勝ちも dtm は 1 になるので, dtm==1 で走査すると
+    #    元のキャッチと区別が付かず, 深さ1のフロンティアに二重に流れてしまう
+    dtm = bytearray(kind)
+    idx = buildIndex(packed)
+    succ, succ_off, cnt = buildSuccessors(packed, kind, idx)
+    del idx
+    pred, pred_off = buildPredecessors(succ, succ_off, n_all)
+    del succ, succ_off
+
+    # ⚠️ 並びが任意なので, 初期フロンティアは range() では取れない。走査で作る
+    #    リストにすると 140,298,614 件で 5.6 GB 乗るので, 生成器のまま流す
+    #    (この段でキャッチの dtm が書き換わることは無いので安全)
+    frontier = (i for i in range(n_all) if kind[i] == TRYLOSE)
+    depth = 0
+    for _ in range(LOOP_MAX):
+        t1 = time.time()
+        printLogSub("#" * 100)
+        printLogMain("#" * 100)
+        nd = depth + 1
+        if nd >= 255:
+            raise RuntimeError("手数が dtm に入らない：%d" % nd)
+        found = []
+        append = found.append
+        if depth % 2 == 0:
+            for q in frontier:
+                for p in pred[pred_off[q]:pred_off[q + 1]]:
+                    if dtm[p] == 255:
+                        dtm[p] = nd
+                        append(p)
+        else:
+            for q in frontier:
+                for p in pred[pred_off[q]:pred_off[q + 1]]:
+                    v = cnt[p] - 1
+                    cnt[p] = v
+                    if v == 0 and dtm[p] == 255:
+                        dtm[p] = nd
+                        append(p)
+        writeWLFilesForDepth([packed[i] for i in found], nd, nd % 2 == 1)
+        if nd == 1:
+            printLogMain("  1手勝ち盤面総数 (キャッチ除く)：%d" % len(found))
+        elif nd % 2 == 1:
+            printLogMain("%3d手勝ち盤面総数：%d" % (nd, len(found)))
+        else:
+            printLogMain("%3d手負け盤面総数：%d" % (nd, len(found)))
+        printLogMain("所要時間：{0:02d}時間{1:02d}分{2:02d}秒".format(*s2hms(time.time() - t1)))
+        if not found:
+            printLogMain("完全解析終了")
+            break
+        if nd == 1:
+            # 深さ1は前向き探索のキャッチと合わせて一つのフロンティアになる
+            frontier = itertools.chain((i for i in range(n_all) if kind[i] == CATCH), found)
+        else:
+            frontier = found
+        depth = nd
+
+    writeUnknownChunks([[packed[i] for i in range(n_all) if dtm[i] == 255]])
+
+def main():
+    t0 = time.time()
+    searchAll()
+    retreatAnalysis()
+    printLogMain("完全解析にかかった時間：%2d時間%2d分%2d秒" % s2hms(time.time() - t0))
+
+if __name__ == "__main__":
+    main()

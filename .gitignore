@@ -1,6 +1,7 @@
 # 計測の作業ディレクトリと生ログ
 runs/
 runs.out
+exp*.out
 
 # ビルド生成物
 *.so

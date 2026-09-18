@@ -35,7 +35,9 @@ target-version = "py312"
 #
 # impl/ も同じ。各実装は baseline からの差分そのものが計測の単位なので、
 # 整形が入ると「1試行1変数」が崩れて、タイム差が何の効果なのか言えなくなる。
-extend-exclude = ["baseline", "impl", "runs", "results", ".claude", ".venv"]
+#
+# experiments/ は記録を取らない試し打ちの置き場。impl/ からの派生なので同じ扱いにする。
+extend-exclude = ["baseline", "impl", "experiments", "runs", "results", ".claude", ".venv"]
 
 [tool.ruff.lint]
 select = [
@@ -68,7 +70,7 @@ ignore = [
 python_version = "3.12"
 strict = true
 files = ["tools", "tests"]
-exclude = '^(baseline|runs|results)/'
+exclude = '^(baseline|experiments|runs|results)/'
 
 # --------------------------------------------------------------------------
 # pytest

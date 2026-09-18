@@ -9,7 +9,7 @@
 #   results/  … 記録済みの実行ログ。証拠なので改変しない
 #   oracle/   … 答えを固定している不変量
 #   runs/     … 計測の作業ディレクトリ (git 管理外)
-exclude: '^(baseline/|impl/|results/|oracle/|runs/)'
+exclude: '^(baseline/|impl/|experiments/|results/|oracle/|runs/)'
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks

@@ -2,6 +2,7 @@
 runs/
 runs.out
 exp*.out
+g1*.out
 
 # ビルド生成物
 *.so

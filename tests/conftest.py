@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import _ctypes
+import atexit
 import importlib.util
 import os
 import pathlib
 import pickle
 import shutil
 import subprocess
+import tempfile
 import types
 
 import pytest
@@ -61,14 +64,10 @@ def totals() -> dict[str, int]:
 # --------------------------------------------------------------------------
 
 
-@pytest.fixture(scope="session")
-def shared_library(tmp_path_factory: pytest.TempPathFactory) -> pathlib.Path:
-    """ベースラインの C を共有ライブラリにする。実装はどれも同じ .so を使う。"""
-    if shutil.which("gcc") is None:
-        pytest.skip("gcc が無い")
-    build = tmp_path_factory.mktemp("so")
+def build_library(src: pathlib.Path, build: pathlib.Path) -> pathlib.Path:
+    """C を共有ライブラリにする。フラグは baseline の Makefile と同じ (-O0)。"""
     for name in ("animal_shogi.c", "animal_shogi.h"):
-        shutil.copy(BASELINE_DIR / name, build / name)
+        shutil.copy(src / name, build / name)
     subprocess.run(
         ["gcc", "animal_shogi.c", "-o", "animal_shogi.so", "-Wall", "-fPIC", "-shared"],
         cwd=build,
@@ -78,14 +77,74 @@ def shared_library(tmp_path_factory: pytest.TempPathFactory) -> pathlib.Path:
     return build / "animal_shogi.so"
 
 
+@pytest.fixture(scope="session")
+def shared_library(tmp_path_factory: pytest.TempPathFactory) -> pathlib.Path:
+    """ベースラインの C を共有ライブラリにする。
+
+    C が baseline とバイト同一な実装 (#7 まで) はこれをそのまま使う。
+    自前の C を持つ実装は load_impl() が別にビルドする。
+    """
+    if shutil.which("gcc") is None:
+        pytest.skip("gcc が無い")
+    return build_library(BASELINE_DIR, tmp_path_factory.mktemp("so"))
+
+
+# 自前の C を持つ実装の .so。同じ実装を何度も読むのでセッション内で使い回す
+_impl_libraries: dict[str, pathlib.Path] = {}
+
+
+def impl_library(impl: str) -> pathlib.Path:
+    """実装ディレクトリの C を共有ライブラリにする。
+
+    #8 で C 側に索引 (パック値 → 連番のハッシュ表) が入り、
+    「実装はどれも同じ .so を使う」という前提が初めて崩れた。
+    """
+    if impl not in _impl_libraries:
+        build = pathlib.Path(tempfile.mkdtemp(prefix=f"so_{impl}_"))
+        atexit.register(shutil.rmtree, build, True)
+        _impl_libraries[impl] = build_library(ROOT / "impl" / impl, build)
+    return _impl_libraries[impl]
+
+
+# 読み込み済みの実装。次の実装を読む前に .so を閉じるために持っておく
+_loaded: list[types.ModuleType] = []
+
+
+def unload_previous() -> None:
+    """前に読んだ実装の .so を閉じる。
+
+    ⚠️ glibc の dlopen は「名前の文字列」で読み込み済みを引き当てる。
+    どの実装も `CDLL("./animal_shogi.so")` と書くので、作業ディレクトリが違っても
+    2つめ以降は**1つめに読み込んだ .so** を受け取ってしまう。
+    #7 までは C がどれもバイト同一だったので害が出なかったが、#8 で C 側に
+    索引が入ったため、閉じないと impl/08 が baseline の .so を掴む。
+    """
+    while _loaded:
+        module = _loaded.pop()
+        lib = getattr(module, "lib", None)
+        # 閉じたあとに C を呼ぶと落ちるので、黙って使えないようにしておく
+        vars(module)["lib"] = None
+        if lib is not None:
+            _ctypes.dlclose(lib._handle)
+
+
 def load_impl(impl: str, work: pathlib.Path, so: pathlib.Path) -> types.ModuleType:
     """作業ディレクトリを作って実装を import する。
 
     実装は `./dat/` と `./kaiseki_log/` をカレント相対で使い、
     `CDLL("./animal_shogi.so")` も import 時のカレントを見るので、chdir してから読む。
+
+    `so` は baseline からビルドした共有ライブラリ。実装が自前の C を持つなら
+    (#8 以降) そちらをビルドして使う。
     """
     (work / "dat").mkdir(parents=True)
     (work / "kaiseki_log").mkdir(parents=True)
+    impl_dir = ROOT / "impl" / impl
+    if any(
+        (impl_dir / name).read_bytes() != (BASELINE_DIR / name).read_bytes()
+        for name in ("animal_shogi.c", "animal_shogi.h")
+    ):
+        so = impl_library(impl)
     shutil.copy(so, work / "animal_shogi.so")
     shutil.copy(ROOT / "impl" / impl / "animal_shogi.py", work / "animal_shogi.py")
 
@@ -94,8 +153,10 @@ def load_impl(impl: str, work: pathlib.Path, so: pathlib.Path) -> types.ModuleTy
     )
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
+    unload_previous()
     with chdir(work):
         spec.loader.exec_module(module)
+    _loaded.append(module)
     return module
 
 

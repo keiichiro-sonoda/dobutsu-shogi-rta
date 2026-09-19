@@ -168,6 +168,30 @@ def test_the_restart_caveat_is_written_down() -> None:
     assert "insertAll" in top_level_functions(SOURCE)["buildSeenBoards"], "C の表に入れ直していない"
 
 
+def test_the_allocation_failure_is_a_known_defect() -> None:
+    """⚠️ **既知の不具合を固定する。** 直すのは次の実装。
+
+    `nextBoardSeenNormalWrap` は C の `-3` (表を確保できない) を検査していないので、
+    `-1` でも `-2` でもない値が `searchNext()` の `else` に落ちて
+    「未知・初見0件」として扱われる。その局面の後続は探索キューに入らないまま、
+    例外も出ずに先へ進む (`-3` を注入して再現した)。
+
+    ⚠️ impl/11_c_seen は記録済みなので直さない (凍結規約)。
+    **次の実装では `-3` を受けたら RuntimeError を投げる** —— CLAUDE.md の
+    「次の実装で必ず直すもの」に積んである。このテストはその積み残しが
+    黙って消えないようにするための印で、実装を直したときは
+    `impl/11` ではなく新しいディレクトリのテストで「直っていること」を検査する。
+    """
+    body = top_level_functions(SOURCE)["nextBoardSeenNormalWrap"]
+    assert "raise" not in body, (
+        "impl/11 の不具合が直っている？ 記録済みの実装は凍結する。"
+        "直した版は新しいディレクトリに作り、このテストは印として残す"
+    )
+    note = (ROOT / "CLAUDE.md").read_text(encoding="utf-8")
+    assert "次の実装で必ず直すもの" in note, "CLAUDE.md の積み残しの節が消えている"
+    assert "nextBoardSeenNormal" in note, "CLAUDE.md にこの不具合が書かれていない"
+
+
 def test_no_impl_env_needed() -> None:
     """構成がベースラインと同じなので、ハーネスの既定値でそのまま走る。"""
     assert not (IMPL_DIR / "impl.env").exists()

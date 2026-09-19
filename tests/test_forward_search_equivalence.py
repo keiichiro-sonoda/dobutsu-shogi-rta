@@ -36,6 +36,7 @@ PAIRS = [
     ("08_c_index", "09_no_reslice"),
     ("09_no_reslice", "10_setdiff"),
     ("10_setdiff", "11_c_seen"),
+    ("11_c_seen", "12_c_predecessors"),
 ]
 
 

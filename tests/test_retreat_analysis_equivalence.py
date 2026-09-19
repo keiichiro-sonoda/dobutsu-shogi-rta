@@ -38,6 +38,7 @@ IMPLS = (
     "09_no_reslice",
     "10_setdiff",
     "11_c_seen",
+    "12_c_predecessors",
 )
 PAIRS = list(itertools.pairwise(IMPLS))
 

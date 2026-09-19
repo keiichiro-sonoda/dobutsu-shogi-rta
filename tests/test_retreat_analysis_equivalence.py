@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import itertools
 import pathlib
+import shutil
 import types
 
 import fingerprint_dat
@@ -35,6 +36,7 @@ IMPLS = (
     "07_batch_forward_write",
     "08_c_index",
     "09_no_reslice",
+    "10_setdiff",
 )
 PAIRS = list(itertools.pairwise(IMPLS))
 
@@ -46,12 +48,28 @@ RESIDENT_UNKNOWN = IMPLS[1:]
 def retreat_runs(
     shared_library: pathlib.Path, tmp_path_factory: pytest.TempPathFactory
 ) -> dict[str, pathlib.Path]:
-    """打ち切った dat/ を作り、各実装の後退解析を最後まで回す。"""
+    """打ち切った dat/ を1つだけ作り、それを配って各実装の後退解析を最後まで回す。
+
+    ⚠️ 実装ごとに全探索を回してはいけない。打ち切った時点の盤面集合は、実装の
+    集合の反復順に依存する。チャンクの分かれ方が変わると次のラウンドで取り出す
+    盤面が変わるので、同じ7ラウンドでも**別の集合**になる（impl/10 で差集合の
+    書き方を変えたときに実際にそうなった）。完走すれば同じ答えに行き着くが、
+    途中で切ったものどうしは比べられない。
+
+    見たいのは「**同じ入力から同じ出力が出るか**」なので、入力を1つに固定する。
+    """
+    src = tmp_path_factory.mktemp("fixture")
+    module = load_impl(IMPLS[0], src, shared_library)
+    run_forward(module, src, FORWARD_ROUNDS, SMALL_BOARD_NUM_MAX)
+
     out: dict[str, pathlib.Path] = {}
     for impl in IMPLS:
         work = tmp_path_factory.mktemp(impl)
         module = load_impl(impl, work, shared_library)
-        run_forward(module, work, FORWARD_ROUNDS, SMALL_BOARD_NUM_MAX)
+        for path in (src / "dat").iterdir():
+            shutil.copy(path, work / "dat" / path.name)
+        # run_forward を通さないので、上限は自分で入れる (writeUnknownChunks が読む)
+        vars(module)["BOARD_NUM_MAX"] = SMALL_BOARD_NUM_MAX
         run_retreat(module, work)
         out[impl] = work
     return out

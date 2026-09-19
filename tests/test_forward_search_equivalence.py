@@ -17,6 +17,9 @@ from conftest import families, load_impl, run_forward
 
 # 記録 #2 の実測では、最初のチャンク分割はラウンド11 の書き出しで起きる。
 # そこまでは結果が一意に決まるので、直接比較できる。9ラウンドなら約2秒。
+# ⚠️ 分割が起きたあとは比較できない。チャンクの分かれ方は集合の反復順で決まり、
+#    次のラウンドで取り出す盤面が変わるので、途中で切った集合が実装ごとに違う
+#    （impl/10 で差集合の書き方を変えたときに実際にそうなった）。完走すれば同じ。
 ROUNDS_BEFORE_SPLIT = 9
 
 # 分割を小さく起こすための上限。本番は 5,000,000。
@@ -31,6 +34,7 @@ PAIRS = [
     ("06_csr_counter", "07_batch_forward_write"),
     ("07_batch_forward_write", "08_c_index"),
     ("08_c_index", "09_no_reslice"),
+    ("09_no_reslice", "10_setdiff"),
 ]
 
 

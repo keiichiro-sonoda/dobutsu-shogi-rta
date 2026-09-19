@@ -35,6 +35,7 @@ PAIRS = [
     ("07_batch_forward_write", "08_c_index"),
     ("08_c_index", "09_no_reslice"),
     ("09_no_reslice", "10_setdiff"),
+    ("10_setdiff", "11_c_seen"),
 ]
 
 
@@ -77,6 +78,10 @@ def test_the_resident_set_equals_the_files_on_disk(
 
     ここが崩れると、すでに見た盤面をもう一度未探索に積んでしまう (＝答えが壊れる)。
     順序に依存しないので、チャンクの分かれ方が変わっても成立する。
+
+    ⚠️ impl/11 から常駐集合は Python の set ではなく C 側の表になった。
+    中身を丸ごと取り出す口は持たせていない (本走で 2.5 億件を Python に
+    引き出す意味がない) ので、件数と全件の所属で同じことを確かめる。
     """
     module, work = split_run
     fam = families(work / "dat")
@@ -86,7 +91,17 @@ def test_the_resident_set_equals_the_files_on_disk(
     for boards in fam.values():
         assert not (union & boards), "4系統が互いに素でない"
         union |= boards
-    assert vars(module)["seen_boards"] == union
+
+    seen = vars(module).get("seen_boards")
+    if isinstance(seen, set):
+        assert seen == union
+        return
+    # C 側の表 (impl/11 以降)
+    count = vars(module)["seenCount"]
+    contains = vars(module)["seenContains"]
+    assert count() == len(union), "発見済みの件数が4系統の和と違う"
+    missing = [b for b in union if not contains(b)]
+    assert missing == [], f"表に入っていない盤面がある: {missing[:3]}"
 
 
 def test_the_totals_match_what_is_on_disk(split_run: tuple[object, pathlib.Path]) -> None:

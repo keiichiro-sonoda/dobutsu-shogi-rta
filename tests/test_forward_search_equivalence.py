@@ -30,6 +30,7 @@ PAIRS = [
     ("05_batch_wl_write", "06_csr_counter"),
     ("06_csr_counter", "07_batch_forward_write"),
     ("07_batch_forward_write", "08_c_index"),
+    ("08_c_index", "09_no_reslice"),
 ]
 
 

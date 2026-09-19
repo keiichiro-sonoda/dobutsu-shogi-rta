@@ -34,6 +34,7 @@ IMPLS = (
     "06_csr_counter",
     "07_batch_forward_write",
     "08_c_index",
+    "09_no_reslice",
 )
 PAIRS = list(itertools.pairwise(IMPLS))
 

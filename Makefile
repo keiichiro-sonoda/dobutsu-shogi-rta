@@ -31,7 +31,7 @@ lint:  ## Python を lint する (ruff check + format --check)
 	$(UV) run ruff format --check .
 
 lint-sh:  ## シェルスクリプトを lint する (shellcheck)
-	$(UV) run shellcheck tools/run.sh
+	$(UV) run shellcheck tools/run.sh tools/pre-push.sh
 
 type:  ## 型検査する (mypy)
 	$(UV) run mypy
@@ -53,8 +53,12 @@ check: lint lint-sh type doc test  ## CI と同じ一式を回す
 publish-check:  ## 公開で取り消せないものだけを検査する (BASE=origin/main)
 	$(UV) run python tools/publish_lint.py --base $(BASE)
 
-hooks:  ## pre-commit を git フックとして仕掛ける (コミット時と push 直前)
-	$(UV) run pre-commit install --hook-type pre-commit --hook-type pre-push
+hooks:  ## pre-commit と pre-push を git フックとして仕掛ける
+	$(UV) run pre-commit install
+	@printf '#!/bin/sh\nexec "$$(git rev-parse --show-toplevel)/tools/pre-push.sh" "$$@"\n' \
+		> .git/hooks/pre-push
+	@chmod +x .git/hooks/pre-push
+	@echo "pre-push フックを仕掛けた (tools/pre-push.sh を呼ぶ)"
 
 measure:  ## 実装を計測する (IMPL=baseline / LABEL は省略可、要 40GB 空き)
 	tools/run.sh "$(IMPL)" "$(LABEL)"

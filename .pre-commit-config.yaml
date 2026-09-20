@@ -54,12 +54,7 @@ repos:
         pass_filenames: false
         always_run: true
 
-      # push は point of no return なので、コミット時ではなく push 直前に置く。
-      # make publish-check と同じものが、打ち忘れても走る
-      - id: publish-lint
-        name: publish_lint (公開で取り消せないもの)
-        entry: uv run python tools/publish_lint.py
-        language: system
-        stages: [pre-push]
-        pass_filenames: false
-        always_run: true
+
+# publish_lint はここに載せない。pre-commit の pre-push ステージは ref を1つしか
+# 渡さないので、git push origin b1 b2 の b2 が検査されないまま通る (実測)。
+# git の契約どおり標準入力から全 ref を読む tools/pre-push.sh を make hooks が仕掛ける。

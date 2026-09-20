@@ -141,6 +141,8 @@ ENV_PATH = re.compile(r"^results/[^/]+/env\.txt$")
 # ⚠️ 使用と言及を分ける。規約そのものを説明した行 (CLAUDE.md や、この修正の
 #    コミットメッセージ) まで鳴ると、門番のことを書けなくなる。
 #    落とすのは URL か、UUID のような不透明な値が続くときだけ
+# 履歴の根から push するときの差分の起点 (git が持つ空ツリーの固定ハッシュ)
+EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
 ESCAPE = "\x1b["
 SESSION_LINE = re.compile(
     r"^\s*Claude-Session:\s*(?:\S+://|[0-9A-Fa-f][0-9A-Fa-f-]{15,})", re.MULTILINE
@@ -464,10 +466,31 @@ def commit_messages(root: pathlib.Path, shas: Iterable[str]) -> list[tuple[str, 
     return [(sha[:7], git(root, "log", "-1", "--format=%B", sha)) for sha in shas]
 
 
-def collect(root: pathlib.Path, base: str) -> tuple[list[Finding], int, int]:
+def commits_to_publish(
+    root: pathlib.Path, tip: str, base: str | None, remote: str | None
+) -> tuple[list[str], str]:
+    """(この push で新しく公開されるコミット, 差分の起点)。
+
+    `--remote` を渡されたら「そのリモートのどこからも辿れないコミット」を取る。
+    新しいブランチでも、force push でも、これが「今から公開されるもの」そのもの。
+    ⚠️ 起点には `--boundary` が出す境界コミットを使う。`base..tip` で数えると、
+    別のブランチ経由で公開済みのコミットまで拾ってしまう。
+    """
+    if remote is None:
+        assert base is not None
+        return git(root, "rev-list", "--reverse", f"{base}..{tip}").split(), base
+    out = git(root, "rev-list", "--boundary", "--reverse", tip, "--not", f"--remotes={remote}")
+    shas = [line for line in out.split() if not line.startswith("-")]
+    boundary = [line[1:] for line in out.split() if line.startswith("-")]
+    return shas, boundary[0] if boundary else EMPTY_TREE
+
+
+def collect(
+    root: pathlib.Path, base: str | None, tip: str = "HEAD", remote: str | None = None
+) -> tuple[list[Finding], int, int]:
     """(指摘, 見たコミット数, 見たファイル数)。git が答えないときは GitError。"""
-    shas = git(root, "rev-list", "--reverse", f"{base}..HEAD").split()
-    changes = parse_name_status(git(root, "diff", "--name-status", "--no-color", f"{base}..HEAD"))
+    shas, diff_base = commits_to_publish(root, tip, base, remote)
+    changes = parse_name_status(git(root, "diff", "--name-status", "--no-color", diff_base, tip))
 
     found: list[Finding] = []
     # ⚠️ コミットを1つずつ見る。最終差分だけだと「足して次のコミットで消した鍵」が
@@ -481,8 +504,8 @@ def collect(root: pathlib.Path, base: str) -> tuple[list[Finding], int, int]:
         found += identity_findings(added, where)
     found += message_findings(commit_messages(root, shas))
 
-    files = files_at(root)
-    read = head_reader(root)
+    files = files_at(root, tip)
+    read = head_reader(root, tip)
     found += frozen_findings(changes, recorded_impls(files, read))
     found += evidence_findings(files, read, new_result_dirs(changes))
     return found, len(shas), len(changes)
@@ -491,15 +514,24 @@ def collect(root: pathlib.Path, base: str) -> tuple[list[Finding], int, int]:
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description="push で取り消せないものを検査する")
     parser.add_argument("--base", default="origin/main", help="比較先 (既定: origin/main)")
+    parser.add_argument("--to", default="HEAD", help="検査の終点 (既定: HEAD)")
+    parser.add_argument(
+        "--remote",
+        help="このリモートのどこからも辿れないコミットを見る (--base より優先。pre-push 用)",
+    )
     parser.add_argument("--root", type=pathlib.Path, default=ROOT, help="検査するリポジトリ")
     args = parser.parse_args(argv)
 
-    if not has_commit(args.root, args.base):
-        print(f"publish_lint: {args.base} が見えない。git fetch してから回すこと")
+    base = None if args.remote else args.base
+    if base is not None and not has_commit(args.root, base):
+        print(f"publish_lint: {base} が見えない。git fetch してから回すこと")
+        return 2
+    if not has_commit(args.root, args.to):
+        print(f"publish_lint: {args.to} が見えない")
         return 2
 
     try:
-        found, n_commits, n_files = collect(args.root, args.base)
+        found, n_commits, n_files = collect(args.root, base, args.to, args.remote)
     except GitError as exc:
         # ⚠️ ここで 0 を返さない。検査できなかったことを合格と区別する
         print(f"publish_lint: 検査できなかった (終了コード 2)。{exc}")
@@ -514,9 +546,10 @@ def main(argv: list[str]) -> int:
             "鍵は失効、同定情報は取り消す手段が無い"
         )
         return 1
+    against = f"{args.remote} に無いもの" if args.remote else f"{args.base} との差"
     print(
         f"publish_lint: 取り消せない指摘なし "
-        f"({n_commits} コミット / {n_files} ファイルを {args.base} と比べた)"
+        f"({args.to[:12]} まで {n_commits} コミット / {n_files} ファイル、{against})"
     )
     return 0
 

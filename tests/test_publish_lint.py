@@ -8,8 +8,10 @@ publish_lint 側の表も同じ理由で長さを要求する形にしてある�
 
 from __future__ import annotations
 
+import os
 import pathlib
 import subprocess
+import sys
 
 import publish_lint
 import pytest
@@ -664,6 +666,12 @@ def test_japanese_output_is_decoded_as_utf8(repo: pathlib.Path) -> None:
     assert "記録 #13 の訂正" in publish_lint.git(repo, "log", "-1", "--format=%B")
 
 
+def test_main_reports_a_missing_tip(repo: pathlib.Path, capsys: pytest.CaptureFixture[str]) -> None:
+    """終点が見えないときも合格にしない。"""
+    assert publish_lint.main(["--root", str(repo), "--base", "base", "--to", "deadbeef"]) == 2
+    assert "が見えない" in capsys.readouterr().out
+
+
 def test_main_reports_a_missing_base(
     tmp_path: pathlib.Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -677,6 +685,117 @@ def test_collect_counts_what_it_looked_at(repo: pathlib.Path) -> None:
     git(repo, "commit", "-qm", "文書を足す")
     found, n_commits, n_files = publish_lint.collect(repo, "base")
     assert (found, n_commits, n_files) == ([], 1, 1)
+
+
+# --------------------------------------------------------------------------
+# push 対象を検査する (pre-push フック)
+# --------------------------------------------------------------------------
+
+TOOLS = ROOT / "tools"
+
+
+@pytest.fixture
+def pushable(tmp_path: pathlib.Path) -> pathlib.Path:
+    """bare リモートと、それを origin に持つ作業コピー。"""
+    bare, work = tmp_path / "remote", tmp_path / "work"
+    git(tmp_path, "init", "-q", "--bare", "-b", "main", str(bare))
+    git(tmp_path, "init", "-q", "-b", "main", str(work))
+    git(work, "config", "user.name", "t")
+    git(work, "config", "user.email", GIT_EMAIL)
+    git(work, "remote", "add", "origin", str(bare))
+    write(work, "README.md", "# 記録\n")
+    git(work, "add", "-A")
+    git(work, "commit", "-qm", "base")
+    git(work, "push", "-q", "-u", "origin", "main")
+    hook = work / ".git" / "hooks" / "pre-push"
+    hook.write_text(f'#!/bin/sh\nexec "{TOOLS}/pre-push.sh" "$@"\n', encoding="utf-8")
+    hook.chmod(0o755)
+    return work
+
+
+def push(work: pathlib.Path, *refs: str) -> subprocess.CompletedProcess[str]:
+    """フックを通して push する。検査は作業コピーの中身に対して走らせる。"""
+    env = {
+        **os.environ,
+        "PUBLISH_LINT_CMD": f"{sys.executable} {TOOLS / 'publish_lint.py'} --root {work}",
+    }
+    return subprocess.run(
+        ["git", "push", "origin", *refs],
+        cwd=work,
+        capture_output=True,
+        encoding="utf-8",
+        errors="replace",
+        env=env,
+        check=False,
+    )
+
+
+def test_a_branch_other_than_head_is_inspected(pushable: pathlib.Path) -> None:
+    """⚠️ 安全な main にいるまま鍵入りブランチを push できる。
+
+    HEAD を終点にすると「0コミット・指摘なし」で通ってしまう。
+    フックは git が標準入力で渡す push 対象の sha を終点にする。
+    """
+    git(pushable, "checkout", "-qb", "leaky")
+    write(pushable, "leak.md", f"token = {TOKEN}\n")
+    git(pushable, "add", "-A")
+    git(pushable, "commit", "-qm", "鍵入り")
+    git(pushable, "checkout", "-q", "main")
+    done = push(pushable, "leaky")
+    assert done.returncode != 0
+    assert "leak.md" in done.stdout + done.stderr
+
+
+def test_every_ref_of_a_multi_branch_push_is_inspected(pushable: pathlib.Path) -> None:
+    """pre-commit の pre-push ステージは ref を1つしか渡さず、2本目を見逃す。"""
+    git(pushable, "checkout", "-qb", "clean")
+    write(pushable, "ok.md", "無害\n")
+    git(pushable, "add", "-A")
+    git(pushable, "commit", "-qm", "無害")
+    git(pushable, "checkout", "-qb", "leaky", "main")
+    write(pushable, "leak.md", f"token = {TOKEN}\n")
+    git(pushable, "add", "-A")
+    git(pushable, "commit", "-qm", "鍵入り")
+    git(pushable, "checkout", "-q", "main")
+    done = push(pushable, "clean", "leaky")
+    assert done.returncode != 0
+    assert "leak.md" in done.stdout + done.stderr
+
+
+def test_a_harmless_branch_still_goes_through(pushable: pathlib.Path) -> None:
+    git(pushable, "checkout", "-qb", "clean")
+    write(pushable, "ok.md", "無害\n")
+    git(pushable, "add", "-A")
+    git(pushable, "commit", "-qm", "無害")
+    git(pushable, "checkout", "-q", "main")
+    assert push(pushable, "clean").returncode == 0
+
+
+def test_deleting_a_ref_publishes_nothing(pushable: pathlib.Path) -> None:
+    """削除はローカルの sha がすべて 0。公開されるものが無いので通す。"""
+    git(pushable, "checkout", "-qb", "gone")
+    write(pushable, "a.md", "なかみ\n")
+    git(pushable, "add", "-A")
+    git(pushable, "commit", "-qm", "足す")
+    git(pushable, "checkout", "-q", "main")
+    assert push(pushable, "gone").returncode == 0
+    assert push(pushable, ":gone").returncode == 0
+
+
+def test_only_commits_missing_from_the_remote_are_inspected(pushable: pathlib.Path) -> None:
+    """`--remote` は「そのリモートのどこからも辿れないコミット」を見る。"""
+    git(pushable, "checkout", "-qb", "topic")
+    write(pushable, "a.md", "なかみ\n")
+    git(pushable, "add", "-A")
+    git(pushable, "commit", "-qm", "1本目")
+    git(pushable, "push", "-q", "--no-verify", "origin", "topic")  # フックは別のテストで見る
+    write(pushable, "b.md", "つづき\n")
+    git(pushable, "add", "-A")
+    git(pushable, "commit", "-qm", "2本目")
+    shas, base = publish_lint.commits_to_publish(pushable, "topic", None, "origin")
+    assert len(shas) == 1
+    assert publish_lint.git(pushable, "log", "-1", "--format=%s", shas[0]).strip() == "2本目"
+    assert base != publish_lint.EMPTY_TREE
 
 
 # --------------------------------------------------------------------------

@@ -10,7 +10,7 @@
 | | ピーク RSS | 差 |
 |---|---|---|
 | 門番（[`gate_15_c_successors`](../gate_15_c_successors/)、旧新8本ずつ） | 13.8268 → 13.8430 GiB | **+16.6 MiB** |
-| 本走（[`results/15_c_successors`](../../results/15_c_successors/)） | 13.8170 → 13.8776 GiB | **+61.8 MiB** |
+| 本走（[`results/15_c_successors`](../../results/15_c_successors/)） | 13.8172 → 13.8776 GiB | **+61.8 MiB** |
 
 門番では**旧8本と新8本が完全に分離**した（旧の最大 14,499,136 KiB < 新の最小
 14,514,988 KiB）ので、揺れではない。

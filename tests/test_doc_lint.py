@@ -115,6 +115,26 @@ def test_inline_code_closes_with_the_same_number_of_backticks(
     assert list(doc_lint.inspect(tmp_path / "docs/a.md", tmp_path)) == []
 
 
+def test_a_longer_run_of_backticks_cannot_close_a_shorter_one(
+    tmp_path: pathlib.Path,
+) -> None:
+    """`a`` x ` は「1本で開いて1本の塊で閉じる」1つのコード。
+
+    塊の途中を閉じ記号に使えてしまうと、2本の塊の2本目で閉じたことになり、
+    残りが本文に漏れる。前後を (?<!`) (?!`) で挟んでそれを止めている。
+    """
+    write(tmp_path, "docs/a.md", f"## 例\n説明 `a`` {KEY} b`\n")
+    assert list(doc_lint.inspect(tmp_path / "docs/a.md", tmp_path)) == []
+
+
+def test_an_unclosed_backtick_is_not_code(tmp_path: pathlib.Path) -> None:
+    """閉じていないバッククォートはコードにしない (記号は本文として数える)。"""
+    write(tmp_path, "docs/a.md", f"## 例\n`閉じていない {KEY}\n")
+    assert list(doc_lint.inspect(tmp_path / "docs/a.md", tmp_path)) == [
+        ("D3", "docs/a.md", "例", 1)
+    ]
+
+
 def test_fenced_blocks_are_ignored(tmp_path: pathlib.Path) -> None:
     write(tmp_path, "docs/a.md", f"## 例\n```\n{WARN} {WARN} {WARN}\n{KEY}\n```\n")
     assert list(doc_lint.inspect(tmp_path / "docs/a.md", tmp_path)) == []

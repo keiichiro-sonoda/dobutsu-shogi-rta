@@ -51,14 +51,33 @@ def relative_links() -> list[tuple[pathlib.Path, str]]:
     return out
 
 
-def record_rows() -> dict[int, tuple[str, str, str, str]]:
-    """README の記録表から (実装, タイム, 倍率, 日付) を拾う。"""
-    rows: dict[int, tuple[str, str, str, str]] = {}
+def matched_rows() -> list[tuple[int, tuple[str, str, str, str]]]:
+    """記録表の行を、表に出てきた順にそのまま返す。
+
+    ⚠️ 辞書にしない。同じ番号が2度出てきても、ここでは両方残す
+    (辞書に入れた時点で後ろの行が前の行を黙って上書きしてしまう)。
+    """
+    out: list[tuple[int, tuple[str, str, str, str]]] = []
     for line in (ROOT / "README.md").read_text(encoding="utf-8").splitlines():
         m = ROW.match(line)
         if m:
-            rows[int(m.group(1))] = (m.group(2), m.group(3), m.group(4), m.group(5))
-    return rows
+            out.append((int(m.group(1)), (m.group(2), m.group(3), m.group(4), m.group(5))))
+    return out
+
+
+def record_numbers() -> list[int]:
+    """表に出てきた番号。重複も残っている生のリスト。"""
+    return [n for n, _ in matched_rows()]
+
+
+def duplicates(numbers: list[int]) -> list[int]:
+    """2度以上出てきた番号。"""
+    return sorted({n for n in numbers if numbers.count(n) > 1})
+
+
+def record_rows() -> dict[int, tuple[str, str, str, str]]:
+    """README の記録表から (実装, タイム, 倍率, 日付) を拾う。"""
+    return dict(matched_rows())
 
 
 def note_for(number: int) -> pathlib.Path:
@@ -78,14 +97,20 @@ def test_every_relative_link_resolves(src: pathlib.Path, raw: str) -> None:
         )
 
 
-def test_the_record_numbers_run_from_one_without_gaps() -> None:
+def test_the_record_numbers_run_from_one_without_gaps_or_duplicates() -> None:
     """件数は固定しない。記録 #13 を足したら通るのが正しい。
 
-    見るのは番号が1から連番であること。抜けや重複があれば落ちる。
+    見るのは番号が1から連番であること。⚠️ 辞書のキーではなく表に出てきた生の
+    リストで見る。辞書にすると同じ番号の2行目が1行目を上書きして、重複が
+    連番検査まで残らない (タイムだけ違う #12 を足しても全部通ってしまった)。
     """
-    numbers = sorted(record_rows())
+    numbers = record_numbers()
     assert numbers, "記録表が読めていない (表の書式が変わった可能性)"
-    assert numbers == list(range(1, len(numbers) + 1)), f"番号が連番でない: {numbers}"
+    duplicated = duplicates(numbers)
+    assert not duplicated, f"記録表に同じ番号の行が複数ある: {duplicated}"
+    assert sorted(numbers) == list(range(1, len(numbers) + 1)), (
+        f"番号が連番でない: {sorted(numbers)}"
+    )
 
 
 def test_the_table_and_the_notes_match_one_to_one() -> None:
@@ -125,3 +150,14 @@ def test_the_index_lists_every_note() -> None:
     index = (ROOT / "docs" / "records" / "README.md").read_text(encoding="utf-8")
     for path in sorted((ROOT / "docs" / "records").glob("[0-9][0-9]-*.md")):
         assert f"({path.name})" in index, f"{path.name} が索引に無い"
+
+
+def test_duplicates_finds_a_repeated_record_number() -> None:
+    """重複の見つけ方そのものを固定する。
+
+    タイムだけ違う #12 をもう1行足しても、番号を辞書のキーで見ていたころは
+    記録表まわりの検査が全部通ってしまった。
+    """
+    assert duplicates([1, 2, 3]) == []
+    assert duplicates([1, 2, 12, 12]) == [12]
+    assert duplicates([5, 5, 7, 7, 9]) == [5, 7]

@@ -1,0 +1,25 @@
+# 記録 #14 (impl/14_c_retreat) の成果物との照合 (バイト単位)
+# diff -rq <#14 の dat/> <#15 の dat/>  と  md5sum 一覧 (LC_ALL=C sort) の sha256
+#   cd <dat>; find . -type f -print0 | LC_ALL=C sort -z | xargs -0 md5sum | sha256sum
+#
+# #15 は後退解析の P2 後続生成のループをC側へ移した。succ の並びが CSR を決め、
+# CSR が P4 の pred を決め、pred が174段ループの found を決め、found が dat/ の
+# バイト列を決める。4段下流まで効くので、C も Python 版と同じ順に走査している:
+#   未知局面を 0 から n_uk-1 まで昇順に見て、各局面の後続は
+#   nextBoardIndexNormal が out に書いた順のまま succ に積む。
+#
+# ⚠️ #15 は全探索側 (expandRound) にも手を入れている。g_exp_n = 0 を空入力の
+#    早期 return より前に出した修正で、挙動が変わるのは空入力のラウンドだけ。
+#    本走にそのラウンドは現れないので、全探索の出力は変わっていない。
+#    「全探索を1バイトも変えていない」とは書けない (ソースは変わっている)。
+#
+# 指紋 (件数・総和・XOR) より強い検査で、一致しなければ「どこかで順序が動いた」証拠になる。
+#
+files:        #14 213 / #15 213
+bytes:        #14 2216050387 / #15 2216050387
+md5_list_sha256: #14 f0f293359b17a68fd674c3f605cf2ebe541465f82107dd5ebe2f0d285741a8a0
+                 #15 f0f293359b17a68fd674c3f605cf2ebe541465f82107dd5ebe2f0d285741a8a0
+diff -rq:     exit=0
+md5 list:     一致
+指紋:         178 行すべて一致 (tools/fingerprint_dat.py)
+PASS: 213 ファイル 2216050387 バイトがすべて一致

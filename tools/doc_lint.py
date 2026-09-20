@@ -52,9 +52,18 @@ WARN_PER_SECTION = 1
 WARN = re.compile("⚠️?")
 KEY = re.compile("\U0001f511")
 
-FENCE = re.compile(r"^\s*(?:```|~~~)")
 HEADING = re.compile(r"^#{1,6} (.+)$")
-INLINE_CODE = re.compile(r"`[^`]*`")
+
+# フェンス: 行頭の空白3つまで、``` か ~~~ を3つ以上、そのあとが情報文字列。
+# ⚠️ 開いた印と同じ文字で、同じ長さ以上で、情報文字列の無い行でしか閉じない
+# (````  の中に ``` を書ける)。長さを見ずに反転させると、コードの中身を違反に
+# したり、以降の本文をまるごと見逃したりする。
+FENCE = re.compile(r"^ {0,3}(?P<mark>`{3,}|~{3,})(?P<info>.*)$")
+
+# インラインコード: 開いたバッククォートの本数と同じ本数で閉じる。
+# `x` も ``x`` も ``a`b`` も1つのコードとして落とす (1文字ずつ見ると
+# ``x`` が「空のコード + x + 空のコード」に見えて、x が本文に残ってしまう)。
+INLINE_CODE = re.compile(r"(?P<ticks>`+).*?(?P=ticks)(?!`)")
 
 PREAMBLE = "(前文)"
 
@@ -70,6 +79,14 @@ def documents(root: pathlib.Path) -> list[pathlib.Path]:
     return [p for p in found if p.is_file()]
 
 
+def fence_mark(line: str) -> tuple[str, int, str] | None:
+    """フェンスの行なら (印の文字, 印の長さ, 情報文字列) を返す。"""
+    m = FENCE.match(line)
+    if m is None:
+        return None
+    return m.group("mark")[0], len(m.group("mark")), m.group("info")
+
+
 def sections(text: str) -> list[tuple[str, str]]:
     """見出しから次の見出しまでを1節として切り出す。
 
@@ -80,13 +97,18 @@ def sections(text: str) -> list[tuple[str, str]]:
     out: list[tuple[str, str]] = []
     locator = PREAMBLE
     buf: list[str] = []
-    in_fence = False
+    fence: tuple[str, int] | None = None  # 開いているフェンスの (印の文字, 長さ)
     for line in text.splitlines():
-        if FENCE.match(line):
-            in_fence = not in_fence
-            continue
-        if in_fence:
-            continue
+        mark = fence_mark(line)
+        if fence is None:
+            if mark is not None and not (mark[0] == "`" and "`" in mark[2]):
+                fence = (mark[0], mark[1])  # ``` の情報文字列にバッククォートは置けない
+                continue
+        else:
+            closes = mark is not None and mark[0] == fence[0] and mark[1] >= fence[1]
+            if closes and not mark[2].strip():  # type: ignore[index]
+                fence = None
+            continue  # フェンスの中身も、開き行も閉じ行も数えない
         m = HEADING.match(line)
         if m:
             out.append((locator, "\n".join(buf)))

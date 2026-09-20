@@ -78,8 +78,22 @@ def test_every_relative_link_resolves(src: pathlib.Path, raw: str) -> None:
         )
 
 
-def test_the_record_table_has_all_twelve_rows() -> None:
-    assert sorted(record_rows()) == list(range(1, 13))
+def test_the_record_numbers_run_from_one_without_gaps() -> None:
+    """件数は固定しない。記録 #13 を足したら通るのが正しい。
+
+    見るのは番号が1から連番であること。抜けや重複があれば落ちる。
+    """
+    numbers = sorted(record_rows())
+    assert numbers, "記録表が読めていない (表の書式が変わった可能性)"
+    assert numbers == list(range(1, len(numbers) + 1)), f"番号が連番でない: {numbers}"
+
+
+def test_the_table_and_the_notes_match_one_to_one() -> None:
+    """記録表とノートの過不足。片側だけ足したら落ちる。"""
+    notes = {int(p.name[:2]) for p in (ROOT / "docs" / "records").glob("[0-9][0-9]-*.md")}
+    rows = set(record_rows())
+    assert notes - rows == set(), f"記録表に行の無いノート: {sorted(notes - rows)}"
+    assert rows - notes == set(), f"ノートの無い記録表の行: {sorted(rows - notes)}"
 
 
 @pytest.mark.parametrize("number", sorted(record_rows()))

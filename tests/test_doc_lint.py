@@ -57,6 +57,64 @@ def test_symbols_inside_code_are_mentions_not_uses(tmp_path: pathlib.Path) -> No
     assert doc_lint.sections(f"## 規約\n{body}\n")[1][1].count(WARN) == 0
 
 
+def test_a_longer_fence_can_contain_a_shorter_one(tmp_path: pathlib.Path) -> None:
+    """```` の中の ``` はフェンスを閉じない。
+
+    ⚠️ 印の長さを見ずに出てくるたび反転させると、コードの中身を違反に数える。
+    """
+    body = f"## 例\n````\n```\n{WARN} {WARN} {WARN}\n```\n````\n\n## 本文\n{WARN}\n{WARN}\n"
+    write(tmp_path, "docs/a.md", body)
+    assert list(doc_lint.inspect(tmp_path / "docs/a.md", tmp_path)) == [
+        ("D2", "docs/a.md", "本文", 2)
+    ]
+
+
+def test_an_unbalanced_inner_fence_does_not_silence_the_rest(tmp_path: pathlib.Path) -> None:
+    """内側の印が奇数でも、以降の本文を見逃さない。
+
+    反転で数えていたときは、ここで検査が最後まで黙っていた (違反ゼロと報告した)。
+    見逃しは誤検知より悪いので、この向きを別に固定する。
+    """
+    body = f"## 例\n````\n```\nなかみ\n````\n\n## 本文\n{WARN}\n{WARN}\n{WARN}\n"
+    write(tmp_path, "docs/a.md", body)
+    assert list(doc_lint.inspect(tmp_path / "docs/a.md", tmp_path)) == [
+        ("D2", "docs/a.md", "本文", 3)
+    ]
+
+
+def test_a_fence_only_closes_on_a_bare_line_of_the_same_kind(tmp_path: pathlib.Path) -> None:
+    """情報文字列の付いた行や、別の文字の行では閉じない。"""
+    write(tmp_path, "docs/a.md", f"## 例\n```\n{WARN}\n``` ruby\n{WARN}\n~~~\n{WARN}\n```\n")
+    assert list(doc_lint.inspect(tmp_path / "docs/a.md", tmp_path)) == []
+    # 逆に、開いた印より長い行では閉じられる
+    write(tmp_path, "docs/b.md", f"## 例\n```\n{WARN}\n`````\n\n## 本文\n{WARN}\n{WARN}\n")
+    assert list(doc_lint.inspect(tmp_path / "docs/b.md", tmp_path)) == [
+        ("D2", "docs/b.md", "本文", 2)
+    ]
+
+
+def test_a_tilde_fence_may_hold_backticks(tmp_path: pathlib.Path) -> None:
+    write(tmp_path, "docs/a.md", f"## 例\n~~~markdown\n```\n{WARN} {WARN}\n```\n~~~\n")
+    assert list(doc_lint.inspect(tmp_path / "docs/a.md", tmp_path)) == []
+
+
+def test_backticks_in_a_backtick_info_string_are_not_a_fence(tmp_path: pathlib.Path) -> None:
+    """``` のあとにバッククォートが来る行はフェンスではない (Markdown の規則)。"""
+    write(tmp_path, "docs/a.md", f"## 例\n``` `x`\n{WARN}\n{WARN}\n")
+    assert list(doc_lint.inspect(tmp_path / "docs/a.md", tmp_path)) == [
+        ("D2", "docs/a.md", "例", 2)
+    ]
+
+
+@pytest.mark.parametrize("ticks", ["`", "``", "```"])
+def test_inline_code_closes_with_the_same_number_of_backticks(
+    tmp_path: pathlib.Path, ticks: str
+) -> None:
+    """``⚠️`` を1文字ずつ見ると「空のコード + 記号 + 空のコード」になり、記号が残る。"""
+    write(tmp_path, "docs/a.md", f"## 規約\n{ticks}{WARN}{ticks} と {ticks}{KEY}{ticks}\n")
+    assert list(doc_lint.inspect(tmp_path / "docs/a.md", tmp_path)) == []
+
+
 def test_fenced_blocks_are_ignored(tmp_path: pathlib.Path) -> None:
     write(tmp_path, "docs/a.md", f"## 例\n```\n{WARN} {WARN} {WARN}\n{KEY}\n```\n")
     assert list(doc_lint.inspect(tmp_path / "docs/a.md", tmp_path)) == []

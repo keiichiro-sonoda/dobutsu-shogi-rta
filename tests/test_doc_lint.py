@@ -10,7 +10,9 @@
 
 from __future__ import annotations
 
+import io
 import pathlib
+import sys
 
 import doc_lint
 import pytest
@@ -197,6 +199,31 @@ def test_documents_covers_the_right_places_and_skips_the_frozen_ones(
     assert got == ["README.md", "CLAUDE.md", "docs/records/01-a.md", "experiments/e/README.md"]
 
 
+def test_a_new_markdown_file_at_the_root_is_inspected(tmp_path: pathlib.Path) -> None:
+    """根直下は名指しではなく *.md でまるごと見る。
+
+    README と CLAUDE だけを名指ししていたころは、根に NOTES.md や
+    ARCHITECTURE.md を置かれると素通りしていた。文書が増える経路として
+    いちばん通りやすいところが空いていた。
+    """
+    write(tmp_path, "README.md", "あ\n")
+    write(tmp_path, "NOTES.md", f"## メモ\n{WARN}\n{WARN}\n{KEY}\n")
+    assert list(doc_lint.inspect(tmp_path / "NOTES.md", tmp_path)) == [
+        ("D2", "NOTES.md", "メモ", 2),
+        ("D3", "NOTES.md", "メモ", 1),
+    ]
+    assert ("D3", "NOTES.md", "メモ", 1) in doc_lint.collect(tmp_path)
+
+
+def test_documents_lists_each_file_once(tmp_path: pathlib.Path) -> None:
+    """ALWAYS と根の *.md は重なる。2度数えると baseline と食い違う。"""
+    for rel in ("README.md", "CLAUDE.md", "NOTES.md", "docs/a.md"):
+        write(tmp_path, rel, "あ\n")
+    found = doc_lint.documents(tmp_path)
+    assert len(found) == len(set(found))
+    assert [p.name for p in found] == ["README.md", "CLAUDE.md", "NOTES.md", "a.md"]
+
+
 def test_a_missing_always_file_is_skipped(tmp_path: pathlib.Path) -> None:
     write(tmp_path, "README.md", "あ\n")
     assert [p.name for p in doc_lint.documents(tmp_path)] == ["README.md"]
@@ -258,3 +285,36 @@ def test_the_repository_has_no_new_violations() -> None:
     """実物。make check がこれを回す。"""
     bad, _ = doc_lint.compare(doc_lint.collect(doc_lint.ROOT), doc_lint.load(doc_lint.BASELINE))
     assert bad == [], "doc_lint_baseline.txt を締め直すか、違反を直すこと"
+
+
+def test_it_reports_on_a_terminal_that_cannot_encode_the_symbols(
+    tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """報告文と節名に ⚠️ 🔑 が入るので、cp932 の端末では報告時だけ落ちていた。
+
+    正常時は絵文字を出さないので通る、というリンターとして最悪の向きだった
+    (CI は ubuntu なので気づけない)。main() の冒頭で stdout を張り替える。
+    ここでは reconfigure を持たない stdout に差し替えて、その分岐も通す。
+    """
+    write(tmp_path, "docs/a.md", f"## あ\n{WARN}\n{WARN}\n{KEY}\n")
+    buffer = io.StringIO()  # ⚠️ reconfigure を持たないので、その分岐も通る
+    monkeypatch.setattr(sys, "stdout", buffer)
+    rc = doc_lint.main(["--root", str(tmp_path), "--baseline", str(tmp_path / "無い.txt")])
+    out = buffer.getvalue()
+    assert rc == 1
+    assert WARN in out and KEY in out
+
+
+def test_the_makefile_actually_runs_doc_lint() -> None:
+    """黙って効かなくなる経路を塞ぐ。
+
+    doc が .PHONY に無いと、根に doc という名前のファイルができた瞬間に
+    make doc が "up to date" でスキップされ、make check からリントが消える。
+    この検査が防ごうとしている型そのものなので、単語1つでも留めておく。
+    """
+    lines = (doc_lint.ROOT / "Makefile").read_text(encoding="utf-8").splitlines()
+    phony = next(line for line in lines if line.startswith(".PHONY:")).split()
+    assert "doc" in phony, "doc が .PHONY に無い"
+    check = next(line for line in lines if line.startswith("check:"))
+    assert "doc" in check.split(), "check が doc を呼んでいない"
+    assert any("tools/doc_lint.py" in line for line in lines), "doc target が本体を呼んでいない"

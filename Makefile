@@ -13,7 +13,7 @@ LABEL ?= $(notdir $(patsubst %/,%,$(IMPL)))
 
 .DEFAULT_GOAL := help
 
-.PHONY: help setup fmt lint lint-sh type test cov check hooks measure clean
+.PHONY: help setup fmt lint lint-sh type doc test cov check hooks measure clean
 
 help:  ## このヘルプを出す
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) \

@@ -40,9 +40,11 @@ from collections.abc import Iterable, Iterator
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 BASELINE = ROOT / "tools" / "doc_lint_baseline.txt"
 
-# 検査する文書。results/ baseline/ impl/ は凍結された証拠なので入れない
+# 検査する文書。results/ baseline/ impl/ は凍結された証拠なので入れない。
+# ⚠️ 根直下の *.md をまるごと見る。README と CLAUDE だけ名指しにしていたころは、
+# NOTES.md や ARCHITECTURE.md を根に置かれると素通りしていた。
 ALWAYS = ("README.md", "CLAUDE.md")
-GLOBS = ("docs/**/*.md", "experiments/**/*.md")
+GLOBS = ("*.md", "docs/**/*.md", "experiments/**/*.md")
 
 LINE_LIMITS = {"README.md": 400}
 DEFAULT_LINE_LIMIT = 300
@@ -72,11 +74,22 @@ Violation = tuple[str, str, str, int]
 
 
 def documents(root: pathlib.Path) -> list[pathlib.Path]:
-    """検査対象の文書を集める。"""
+    """検査対象の文書を集める。
+
+    ALWAYS を先に置くのは、報告の並びを入口の文書から始めるため。
+    ⚠️ 根の *.md と重なるので、重複を落とす (同じファイルを2度数えると
+    違反が二重計上されて baseline と食い違う)。
+    """
     found = [root / name for name in ALWAYS]
     for pattern in GLOBS:
         found += sorted(root.glob(pattern))
-    return [p for p in found if p.is_file()]
+    out: list[pathlib.Path] = []
+    seen: set[pathlib.Path] = set()
+    for path in found:
+        if path.is_file() and path not in seen:
+            seen.add(path)
+            out.append(path)
+    return out
 
 
 def fence_mark(line: str) -> tuple[str, int, str] | None:
@@ -196,6 +209,12 @@ def compare(
 
 
 def main(argv: list[str]) -> int:
+    # ⚠️ 報告文と節名に ⚠️ 🔑 が入るので、cp932 の端末では「報告することがある
+    # ときだけ」落ちていた。正常時は絵文字が出ないので通る、という最悪の向き。
+    reconfigure = getattr(sys.stdout, "reconfigure", None)
+    if reconfigure is not None:
+        reconfigure(encoding="utf-8", errors="replace")
+
     parser = argparse.ArgumentParser(description="文書の分量を検査する")
     parser.add_argument(
         "--update-baseline", action="store_true", help="いまの違反を baseline に固定する"

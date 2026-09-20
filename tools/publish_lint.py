@@ -126,6 +126,7 @@ ENV_PATH = re.compile(r"^results/[^/]+/env\.txt$")
 # ⚠️ 使用と言及を分ける。規約そのものを説明した行 (CLAUDE.md や、この修正の
 #    コミットメッセージ) まで鳴ると、門番のことを書けなくなる。
 #    落とすのは URL か、UUID のような不透明な値が続くときだけ
+ESCAPE = "\x1b["
 SESSION_LINE = re.compile(
     r"^\s*Claude-Session:\s*(?:\S+://|[0-9A-Fa-f][0-9A-Fa-f-]{15,})", re.MULTILINE
 )
@@ -144,12 +145,22 @@ def git(root: pathlib.Path, *args: str) -> str:
     """git を呼んで標準出力を返す。失敗したら GitError。
 
     `core.quotepath=false` はパスを quote させないため (日本語のパスをそのまま扱う)。
-    ⚠️ `color.ui=false` を明示する。`color.ui=always` を設定した環境では差分の行頭に
-    エスケープが入り、`+` で始まらなくなって**追加行が1つも見えなくなる**。
-    設定ファイル側の値に `-c` が勝つ。
+    ⚠️ 色を止めるのは3重にしてある。差分に色が付くと行頭が `+` で始まらなくなり、
+    **追加行が1つも見えないまま合格する**。`color.ui` だけでは足りない
+    (より細かい `color.diff` が勝つ) ので両方を落とし、差分を出すコマンドには
+    `--no-color` を渡し、それでも色が来たら `parse_added_lines` が落ちる。
     """
     proc = subprocess.run(
-        ["git", "-c", "core.quotepath=false", "-c", "color.ui=false", *args],
+        [
+            "git",
+            "-c",
+            "core.quotepath=false",
+            "-c",
+            "color.ui=false",
+            "-c",
+            "color.diff=false",
+            *args,
+        ],
         cwd=root,
         capture_output=True,
         text=True,
@@ -202,6 +213,9 @@ def parse_added_lines(text: str) -> list[Added]:
     ⚠️ 片方の親から来ただけの行 (` +`) を数えない。`main` を取り込んだマージで、
     base 側に既にある＝公開済みの内容を新規として鳴らしてしまう。
     """
+    if ESCAPE in text:
+        # ⚠️ 色が付いたまま読むと、追加行ゼロ件＝合格に見える。黙るより落ちる
+        raise GitError("差分に色が付いている。git の color 設定を確認すること")
     out: list[Added] = []
     path = ""
     lineno = 0
@@ -415,13 +429,14 @@ def commit_messages(root: pathlib.Path, shas: Iterable[str]) -> list[tuple[str, 
 def collect(root: pathlib.Path, base: str) -> tuple[list[Finding], int, int]:
     """(指摘, 見たコミット数, 見たファイル数)。git が答えないときは GitError。"""
     shas = git(root, "rev-list", "--reverse", f"{base}..HEAD").split()
-    changes = parse_name_status(git(root, "diff", "--name-status", f"{base}..HEAD"))
+    changes = parse_name_status(git(root, "diff", "--name-status", "--no-color", f"{base}..HEAD"))
 
     found: list[Finding] = []
     # ⚠️ コミットを1つずつ見る。最終差分だけだと「足して次のコミットで消した鍵」が
     #    素通りする (blob は履歴に残り、SHA を知っていれば取れる)
     for sha in shas:
-        added = parse_added_lines(git(root, "show", "--format=", "--unified=0", "--cc", sha))
+        text = git(root, "show", "--format=", "--unified=0", "--cc", "--no-color", sha)
+        added = parse_added_lines(text)
         where = f"{sha[:7]} "
         found += secret_findings(added, where)
         found += identity_findings(added, where)

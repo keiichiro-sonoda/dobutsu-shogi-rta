@@ -103,6 +103,13 @@ def test_a_malformed_hunk_header_resets_the_line_number() -> None:
     assert publish_lint.parse_added_lines(diff) == [("a.md", 0, "なかみ")]
 
 
+def test_a_coloured_diff_is_an_error_not_an_empty_result() -> None:
+    """3重の最後。色を止め損ねても、黙って合格にせず落ちる。"""
+    diff = "+++ b/a.md\n@@ -0,0 +1 @@\n\x1b[32m+なかみ\x1b[m\n"
+    with pytest.raises(publish_lint.GitError, match="色"):
+        publish_lint.parse_added_lines(diff)
+
+
 def test_a_combined_diff_counts_only_lines_added_against_every_parent() -> None:
     """マージは `--cc` で見る。片方の親から来た行は、その親の側で既に履歴にある。
 
@@ -534,9 +541,14 @@ def test_a_fully_committed_record_passes(repo: pathlib.Path) -> None:
     assert run(repo) == 0
 
 
-def test_a_secret_is_caught_even_when_color_output_is_forced(repo: pathlib.Path) -> None:
-    """`color.ui=always` だと差分の行頭にエスケープが入り、追加行が1つも見えなくなる。"""
-    git(repo, "config", "color.ui", "always")
+@pytest.mark.parametrize("key", ["color.ui", "color.diff"])
+def test_a_secret_is_caught_even_when_color_output_is_forced(repo: pathlib.Path, key: str) -> None:
+    """色が付くと行頭が `+` で始まらず、追加行ゼロ件＝合格に見える。
+
+    ⚠️ `color.ui` だけ塞いでも足りない。より細かい `color.diff` が勝つので、
+    片方だけ試して直ったことにしない。
+    """
+    git(repo, "config", key, "always")
     write(repo, "leak.md", f"token = {TOKEN}\n")
     git(repo, "add", "-A")
     git(repo, "commit", "-qm", "鍵入り")

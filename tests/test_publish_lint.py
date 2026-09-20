@@ -26,6 +26,9 @@ USER_PATH = "/" + "home/alice/work"
 EMAIL = "alice@" + "example.invalid"
 IP = "203.0" + ".113.7"
 VERSION = "0.11" + ".0.1"
+PASSWORD = "password = " + '"Tr0ub4dor&3xKcd"'
+APIKEY = "api_key: " + "8f3b91c4d05e47aa"
+URL_CRED = "http://admin:" + "PASS@host:5984/vault"
 
 
 def added(text: str, path: str = "docs/a.md", lineno: int = 1) -> list[publish_lint.Added]:
@@ -137,6 +140,30 @@ def test_a_finding_says_which_commit_it_came_from() -> None:
     assert found[0][1] == "abc1234 docs/a.md:1"
 
 
+@pytest.mark.parametrize(
+    ("line", "want"),
+    [
+        (PASSWORD, "秘密らしき代入"),
+        (APIKEY, "秘密らしき代入"),
+        (URL_CRED, "認証情報つきの URL"),
+    ],
+)
+def test_a_secret_that_is_not_a_known_token_shape_is_caught(line: str, want: str) -> None:
+    assert [what for _, _, what in publish_lint.secret_findings(added(line))] == [want]
+
+
+def test_a_url_with_credentials_is_not_called_an_email_address() -> None:
+    """`user:pass@host` は P1 が名指しする。メールとして鳴ると理由が嘘になるうえ、
+    `@` のあとがホスト名でなければ落ちる。"""
+    assert list(publish_lint.identity_findings(added(URL_CRED))) == []
+
+
+@pytest.mark.parametrize("line", ["token = {TOKEN}", "TOKEN = 'gh' + 'p_'", "secret: あいうえお"])
+def test_talking_about_a_secret_is_not_a_secret(line: str) -> None:
+    """値に英字と数字の両方を要求する。これが無いと、この検査のテスト自体が鳴る。"""
+    assert list(publish_lint.secret_findings(added(line))) == []
+
+
 def test_a_sha256_in_the_evidence_is_not_a_secret() -> None:
     """`env.txt` の `impl_sha256` は毎回入る。ここで鳴ったら門番が使い物にならない。"""
     line = "impl_sha256: 1efe2123663c839775fa288a2d3f85a2cc1a0d3c2f8a4e7b296f4aebd987ce9a"
@@ -226,6 +253,27 @@ def test_writing_about_the_rule_is_not_a_session_pointer() -> None:
     """
     body = "取り決め\n\nClaude-Session: の URL 行は付けない。公開リポジトリなので。\n"
     assert list(publish_lint.message_findings([("abc1234", body)])) == []
+
+
+# --------------------------------------------------------------------------
+# P6 中身を検査できないもの
+# --------------------------------------------------------------------------
+
+
+def test_a_binary_file_is_reported_as_uninspectable() -> None:
+    """⚠️ `git diff` はバイナリに `+` 行を出さない。黙って通すと、この門番が
+    いちばん止めたいもの (PEM 秘密鍵) が入った blob が合格する。
+
+    `GitError` と同じ理由で、検査できなかったことを合格と区別する。
+    """
+    numstat = "3\t0\tdocs/a.md\n-\t-\tblob.bin\n"
+    assert list(publish_lint.binary_findings(numstat, "abc1234 ")) == [
+        ("P6", "abc1234 blob.bin", "バイナリなので中身を検査できない")
+    ]
+
+
+def test_a_text_file_is_not_reported_as_binary() -> None:
+    assert list(publish_lint.binary_findings("3\t0\tdocs/a.md\n\n")) == []
 
 
 # --------------------------------------------------------------------------
@@ -591,6 +639,29 @@ def test_a_secret_written_while_resolving_a_merge_is_caught(repo: pathlib.Path) 
     git(repo, "add", "c.md")
     git(repo, "commit", "-qm", "競合を解決")
     assert run(repo) == 1
+
+
+def test_a_binary_blob_stops_the_push(
+    repo: pathlib.Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """検体は PEM 秘密鍵入りの blob。追加行が1つも出ないので、黙ると素通りする。"""
+    (repo / "blob.bin").write_bytes(b"\x00\x01" + PEM.encode() + b"\n\x00")
+    git(repo, "add", "-A")
+    git(repo, "commit", "-qm", "バイナリを足す")
+    assert run(repo) == 1
+    assert "検査できない" in capsys.readouterr().out
+
+
+def test_japanese_output_is_decoded_as_utf8(repo: pathlib.Path) -> None:
+    """⚠️ ロケールで復号すると cp932 の環境で落ちる。utf-8 を明示してあること。
+
+    この検査は UTF-8 の環境では退行を捕まえられない (そこでは text=True でも通る)。
+    ここで固定しているのは「日本語がそのまま読めること」まで。
+    """
+    write(repo, "a.md", "なかみ\n")
+    git(repo, "add", "-A")
+    git(repo, "commit", "-qm", "記録 #13 の訂正")
+    assert "記録 #13 の訂正" in publish_lint.git(repo, "log", "-1", "--format=%B")
 
 
 def test_main_reports_a_missing_base(

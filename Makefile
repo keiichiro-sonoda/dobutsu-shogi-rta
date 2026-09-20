@@ -53,8 +53,8 @@ check: lint lint-sh type doc test  ## CI と同じ一式を回す
 publish-check:  ## 公開で取り消せないものだけを検査する (BASE=origin/main)
 	$(UV) run python tools/publish_lint.py --base $(BASE)
 
-hooks:  ## pre-commit を git フックとして仕掛ける
-	$(UV) run pre-commit install
+hooks:  ## pre-commit を git フックとして仕掛ける (コミット時と push 直前)
+	$(UV) run pre-commit install --hook-type pre-commit --hook-type pre-push
 
 measure:  ## 実装を計測する (IMPL=baseline / LABEL は省略可、要 40GB 空き)
 	tools/run.sh "$(IMPL)" "$(LABEL)"

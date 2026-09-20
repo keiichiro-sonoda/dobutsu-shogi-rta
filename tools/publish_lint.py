@@ -18,6 +18,7 @@
 | P3 | 既存の凍結物の変更・削除・改名 | base との差 |
 | P4 | 記録の証拠の欠損、記録表との食い違い | HEAD の中身 |
 | P5 | コミットメッセージの会話ログへのポインタ | 各コミットのメッセージ |
+| P6 | 中身を検査できないもの (バイナリ) | 各コミットの `--numstat` |
 
 `Co-Authored-By:` は残す (CLAUDE.md の取り決め)。`Claude-Session:` の URL は
 他人が開けないうえ恒久的に残るので P5 で落とす。
@@ -64,14 +65,28 @@ Reader = Callable[[str], str]
 # ⚠️ 検体を literal で書かない。長さを要求する形にしてあるので、この表そのものは
 #    検体にならない (テスト側も実行時に組み立てる)。
 # --------------------------------------------------------------------------
+# URL に利用者名とパスワードを埋め込んだ形。P2 のメールと形が似ているので、
+# ⚠️ ここに実例を literal で書くとこの行自身が P1 で鳴る (言及と使用の区別)
+URL_CREDENTIALS = re.compile(r"\b[a-z][a-z0-9+.-]*://[^/\s:@]+:[^/\s@]+@")
+
 SECRETS: tuple[tuple[str, re.Pattern[str]], ...] = (
-    ("PEM 秘密鍵", re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----")),
-    ("GitHub トークン", re.compile(r"\bgh[pousr]_[0-9A-Za-z]{36}\b")),
-    ("GitHub PAT", re.compile(r"\bgithub_pat_[0-9A-Za-z_]{22,}")),
-    ("AWS アクセスキー", re.compile(r"\b(?:AKIA|ASIA)[0-9A-Z]{16}\b")),
-    ("`sk-` で始まる API キー", re.compile(r"\bsk-[0-9A-Za-z_-]{20,}")),
-    ("Slack トークン", re.compile(r"\bxox[abprs]-[0-9A-Za-z-]{10,}")),
-    ("Authorization ヘッダ", re.compile(r"[Aa]uthorization:\s*(?:Bearer|Basic)\s+\S")),
+    ("PEM 秘密鍵らしき文字列", re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----")),
+    ("GitHub トークンらしき文字列", re.compile(r"\bgh[pousr]_[0-9A-Za-z]{36}\b")),
+    ("GitHub PATらしき文字列", re.compile(r"\bgithub_pat_[0-9A-Za-z_]{22,}")),
+    ("AWS アクセスキーらしき文字列", re.compile(r"\b(?:AKIA|ASIA)[0-9A-Z]{16}\b")),
+    ("`sk-` で始まる API キーらしき文字列", re.compile(r"\bsk-[0-9A-Za-z_-]{20,}")),
+    ("Slack トークンらしき文字列", re.compile(r"\bxox[abprs]-[0-9A-Za-z-]{10,}")),
+    ("Authorization ヘッダらしき文字列", re.compile(r"[Aa]uthorization:\s*(?:Bearer|Basic)\s+\S")),
+    ("認証情報つきの URL", URL_CREDENTIALS),
+    # 値に英字と数字の両方を要求する。`token = {TOKEN}` のような「言及」で鳴らないため
+    # ⚠️ 英字だけのパスフレーズは取れない。一覧に無い形が素通りするのは変わらない
+    (
+        "秘密らしき代入",
+        re.compile(
+            r"(?i)\b(?:password|passwd|secret|token|api[-_]?key)\s*[=:]\s*[\"']?"
+            r"(?=[^\s\"']*[A-Za-z])(?=[^\s\"']*\d)[^\s\"'{}]{8,}"
+        ),
+    ),
 )
 
 # --------------------------------------------------------------------------
@@ -163,7 +178,10 @@ def git(root: pathlib.Path, *args: str) -> str:
         ],
         cwd=root,
         capture_output=True,
-        text=True,
+        # ⚠️ text=True はロケールで復号する。cp932 の環境では日本語の差分や
+        #    コミットメッセージで UnicodeDecodeError になる。utf-8 を明示する
+        encoding="utf-8",
+        errors="replace",
         check=False,
     )
     if proc.returncode != 0:
@@ -178,7 +196,8 @@ def has_commit(root: pathlib.Path, ref: str) -> bool:
         ["git", "rev-parse", "--verify", f"{ref}^{{commit}}"],
         cwd=root,
         capture_output=True,
-        text=True,
+        encoding="utf-8",
+        errors="replace",
         check=False,
     )
     return proc.returncode == 0
@@ -250,7 +269,7 @@ def secret_findings(added: Iterable[Added], where: str = "") -> Iterator[Finding
     for path, lineno, text in added:
         for name, pattern in SECRETS:
             if pattern.search(text):
-                yield ("P1", f"{where}{path}:{lineno}", f"{name}らしき文字列")
+                yield ("P1", f"{where}{path}:{lineno}", name)
 
 
 def identity_findings(added: Iterable[Added], where: str = "") -> Iterator[Finding]:
@@ -258,6 +277,10 @@ def identity_findings(added: Iterable[Added], where: str = "") -> Iterator[Findi
     for path, lineno, text in added:
         at = f"{where}{path}:{lineno}"
         rules = [r for r in FILE_IDENTITY if not (r is IPV4 and path.endswith(GENERATED))]
+        if URL_CREDENTIALS.search(text):
+            # 認証情報つきの URL は P1 が名指しする。`user:pass@host` を
+            # 「メールアドレス」として鳴らすと、理由が嘘になる
+            rules = [r for r in rules if r is not EMAIL]
         for what in identity_matches(text, rules):
             yield ("P2", at, what)
         if path.endswith(".sh") and HOST_CMD.search(text):
@@ -277,12 +300,27 @@ def message_findings(messages: Iterable[tuple[str, str]]) -> Iterator[Finding]:
             at = f"{sha} のメッセージ:{lineno}"
             for name, pattern in SECRETS:
                 if pattern.search(line):
-                    yield ("P1", at, f"{name}らしき文字列")
+                    yield ("P1", at, name)
             rules = MESSAGE_IDENTITY if TRAILER.match(line) else (*MESSAGE_IDENTITY, EMAIL)
             for what in identity_matches(line, rules):
                 yield ("P2", at, what)
         if SESSION_LINE.search(body):
             yield ("P5", sha, "コミットメッセージに Claude-Session: の行がある")
+
+
+def binary_findings(numstat: str, where: str = "") -> Iterator[Finding]:
+    """P6。中身を検査できないものを「指摘なし」に混ぜない。
+
+    `git diff` はバイナリに `+` 行を出さないので、`parse_added_lines` は何も拾わない。
+    そのまま通すと、この門番がいちばん止めたいもの (PEM 秘密鍵) が入った blob が
+    合格する。⚠️ `GitError` と同じ理由で、**検査できなかったことを合格と区別する**。
+
+    `--numstat` はバイナリを `-<TAB>-<TAB>パス` で出す (メッセージの翻訳に依存しない)。
+    """
+    for line in numstat.splitlines():
+        parts = line.split("\t")
+        if len(parts) == 3 and parts[0] == "-" and parts[1] == "-":
+            yield ("P6", f"{where}{parts[2]}", "バイナリなので中身を検査できない")
 
 
 def recorded_impls(files: Iterable[str], read: Reader) -> set[str]:
@@ -438,6 +476,7 @@ def collect(root: pathlib.Path, base: str) -> tuple[list[Finding], int, int]:
         text = git(root, "show", "--format=", "--unified=0", "--cc", "--no-color", sha)
         added = parse_added_lines(text)
         where = f"{sha[:7]} "
+        found += binary_findings(git(root, "show", "--format=", "--numstat", sha), where)
         found += secret_findings(added, where)
         found += identity_findings(added, where)
     found += message_findings(commit_messages(root, shas))

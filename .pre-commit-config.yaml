@@ -53,3 +53,13 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
+
+      # push は point of no return なので、コミット時ではなく push 直前に置く。
+      # make publish-check と同じものが、打ち忘れても走る
+      - id: publish-lint
+        name: publish_lint (公開で取り消せないもの)
+        entry: uv run python tools/publish_lint.py
+        language: system
+        stages: [pre-push]
+        pass_filenames: false
+        always_run: true

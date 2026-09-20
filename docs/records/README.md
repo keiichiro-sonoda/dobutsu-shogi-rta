@@ -22,5 +22,6 @@ frontmatter の2か所にある。読み物としては記録表、機械可読�
 | [#10](10-setdiff.md) | [`impl/10_setdiff/`](../../impl/10_setdiff/) |
 | [#11](11-c-seen.md) | [`impl/11_c_seen/`](../../impl/11_c_seen/) |
 | [#12](12-c-predecessors.md) | [`impl/12_c_predecessors/`](../../impl/12_c_predecessors/) |
+| [#13](13-c-expand.md) | [`impl/13_c_expand/`](../../impl/13_c_expand/) |
 
 試行をまたぐ話は [`../measurement-noise.md`](../measurement-noise.md) にある。

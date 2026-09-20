@@ -21,7 +21,7 @@ import pathlib
 import re
 import shutil
 from array import array
-from ctypes import CDLL, POINTER, c_int32, c_ubyte, c_uint32, cast
+from ctypes import CDLL, POINTER, c_int32, c_ubyte, c_uint32, c_uint64, cast
 
 import pytest
 from conftest import ROOT, impl_library, load_impl, run_forward, run_retreat
@@ -37,6 +37,7 @@ SMALL_BOARD_NUM_MAX = 2000
 FORWARD_ROUNDS = 7
 
 UNDECIDED = 255
+INITIAL_BOARD = 0x000A003C914B002
 
 
 def top_level_functions(path: pathlib.Path) -> dict[str, str]:
@@ -149,6 +150,64 @@ def test_the_c_keeps_no_state_between_calls() -> None:
     assert rest.index("out[0] = 0;") < rest.index("return"), (
         "リセットが早期 return の後ろにある (記録 #13 と同じ形)"
     )
+
+
+def test_the_expansion_defect_of_impl_13_is_still_here() -> None:
+    """★記録 #13 の既知の不具合が、この版にもそのまま残っていることを固定する。
+
+    impl/14 の C は impl/13 への純粋な追加で、`expandRound` は1行も動かして
+    いない。`n == 0` の早期 return が `g_exp_n = 0` より前にあるままなので、
+    空入力のラウンドで `expandNewCount()` が**前のラウンドの値**を返す。
+    Python 側はそれを見て初見の後続を読むので、同じ局面がもう一度未探索盤面に積まれる。
+
+    ⚠️ 記録 #14 の本走に空入力のラウンドは無く、成果物は #13 とバイト一致している
+    ので記録への影響は無い。impl/14 は凍結なので、直すのは次の実装
+    (CLAUDE.md の「次の実装で必ず直すもの」)。
+    """
+    lib = CDLL(str(impl_library("14_c_retreat")))
+    lib.seenInit.restype = c_int32
+    lib.seenInit.argtypes = ()
+    lib.seenFree.restype = None
+    lib.seenFree.argtypes = ()
+    lib.expandRound.restype = c_int32
+    lib.expandRound.argtypes = (
+        POINTER(c_uint64),
+        c_uint32,
+        POINTER(c_uint64),
+        POINTER(c_uint64),
+        POINTER(c_uint64),
+        POINTER(c_uint64),
+    )
+    lib.expandNewCount.restype = c_uint64
+    lib.expandNewCount.argtypes = ()
+    lib.expandFreeBuffer.restype = None
+    lib.expandFreeBuffer.argtypes = ()
+
+    def ptr(a: array[int]) -> object:
+        return cast(a.buffer_info()[0], POINTER(c_uint64))
+
+    def one_round(boards: list[int]) -> int:
+        n = len(boards)
+        arr = array("Q", boards)
+        win = array("Q", bytes(8)) * max(n, 1)
+        lose = array("Q", bytes(8)) * max(n, 1)
+        uk = array("Q", bytes(8)) * max(n, 1)
+        out = array("Q", bytes(8)) * 5
+        rc = lib.expandRound(ptr(arr), n, ptr(win), ptr(lose), ptr(uk), ptr(out))
+        assert rc == 0, f"expandRound が {rc} を返した"
+        return int(lib.expandNewCount())
+
+    assert lib.seenInit() == 0
+    try:
+        first = one_round([INITIAL_BOARD])
+        assert first, "初期局面から後続が出ていない (テストが空振り)"
+        assert one_round([]) == first, (
+            "空入力で初見バッファが 0 に戻っている。直っているなら、この固定と "
+            "CLAUDE.md の「次の実装で必ず直すもの」を一緒に畳むこと"
+        )
+    finally:
+        lib.seenFree()
+        lib.expandFreeBuffer()
 
 
 # --------------------------------------------------------------------------

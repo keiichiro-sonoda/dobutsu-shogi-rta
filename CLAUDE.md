@@ -148,6 +148,8 @@
   会話ログへの恒久的なポインタを残さない。
 - **`push` と PR 作成は指示されるまでしない。** 公開リポジトリでは両方が point of no return で、
   PR は削除できず、クローズしても `/pull/N.diff` は認証不要で取得できる。
+- **push の前に `make publish-check` を通す。** 落ちたら push しない。
+  そこで見るのは追記で回復できないものだけなので、鳴ったら本当に止める。
 
 ## 文書の書き方
 
@@ -164,8 +166,17 @@
 
 ```bash
 make setup && make hooks   # 新しい作業コピーで最初に一度
-make check                 # ruff / shellcheck / mypy / pytest。CI と同じ
+make check                 # ruff / shellcheck / mypy / doc_lint / pytest。CI と同じ
+make publish-check         # push の前だけ。取り消せないものだけを見る
 ```
 
 pre-commit フックは `.git/hooks` にあって clone に付いてこない。
 clone 直後は `make hooks` を忘れないこと（CI はその保険でもある）。
+
+`make publish-check` は `origin/main..HEAD` の追加行を見て、鍵・計測機や個人の同定情報・
+凍結物の変更・記録の証拠の欠損・`Claude-Session:` 行だけを落とす
+（`tools/publish_lint.py`）。説明の誤りや命名は**わざと見ない**。直せるものを門番に
+積むと、鳴っても push を止めない癖がつくため。比較先は `BASE=` で変えられる。
+
+機械に持たせられない観点（主張とログの突き合わせ、帯の引き方、C と Python をまたぐ
+不変条件など）は [`docs/review-checklist.md`](docs/review-checklist.md) にまとめてある。

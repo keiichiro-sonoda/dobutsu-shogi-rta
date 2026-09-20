@@ -35,6 +35,9 @@ lint-sh:  ## シェルスクリプトを lint する (shellcheck)
 type:  ## 型検査する (mypy)
 	$(UV) run mypy
 
+doc:  ## 文書の分量を検査する (doc_lint)
+	$(UV) run python tools/doc_lint.py
+
 test:  ## テストを走らせる (pytest)
 	$(UV) run pytest
 
@@ -42,7 +45,7 @@ cov:  ## カバレッジ付きでテストし HTML レポートも出す
 	$(UV) run pytest --cov --cov-report=term-missing --cov-report=html
 	@echo "HTML レポート: htmlcov/index.html"
 
-check: lint lint-sh type test  ## CI と同じ一式を回す
+check: lint lint-sh type doc test  ## CI と同じ一式を回す
 
 hooks:  ## pre-commit を git フックとして仕掛ける
 	$(UV) run pre-commit install

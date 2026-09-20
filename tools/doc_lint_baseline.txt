@@ -1,0 +1,86 @@
+# doc_lint の既知の違反。新しく増えたぶんだけを FAIL させるための固定点。
+# 減らすのは歓迎 (--update-baseline で締め直す)。
+# ルール	ファイル	節	個数
+D1	experiments/forward_profile/README.md	上限 300 行	304
+D2	CLAUDE.md	計測	12
+D2	CLAUDE.md	記録を取らない実験	2
+D2	README.md	実行方法	3
+D2	README.md	次の標的	12
+D2	README.md	記録	2
+D2	README.md	記録を取らない実験（`experiments/`）	5
+D2	docs/measurement-noise.md	計測機のばらつきについて（記録 #5 から計装）	5
+D2	docs/records/04-resident-unknown.md	記録 #4 で分かったこと	3
+D2	docs/records/05-batch-wl-write.md	記録 #5 で分かったこと	2
+D2	docs/records/06-csr-counter.md	メモリの見積もりは小規模実測からの外挿で足りた	2
+D2	docs/records/06-csr-counter.md	構築が新しい後退解析の 85% を占める	2
+D2	docs/records/07-batch-forward-write.md	改善を示唆する観測はある（ただし確定はしていない）	3
+D2	docs/records/07-batch-forward-write.md	🔑 今回の計測本数では効果量を確定できなかった	2
+D2	docs/records/08-c-index.md	バッファ確保のぶんは分離できなかった	2
+D2	docs/records/08-c-index.md	予測は3つ外した。いずれも見積もりが保守的すぎた	6
+D2	docs/records/08-c-index.md	段ごとの振れは、合計の振れより大きい	6
+D2	docs/records/08-c-index.md	記録 #8 で分かったこと	2
+D2	docs/records/08-c-index.md	🔑 FFI の回数を増やさないことが前提だった	2
+D2	docs/records/09-no-reslice.md	予測と実測	5
+D2	docs/records/09-no-reslice.md	記録 #9 で分かったこと	2
+D2	docs/records/09-no-reslice.md	🔑 終端の書き出しは落ちた。ただし合計では −40 秒にしか見えない	5
+D2	docs/records/10-setdiff.md	予測と実測	6
+D2	docs/records/10-setdiff.md	同一コードの観測が2本ある（門番と本走）	2
+D2	docs/records/10-setdiff.md	後退解析は +9.8 秒（採番順が変わっている）	2
+D2	docs/records/10-setdiff.md	計装を常設した（F0〜F6）	3
+D2	docs/records/10-setdiff.md	記録 #10 で分かったこと	5
+D2	docs/records/10-setdiff.md	🔑 「8倍を越えた区間では差がない」は成り立たなかった	3
+D2	docs/records/11-c-seen.md	⚠️ F5 が 86 秒速くなった理由は分かっていない	2
+D2	docs/records/11-c-seen.md	⚠️ 既知の不具合：C側の確保失敗を握りつぶす	6
+D2	docs/records/11-c-seen.md	予測と実測	5
+D2	docs/records/11-c-seen.md	同一コードの観測（門番と本走）	2
+D2	docs/records/11-c-seen.md	後退解析は −15.4 秒	2
+D2	docs/records/11-c-seen.md	表の成長（既知の総数を使わずに済んだ）	2
+D2	docs/records/12-c-predecessors.md	予測と実測	5
+D2	docs/records/12-c-predecessors.md	記録 #11 の積み残しを直した	2
+D2	docs/records/12-c-predecessors.md	🔑 この企画で初めて、効果量を複数本で確定させた	5
+D2	docs/records/12-c-predecessors.md	🔑 記録 #9 以来のバイト一致	4
+D2	experiments/ffi_buffer_reuse/README.md	副産物：段ごとの振れは合計より大きい	2
+D2	experiments/ffi_buffer_reuse/README.md	結論：分離できなかった	5
+D2	experiments/forward_profile/README.md	F4 が大きい理由（測ったことと、推定の区別）	5
+D2	experiments/forward_profile/README.md	§8 の候補が、それぞれどの区分に触るか（データの対応づけだけ。⚠️ どれを #9 にするかはここでは決めない）	2
+D2	experiments/forward_profile/README.md	何を測ったか	3
+D2	experiments/gate_10_setdiff/README.md	F4 が落ちた場所	3
+D2	experiments/gate_10_setdiff/README.md	⚠️ F6 の −88 秒は #10 ではなく #9 のぶん	2
+D2	experiments/gate_10_setdiff/README.md	なぜ走らせたか	3
+D2	experiments/gate_10_setdiff/README.md	メモリ	3
+D2	experiments/gate_10_setdiff/README.md	新しい2列で分かったこと	2
+D2	experiments/gate_10_setdiff/README.md	結果	4
+D2	experiments/gate_11_c_seen/README.md	なぜ走らせたか	3
+D2	experiments/gate_11_c_seen/README.md	メモリ	2
+D2	experiments/gate_11_c_seen/README.md	結果	2
+D2	experiments/gate_11_c_seen/README.md	表の成長（既知の総数を使わずに済むことの確認）	2
+D2	experiments/gate_12_c_predecessors/README.md	⚠️ 本走の P4 とは一致していない	4
+D2	experiments/gate_12_c_predecessors/README.md	ファイル	2
+D2	experiments/gate_12_c_predecessors/README.md	触っていない段（対照群）	2
+D2	experiments/gate_12_c_predecessors/README.md	🔑 この企画で初めて、効果量を「複数本」で確定させた	4
+D2	experiments/numbering_order/README.md	ファイル	2
+D2	experiments/numbering_order/README.md	実験: 採番順が後退解析にどれだけ効くか	2
+D2	experiments/numbering_order/README.md	言えないこと	5
+D2	experiments/numbering_order/README.md	言えること	3
+D3	CLAUDE.md	記録を取らない実験	1
+D3	README.md	次の標的	2
+D3	README.md	記録	1
+D3	docs/records/06-csr-counter.md	構築が新しい後退解析の 85% を占める	1
+D3	docs/records/06-csr-counter.md	記録 #6 で分かったこと	1
+D3	docs/records/07-batch-forward-write.md	改善を示唆する観測はある（ただし確定はしていない）	1
+D3	docs/records/07-batch-forward-write.md	🔑 今回の計測本数では効果量を確定できなかった	1
+D3	docs/records/08-c-index.md	🔑 FFI の回数を増やさないことが前提だった	1
+D3	docs/records/09-no-reslice.md	🔑 終端の書き出しは落ちた。ただし合計では −40 秒にしか見えない	1
+D3	docs/records/10-setdiff.md	🔑 「8倍を越えた区間では差がない」は成り立たなかった	1
+D3	docs/records/10-setdiff.md	🔑 マイクロベンチは外挿できた（今回は）	1
+D3	docs/records/11-c-seen.md	🔑 帰属を壁時計だけで取らない	1
+D3	docs/records/12-c-predecessors.md	記録 #11 の積み残しを直した	1
+D3	docs/records/12-c-predecessors.md	🔑 この企画で初めて、効果量を複数本で確定させた	3
+D3	docs/records/12-c-predecessors.md	🔑 記録 #9 以来のバイト一致	1
+D3	experiments/forward_profile/README.md	指示書の予想との突き合わせ	1
+D3	experiments/gate_10_setdiff/README.md	F4 が落ちた場所	2
+D3	experiments/gate_10_setdiff/README.md	⚠️ F6 の −88 秒は #10 ではなく #9 のぶん	1
+D3	experiments/gate_11_c_seen/README.md	仕事の量は同じ（壁時計だけで帰属を取らないための検算）	1
+D3	experiments/gate_12_c_predecessors/README.md	P4（今回のレバー）	1
+D3	experiments/gate_12_c_predecessors/README.md	⚠️ 本走の P4 とは一致していない	1
+D3	experiments/gate_12_c_predecessors/README.md	🔑 この企画で初めて、効果量を「複数本」で確定させた	1

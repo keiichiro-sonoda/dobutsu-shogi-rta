@@ -1,8 +1,8 @@
 """`tools/publish_lint.py` の検査。
 
-⚠️ **検体を literal で書かない。** この門番は「追加行」を見るので、テストに本物の形を
-そのまま書くと、このファイルを公開するときに自分自身で鳴る。実行時に組み立てれば、
-ソースの上では連続した形にならないので鳴らない（`"gh" "p_..."` のように切る）。
+⚠️ **検体を literal で書かない。** この門番は追加行とコミットメッセージを見るので、
+テストに本物の形をそのまま書くと、このファイルを公開するときに自分自身で鳴る。
+実行時に組み立てれば、ソースの上では連続した形にならないので鳴らない。
 publish_lint 側の表も同じ理由で長さを要求する形にしてある。
 """
 
@@ -25,6 +25,7 @@ AUTH = "Authorization: " + "Bearer tok"
 USER_PATH = "/" + "home/alice/work"
 EMAIL = "alice@" + "example.invalid"
 IP = "203.0" + ".113.7"
+VERSION = "0.11" + ".0.1"
 
 
 def added(text: str, path: str = "docs/a.md", lineno: int = 1) -> list[publish_lint.Added]:
@@ -33,6 +34,19 @@ def added(text: str, path: str = "docs/a.md", lineno: int = 1) -> list[publish_l
 
 def rules(found: list[publish_lint.Finding]) -> list[str]:
     return [rule for rule, _, _ in found]
+
+
+def write(root: pathlib.Path, rel: str, text: str) -> pathlib.Path:
+    path = root / rel
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+    return path
+
+
+def fs_view(root: pathlib.Path) -> tuple[list[str], publish_lint.Reader]:
+    """作業ディレクトリを「公開される側」の代わりに見せる (HEAD 読みの単体用)。"""
+    files = [p.relative_to(root).as_posix() for p in sorted(root.rglob("*")) if p.is_file()]
+    return files, lambda rel: (root / rel).read_text(encoding="utf-8")
 
 
 # --------------------------------------------------------------------------
@@ -89,6 +103,12 @@ def test_a_malformed_hunk_header_resets_the_line_number() -> None:
     assert publish_lint.parse_added_lines(diff) == [("a.md", 0, "なかみ")]
 
 
+def test_a_merge_diff_does_not_report_the_same_line_twice() -> None:
+    """マージを `-m` で見ると親の数だけ同じ追加行が並ぶ。"""
+    diff = "+++ b/a.md\n@@@ -1,0 +1,1 @@@\n+なかみ\n+++ b/a.md\n@@@ -1,0 +1,1 @@@\n+なかみ\n"
+    assert publish_lint.parse_added_lines(diff) == [("a.md", 1, "なかみ")]
+
+
 # --------------------------------------------------------------------------
 # P1 鍵・トークン
 # --------------------------------------------------------------------------
@@ -97,6 +117,11 @@ def test_a_malformed_hunk_header_resets_the_line_number() -> None:
 @pytest.mark.parametrize("sample", [TOKEN, PEM, AWS, SK, SLACK, AUTH, "github_pat_" + "d" * 30])
 def test_a_secret_is_caught(sample: str) -> None:
     assert rules(list(publish_lint.secret_findings(added(f"key = {sample}")))) == ["P1"]
+
+
+def test_a_finding_says_which_commit_it_came_from() -> None:
+    found = list(publish_lint.secret_findings(added(f"key = {TOKEN}"), "abc1234 "))
+    assert found[0][1] == "abc1234 docs/a.md:1"
 
 
 def test_a_sha256_in_the_evidence_is_not_a_secret() -> None:
@@ -117,7 +142,7 @@ def test_identity_information_is_caught(sample: str) -> None:
 
 def test_a_version_string_in_a_lock_file_is_not_an_ip() -> None:
     """`uv.lock` は生成物で中身を選べない。4連の版番号が IP と同じ形になる。"""
-    line = 'version = "' + "0.11" + '.0.1"'  # 検体なので連結する
+    line = f'version = "{VERSION}"'
     assert list(publish_lint.identity_findings(added(line, "uv.lock"))) == []
     assert rules(list(publish_lint.identity_findings(added(line, "tools/x.py")))) == ["P2"]
 
@@ -138,6 +163,56 @@ def test_an_ordinary_line_is_quiet() -> None:
     line = "全探索 972.74 -> 695.62 (-277.12)"
     assert list(publish_lint.identity_findings(added(line))) == []
     assert list(publish_lint.secret_findings(added(line))) == []
+
+
+# --------------------------------------------------------------------------
+# コミットメッセージ (P1 / P2 / P5)
+# --------------------------------------------------------------------------
+
+
+def test_a_secret_in_a_commit_message_is_caught() -> None:
+    """メッセージも履歴に残る。ファイルに貼った鍵と同じだけ取り消せない。"""
+    found = list(publish_lint.message_findings([("abc1234", f"手順\n\ntoken = {TOKEN}\n")]))
+    assert rules(found) == ["P1"] and found[0][1] == "abc1234 のメッセージ:3"
+
+
+def test_a_user_path_in_a_commit_message_is_caught() -> None:
+    found = list(publish_lint.message_findings([("abc1234", f"走らせた: {USER_PATH}")]))
+    assert rules(found) == ["P2"]
+
+
+@pytest.mark.parametrize("trailer", ["Co-Authored-By", "Signed-off-by", "Reported-by"])
+def test_an_attribution_trailer_is_not_reported_as_an_email(trailer: str) -> None:
+    """⚠️ Co-Authored-By は付ける約束 (CLAUDE.md)。履歴のメール 55 件は全部これ。
+
+    Claude Code と協働したことを残す行なので、門番が鳴ってはいけない。
+    """
+    body = f"記録 #13\n\n{trailer}: Claude <noreply@" + "anthropic.example>\n"
+    assert list(publish_lint.message_findings([("abc1234", body)])) == []
+
+
+def test_an_email_in_the_body_of_a_message_is_still_caught() -> None:
+    """trailer だけを通す。本文に他人のアドレスを引用する経路は残っている。"""
+    body = f"ログを貼る\n\n  connect failed for {EMAIL}\n"
+    assert rules(list(publish_lint.message_findings([("abc1234", body)]))) == ["P2"]
+
+
+@pytest.mark.parametrize(
+    "value", ["https://example.invalid/x", "1f2e3d4c-5b6a-7980-9a8b-7c6d5e4f3a2b"]
+)
+def test_a_session_pointer_in_a_commit_message_is_caught(value: str) -> None:
+    body = f"記録 #13\n\nClaude-Session: {value}\n"
+    assert rules(list(publish_lint.message_findings([("abc1234", body)]))) == ["P5"]
+
+
+def test_writing_about_the_rule_is_not_a_session_pointer() -> None:
+    """⚠️ 使用と言及を分ける。規約を説明した行まで鳴ると、門番のことを書けない。
+
+    実際この修正のコミットメッセージで鳴った (doc_lint の「言及」と同じ問題が、
+    今度はコミットメッセージ側で出た)。
+    """
+    body = "取り決め\n\nClaude-Session: の URL 行は付けない。公開リポジトリなので。\n"
+    assert list(publish_lint.message_findings([("abc1234", body)])) == []
 
 
 # --------------------------------------------------------------------------
@@ -164,6 +239,18 @@ def test_touching_something_frozen_is_caught(status: str, path: str, recorded: s
     assert rules(list(publish_lint.frozen_findings([(status, path)], recorded))) == ["P3"]
 
 
+def test_the_readme_in_results_is_not_frozen(recorded: set[str]) -> None:
+    """⚠️ 凍結は記録ごとのディレクトリ。`results/README.md` は証拠の置き方の説明で、
+    計装が増えるたびに更新してきた (履歴で6回)。ここで鳴ると門番が信用されなくなる。
+    """
+    assert list(publish_lint.frozen_findings([("M", "results/README.md")], recorded)) == []
+
+
+def test_a_finding_names_the_record_directory(recorded: set[str]) -> None:
+    found = list(publish_lint.frozen_findings([("M", "results/12_x/env.txt")], recorded))
+    assert found[0][2] == "凍結物 (results/12_x/) の変更"
+
+
 def test_adding_a_new_record_is_allowed(recorded: set[str]) -> None:
     """記録は results/ に「足す」もの。追加まで止めたら何も公開できない。"""
     changes = [("A", "results/14_x/env.txt"), ("A", "impl/14_x/animal_shogi.c")]
@@ -184,19 +271,13 @@ def test_recorded_implementations_come_from_the_evidence(tmp_path: pathlib.Path)
     write(tmp_path, "results/00_baseline/env.txt", "label: baseline\n")
     write(tmp_path, "results/13_c_expand/env.txt", "impl: 13_c_expand\ngit_commit: abc\n")
     write(tmp_path, "results/99_broken/env.txt", "git_commit: abc\n")
-    assert publish_lint.recorded_impls(tmp_path) == {"baseline/", "impl/13_c_expand/"}
+    files, read = fs_view(tmp_path)
+    assert publish_lint.recorded_impls(files, read) == {"baseline/", "impl/13_c_expand/"}
 
 
 # --------------------------------------------------------------------------
 # P4 記録の証拠
 # --------------------------------------------------------------------------
-
-
-def write(root: pathlib.Path, rel: str, text: str) -> pathlib.Path:
-    path = root / rel
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text, encoding="utf-8")
-    return path
 
 
 def make_record(root: pathlib.Path, *, elapsed: str = "24:27.10", listed: str = "0:24:27") -> None:
@@ -210,23 +291,27 @@ def make_record(root: pathlib.Path, *, elapsed: str = "24:27.10", listed: str = 
     write(root, "README.md", f"| 13 | `impl/13_x/` | 1スレッド | **{listed}** | **21.90×** |\n")
 
 
+def evidence(root: pathlib.Path) -> list[publish_lint.Finding]:
+    files, read = fs_view(root)
+    return list(publish_lint.evidence_findings(files, read, ["results/13_x/"]))
+
+
 def test_a_complete_record_is_quiet(tmp_path: pathlib.Path) -> None:
     make_record(tmp_path)
-    assert list(publish_lint.evidence_findings(tmp_path, ["results/13_x/"])) == []
+    assert evidence(tmp_path) == []
 
 
 def test_missing_evidence_is_caught(tmp_path: pathlib.Path) -> None:
     make_record(tmp_path)
     (tmp_path / "results/13_x/verify.txt").unlink()
-    found = list(publish_lint.evidence_findings(tmp_path, ["results/13_x/"]))
+    found = evidence(tmp_path)
     assert rules(found) == ["P4"] and "verify.txt" in found[0][2]
 
 
 def test_a_missing_env_field_is_caught(tmp_path: pathlib.Path) -> None:
     make_record(tmp_path)
     write(tmp_path, "results/13_x/env.txt", "impl: 13_x\n")
-    found = list(publish_lint.evidence_findings(tmp_path, ["results/13_x/"]))
-    assert [what for _, _, what in found] == [
+    assert [what for _, _, what in evidence(tmp_path)] == [
         "git_commit が無い",
         "impl を指しているのに impl_sha256 が無い",
     ]
@@ -240,34 +325,41 @@ def test_the_baseline_record_does_not_need_an_impl_hash(tmp_path: pathlib.Path) 
     """
     make_record(tmp_path)
     write(tmp_path, "results/13_x/env.txt", "label: baseline\ngit_commit: d5001f5\n")
-    assert list(publish_lint.evidence_findings(tmp_path, ["results/13_x/"])) == []
+    assert evidence(tmp_path) == []
 
 
 def test_a_failed_oracle_check_is_caught(tmp_path: pathlib.Path) -> None:
     make_record(tmp_path)
     write(tmp_path, "results/13_x/verify.txt", "FAIL: 3 行が違う\n")
-    found = list(publish_lint.evidence_findings(tmp_path, ["results/13_x/"]))
+    found = evidence(tmp_path)
     assert rules(found) == ["P4"] and "PASS" in found[0][2]
 
 
 def test_a_time_that_disagrees_with_the_table_is_caught(tmp_path: pathlib.Path) -> None:
     """同じ数字を2か所に持っているので、片方だけ直すと食い違う。"""
     make_record(tmp_path, listed="0:24:28")
-    found = list(publish_lint.evidence_findings(tmp_path, ["results/13_x/"]))
+    found = evidence(tmp_path)
     assert rules(found) == ["P4"] and "1468 秒" in found[0][2]
 
 
 def test_a_record_missing_from_the_table_is_caught(tmp_path: pathlib.Path) -> None:
     make_record(tmp_path)
     write(tmp_path, "README.md", "記録表がまだ無い\n")
-    found = list(publish_lint.evidence_findings(tmp_path, ["results/13_x/"]))
+    found = evidence(tmp_path)
+    assert rules(found) == ["P4"] and "記録 #13" in found[0][2]
+
+
+def test_a_missing_readme_leaves_the_table_empty(tmp_path: pathlib.Path) -> None:
+    make_record(tmp_path)
+    (tmp_path / "README.md").unlink()
+    found = evidence(tmp_path)
     assert rules(found) == ["P4"] and "記録 #13" in found[0][2]
 
 
 def test_an_unreadable_time_file_is_caught(tmp_path: pathlib.Path) -> None:
     make_record(tmp_path)
     write(tmp_path, "results/13_x/time.txt", "途中で落ちた\n")
-    found = list(publish_lint.evidence_findings(tmp_path, ["results/13_x/"]))
+    found = evidence(tmp_path)
     assert rules(found) == ["P4"] and "Elapsed" in found[0][2]
 
 
@@ -309,26 +401,28 @@ def test_new_result_dirs_are_listed_once() -> None:
 
 
 # --------------------------------------------------------------------------
-# P5 コミットメッセージ
+# git が答えなかったとき
 # --------------------------------------------------------------------------
 
 
-def test_a_session_pointer_in_a_commit_message_is_caught() -> None:
-    body = "記録 #13\n\nClaude-Session: https://example.invalid/x\n"
-    assert rules(list(publish_lint.session_findings([("abc1234", body)]))) == ["P5"]
+def test_git_raises_instead_of_returning_nothing(tmp_path: pathlib.Path) -> None:
+    """⚠️ 「取れなかった」を「何も無かった」にしない。ここを混ぜると門番が黙る。"""
+    git(tmp_path, "init", "-q", "-b", "main")
+    with pytest.raises(publish_lint.GitError, match="終了コード"):
+        publish_lint.git(tmp_path, "cat-file", "-p", "deadbeef" * 5)
 
 
-def test_a_co_authored_by_line_is_allowed() -> None:
-    body = "記録 #13\n\nCo-Authored-By: Claude <noreply@" + "anthropic.example>\n"
-    assert list(publish_lint.session_findings([("abc1234", body)])) == []
+def test_main_reports_an_error_when_git_cannot_answer(
+    repo: pathlib.Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """差分を取れなかったら合格にしない。終了コードは 1 でも 0 でもなく 2。"""
 
+    def boom(*args: object, **kwargs: object) -> str:
+        raise publish_lint.GitError("git diff が終了コード 128")
 
-def test_commit_messages_are_split_on_nul() -> None:
-    text = "aaaaaaabbb\n本文1\n\0cccccccddd\n本文2\n\0\n"
-    assert publish_lint.commit_messages(text) == [
-        ("aaaaaaa", "本文1"),
-        ("ccccccc", "本文2"),
-    ]
+    monkeypatch.setattr(publish_lint, "collect", boom)
+    assert publish_lint.main(["--root", str(repo), "--base", "base"]) == 2
+    assert "検査できなかった" in capsys.readouterr().out
 
 
 # --------------------------------------------------------------------------
@@ -349,11 +443,15 @@ def repo(tmp_path: pathlib.Path) -> pathlib.Path:
     git(tmp_path, "init", "-q", "-b", "main")
     git(tmp_path, "config", "user.name", "t")
     git(tmp_path, "config", "user.email", GIT_EMAIL)
-    write(tmp_path, "README.md", "# 記録\n")
+    write(tmp_path, "README.md", "# 記録\n\n| 14 | `impl/14_x/` | 1スレッド | **0:24:27** | |\n")
     git(tmp_path, "add", "-A")
     git(tmp_path, "commit", "-qm", "base")
     git(tmp_path, "branch", "base")
     return tmp_path
+
+
+def run(repo: pathlib.Path) -> int:
+    return publish_lint.main(["--root", str(repo), "--base", "base"])
 
 
 def test_main_passes_on_a_harmless_commit(
@@ -362,7 +460,7 @@ def test_main_passes_on_a_harmless_commit(
     write(repo, "docs/a.md", "ふつうの文書\n")
     git(repo, "add", "-A")
     git(repo, "commit", "-qm", "文書を足す")
-    assert publish_lint.main(["--root", str(repo), "--base", "base"]) == 0
+    assert run(repo) == 0
     assert "取り消せない指摘なし" in capsys.readouterr().out
 
 
@@ -370,9 +468,64 @@ def test_main_stops_on_a_secret(repo: pathlib.Path, capsys: pytest.CaptureFixtur
     write(repo, "deploy.md", f"token = {TOKEN}\n")
     git(repo, "add", "-A")
     git(repo, "commit", "-qm", "鍵を貼ってしまった")
-    assert publish_lint.main(["--root", str(repo), "--base", "base"]) == 1
+    assert run(repo) == 1
     out = capsys.readouterr().out
     assert "P1" in out and "point of no return" in out
+
+
+def test_a_secret_removed_in_a_later_commit_is_still_caught(
+    repo: pathlib.Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """⚠️ 最終差分では消えていても、blob は履歴に残って SHA から取れる。
+
+    「うっかり足して次のコミットで消した」は、公開前チェックがいちばん
+    捕まえないといけない形。
+    """
+    write(repo, "leak.md", f"token = {TOKEN}\n")
+    git(repo, "add", "-A")
+    git(repo, "commit", "-qm", "うっかり貼った")
+    (repo / "leak.md").unlink()
+    git(repo, "add", "-A")
+    git(repo, "commit", "-qm", "消した")
+    assert run(repo) == 1
+    assert "leak.md" in capsys.readouterr().out
+
+
+def test_a_secret_in_a_pushed_commit_message_is_caught(
+    repo: pathlib.Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    write(repo, "a.md", "ふつう\n")
+    git(repo, "add", "-A")
+    git(repo, "commit", "-qm", f"デプロイ手順\n\ntoken = {TOKEN}")
+    assert run(repo) == 1
+    assert "のメッセージ" in capsys.readouterr().out
+
+
+def test_evidence_that_was_never_committed_does_not_count(
+    repo: pathlib.Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """⚠️ 手元にあるだけの verify.txt は、push したあと誰にも見えない。"""
+    write(repo, "results/14_x/env.txt", "impl: 14_x\nimpl_sha256: abc\ngit_commit: def\n")
+    git(repo, "add", "results/14_x/env.txt")
+    git(repo, "commit", "-qm", "記録を足す")
+    write(repo, "results/14_x/verify.txt", "PASS\n")
+    write(
+        repo, "results/14_x/time.txt", "\tElapsed (wall clock) time (h:mm:ss or m:ss): 24:27.10\n"
+    )
+    assert run(repo) == 1
+    out = capsys.readouterr().out
+    assert "コミットされていない" in out and "verify.txt" in out
+
+
+def test_a_fully_committed_record_passes(repo: pathlib.Path) -> None:
+    write(repo, "results/14_x/env.txt", "impl: 14_x\nimpl_sha256: abc\ngit_commit: def\n")
+    write(repo, "results/14_x/verify.txt", "PASS\n")
+    write(
+        repo, "results/14_x/time.txt", "\tElapsed (wall clock) time (h:mm:ss or m:ss): 24:27.10\n"
+    )
+    git(repo, "add", "-A")
+    git(repo, "commit", "-qm", "記録を足す")
+    assert run(repo) == 0
 
 
 def test_main_reports_a_missing_base(
@@ -401,8 +554,16 @@ def test_every_recorded_run_agrees_with_the_record_table() -> None:
     ⚠️ 公開したあとで食い違いが見つかっても、記録は凍結物なので訂正を足すことしか
     できない。`make check` で毎回見る。
     """
-    dirs = sorted(
-        f"{p.parent.relative_to(ROOT).as_posix()}/" for p in ROOT.glob("results/*/env.txt")
-    )
+    files, _ = fs_view(ROOT / "results")
+    paths = [f"results/{p}" for p in files]
+    dirs = sorted({p.rsplit("/", 1)[0] + "/" for p in paths if p.endswith("/env.txt")})
     assert dirs, "results/ に記録が1つも無い"
-    assert list(publish_lint.evidence_findings(ROOT, dirs)) == []
+    full_files = [*paths, "README.md"]
+    found = list(
+        publish_lint.evidence_findings(
+            full_files,
+            lambda rel: (ROOT / rel).read_text(encoding="utf-8"),
+            dirs,
+        )
+    )
+    assert found == []

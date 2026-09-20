@@ -11,19 +11,26 @@
 
 なので、この門番が見るのは**追記で回復できない種類だけ**にする。
 
-| ID | 内容 |
-|----|------|
-| P1 | 鍵・トークンらしき文字列 |
-| P2 | 計測機と個人の同定情報 (ホスト名の収集、ユーザ名入りの絶対パス、メール、IP) |
-| P3 | 既存の凍結物の変更・削除・改名 |
-| P4 | 新しい記録の証拠が欠けている、または記録表と食い違う |
-| P5 | コミットメッセージに会話ログへのポインタ |
+| ID | 内容 | 見る範囲 |
+|----|------|----------|
+| P1 | 鍵・トークンらしき文字列 | 各コミットの追加行とメッセージ |
+| P2 | 計測機と個人の同定情報 | 各コミットの追加行とメッセージ |
+| P3 | 既存の凍結物の変更・削除・改名 | base との差 |
+| P4 | 記録の証拠の欠損、記録表との食い違い | HEAD の中身 |
+| P5 | コミットメッセージの会話ログへのポインタ | 各コミットのメッセージ |
+
+`Co-Authored-By:` は残す (CLAUDE.md の取り決め)。`Claude-Session:` の URL は
+他人が開けないうえ恒久的に残るので P5 で落とす。
 
 ⚠️ 説明の正しさ・命名・設計は**わざと見ない**。直せるものを門番に足すと、鳴っても
    push を止めない癖がつく。そちらは人と `/code-review` が読む。
 
-見るのは push しようとしている範囲の**追加行だけ**。base 側は既に公開済みなので、
-そこを鳴らしても止めようがない。
+範囲の取り方が P1・P2 と P3・P4 で違うのは、止めたいものが違うため。
+
+- P1・P2 は**履歴に入ること**が問題。足して次のコミットで消しても blob は残り、
+  SHA を知っていれば取れる。だから最終差分ではなく**コミットを1つずつ**見る
+- P3・P4 は**公開後の状態**が問題。範囲の中で足して直したものは、まだ公開されて
+  いないので凍結を破っていない。だから base との差と、HEAD の中身を見る
 
 使い方:
 
@@ -39,7 +46,7 @@ import pathlib
 import re
 import subprocess
 import sys
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
@@ -47,6 +54,8 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 Added = tuple[str, int, str]
 # (ルール, 場所, 何が)
 Finding = tuple[str, str, str]
+# 公開される側の中身を読む
+Reader = Callable[[str], str]
 
 # --------------------------------------------------------------------------
 # P1 鍵・トークン
@@ -67,9 +76,15 @@ SECRETS: tuple[tuple[str, re.Pattern[str]], ...] = (
 # --------------------------------------------------------------------------
 # P2 同定情報
 # --------------------------------------------------------------------------
-USER_PATH = re.compile(r"/(?:home|Users|root)/[A-Za-z0-9._-]+")
-EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
-IPV4 = re.compile(r"(?<![\w.])(?:\d{1,3}\.){3}\d{1,3}(?![\w.])")
+USER_PATH = ("ユーザ名を含む絶対パス", re.compile(r"/(?:home|Users|root)/[A-Za-z0-9._-]+"))
+EMAIL = ("メールアドレス", re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"))
+IPV4 = ("IP アドレスらしき文字列", re.compile(r"(?<![\w.])(?:\d{1,3}\.){3}\d{1,3}(?![\w.])"))
+# ファイルには3つとも当てる。メッセージでは attribution の trailer 行だけメールを
+# 通す。`Co-Authored-By:` は付ける約束で (CLAUDE.md)、履歴のメール 55 件は全部これ。
+# ⚠️ メッセージ全体で素通りにはしない。他人のアドレスを本文に引用する経路が残る
+FILE_IDENTITY = (USER_PATH, EMAIL, IPV4)
+MESSAGE_IDENTITY = (USER_PATH, IPV4)
+TRAILER = re.compile(r"^[A-Za-z][A-Za-z-]*-[Bb]y:\s")
 # ホスト名を取りに行くコマンド。シェルスクリプトにだけ当てる
 # (Python やテストには「ホスト名を記録しない」と書いた行がありうる)
 HOST_CMD = re.compile(r"\bhostname\b|\buname\s+-n\b|gethostname")
@@ -82,7 +97,11 @@ GENERATED = ("uv.lock",)
 # --------------------------------------------------------------------------
 # P3 凍結物
 # --------------------------------------------------------------------------
-FROZEN = ("baseline/", "oracle/", "results/")
+FROZEN = ("baseline/", "oracle/")
+# ⚠️ `results/` を丸ごと凍結しない。凍結は記録ごとのディレクトリで、直下の
+#    `results/README.md` は証拠の置き方を説明する文書 (計装が増えるたび更新してきた)。
+#    鳴らしても止めないものを門番に積むと、鳴っても止めない癖がつく
+RECORD_DIR = re.compile(r"^results/[^/]+/")
 ADDED_OK = "A"  # 追加だけは通す。記録は results/ に「足す」もの
 
 # --------------------------------------------------------------------------
@@ -98,22 +117,56 @@ ELAPSED = re.compile(r"Elapsed \(wall clock\) time \(h:mm:ss or m:ss\):\s*([\d:.
 # 記録表の4列目: | 13 | `impl/13_c_expand/` | 1スレッド | **0:24:27** | ...
 RECORD_ROW = re.compile(r"^\|\s*(\d+)\s*\|[^|]*\|[^|]*\|\s*\*\*([\d:.]+)\*\*")
 RESULT_DIR = re.compile(r"^results/(\d+)_[^/]*/")
+ENV_PATH = re.compile(r"^results/[^/]+/env\.txt$")
 
 # --------------------------------------------------------------------------
 # P5 コミットメッセージ
 # --------------------------------------------------------------------------
-SESSION_LINE = re.compile(r"^\s*Claude-Session:", re.MULTILINE)
+# ⚠️ 使用と言及を分ける。規約そのものを説明した行 (CLAUDE.md や、この修正の
+#    コミットメッセージ) まで鳴ると、門番のことを書けなくなる。
+#    落とすのは URL か、UUID のような不透明な値が続くときだけ
+SESSION_LINE = re.compile(
+    r"^\s*Claude-Session:\s*(?:\S+://|[0-9A-Fa-f][0-9A-Fa-f-]{15,})", re.MULTILINE
+)
 
 
-def git(root: pathlib.Path, *args: str) -> subprocess.CompletedProcess[str]:
-    """パスを quote させずに git を呼ぶ (日本語のパスをそのまま受け取るため)。"""
-    return subprocess.run(
+class GitError(RuntimeError):
+    """git が答えを返さなかった。
+
+    ⚠️ 「見つからなかった」と混ぜない。混ぜると、差分を取れなかったときに
+    「指摘なし」と出てしまう。黙っているのと合格しているのを区別できないのが
+    門番としていちばん悪い壊れ方になる。
+    """
+
+
+def git(root: pathlib.Path, *args: str) -> str:
+    """git を呼んで標準出力を返す。失敗したら GitError。
+
+    `core.quotepath=false` はパスを quote させないため (日本語のパスをそのまま扱う)。
+    """
+    proc = subprocess.run(
         ["git", "-c", "core.quotepath=false", *args],
         cwd=root,
         capture_output=True,
         text=True,
         check=False,
     )
+    if proc.returncode != 0:
+        detail = (proc.stderr.strip() or proc.stdout.strip()).splitlines()
+        raise GitError(f"git {' '.join(args)} が終了コード {proc.returncode}: {detail[:1]}")
+    return proc.stdout
+
+
+def has_commit(root: pathlib.Path, ref: str) -> bool:
+    """比較先が見えるか。ここだけは git の失敗を答えとして扱う。"""
+    proc = subprocess.run(
+        ["git", "rev-parse", "--verify", f"{ref}^{{commit}}"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return proc.returncode == 0
 
 
 def parse_name_status(text: str) -> list[tuple[str, str]]:
@@ -137,7 +190,10 @@ def parse_name_status(text: str) -> list[tuple[str, str]]:
 
 
 def parse_added_lines(text: str) -> list[Added]:
-    """`git diff --unified=0` から追加行だけを拾う。"""
+    """`--unified=0` の出力から追加行だけを拾う。同じ行は1回だけ返す。
+
+    マージを `-m` で見ると親の数だけ同じ追加行が並ぶので、ここで潰す。
+    """
     out: list[Added] = []
     path = ""
     lineno = 0
@@ -146,51 +202,69 @@ def parse_added_lines(text: str) -> list[Added]:
             target = line[4:]
             path = "" if target == "/dev/null" else target.removeprefix("b/")
         elif line.startswith("@@"):
-            m = re.match(r"@@ -\S+ \+(\d+)", line)
+            m = re.match(r"@@+ -\S+ \+(\d+)", line)
             lineno = int(m.group(1)) if m else 0
         elif line.startswith("+") and not line.startswith("+++") and path:
             out.append((path, lineno, line[1:]))
             lineno += 1
-    return out
+    return list(dict.fromkeys(out))
 
 
-def secret_findings(added: Iterable[Added]) -> Iterator[Finding]:
+def identity_matches(text: str, rules: Iterable[tuple[str, re.Pattern[str]]]) -> Iterator[str]:
+    for name, pattern in rules:
+        if m := pattern.search(text):
+            yield f"{name} ({m.group(0)})"
+
+
+def secret_findings(added: Iterable[Added], where: str = "") -> Iterator[Finding]:
     """P1。鍵とトークンは、出てしまったら消すのではなく失効させるしかない。"""
     for path, lineno, text in added:
         for name, pattern in SECRETS:
             if pattern.search(text):
-                yield ("P1", f"{path}:{lineno}", f"{name}らしき文字列")
+                yield ("P1", f"{where}{path}:{lineno}", f"{name}らしき文字列")
 
 
-def identity_findings(added: Iterable[Added]) -> Iterator[Finding]:
+def identity_findings(added: Iterable[Added], where: str = "") -> Iterator[Finding]:
     """P2。計測機と人の同定情報。取り消す手段が無いので、出す前に止める。"""
     for path, lineno, text in added:
-        where = f"{path}:{lineno}"
-        if m := USER_PATH.search(text):
-            yield ("P2", where, f"ユーザ名を含む絶対パス ({m.group(0)})")
-        if m := EMAIL.search(text):
-            yield ("P2", where, f"メールアドレス ({m.group(0)})")
-        if not path.endswith(GENERATED) and (m := IPV4.search(text)):
-            yield ("P2", where, f"IP アドレスらしき文字列 ({m.group(0)})")
+        at = f"{where}{path}:{lineno}"
+        rules = [r for r in FILE_IDENTITY if not (r is IPV4 and path.endswith(GENERATED))]
+        for what in identity_matches(text, rules):
+            yield ("P2", at, what)
         if path.endswith(".sh") and HOST_CMD.search(text):
-            yield (
-                "P2",
-                where,
-                "ホスト名を取得している (同一性は cpu / cores / mem_total で足りる)",
-            )
+            yield ("P2", at, "ホスト名を取得している (同一性は cpu / cores / mem_total で足りる)")
         if path.endswith("env.txt") and HOST_FIELD.match(text):
-            yield ("P2", where, "記録の証拠にホスト名が入っている")
+            yield ("P2", at, "記録の証拠にホスト名が入っている")
 
 
-def recorded_impls(root: pathlib.Path) -> set[str]:
+def message_findings(messages: Iterable[tuple[str, str]]) -> Iterator[Finding]:
+    """P1・P2・P5 をコミットメッセージにも当てる。
+
+    ⚠️ メッセージも履歴に残る。本文に貼った鍵は、ファイルに貼った鍵と同じだけ
+    取り消せない。
+    """
+    for sha, body in messages:
+        for lineno, line in enumerate(body.splitlines(), 1):
+            at = f"{sha} のメッセージ:{lineno}"
+            for name, pattern in SECRETS:
+                if pattern.search(line):
+                    yield ("P1", at, f"{name}らしき文字列")
+            rules = MESSAGE_IDENTITY if TRAILER.match(line) else (*MESSAGE_IDENTITY, EMAIL)
+            for what in identity_matches(line, rules):
+                yield ("P2", at, what)
+        if SESSION_LINE.search(body):
+            yield ("P5", sha, "コミットメッセージに Claude-Session: の行がある")
+
+
+def recorded_impls(files: Iterable[str], read: Reader) -> set[str]:
     """`results/*/env.txt` が指している実装ディレクトリ。
 
     ここに挙がったものは記録済み＝凍結。`env.txt` の `impl_sha256` と `git_commit` が
     指しているので、1文字でも直すと指し先が嘘になる。
     """
     out: set[str] = set()
-    for env in sorted((root / "results").glob("*/env.txt")):
-        text = env.read_text(encoding="utf-8")
+    for path in sorted(p for p in files if ENV_PATH.match(p)):
+        text = read(path)
         for field in ("impl", "label"):
             if m := re.search(rf"^{field}:\s*(\S+)\s*$", text, re.MULTILINE):
                 name = m.group(1)
@@ -206,6 +280,8 @@ def frozen_findings(changes: Iterable[tuple[str, str]], recorded: set[str]) -> I
         if status == ADDED_OK:
             continue
         hit = next((p for p in prefixes if path.startswith(p)), None)
+        if hit is None and (m := RECORD_DIR.match(path)):
+            hit = m.group(0)
         if hit is not None:
             verb = {"M": "変更", "D": "削除", "R": "改名", "C": "複製元", "T": "種別変更"}
             yield ("P3", path, f"凍結物 ({hit}) の{verb.get(status, status)}")
@@ -252,17 +328,21 @@ def has_field(env: str, name: str) -> bool:
     return re.search(rf"^{name}:\s*\S", env, re.MULTILINE) is not None
 
 
-def evidence_findings(root: pathlib.Path, dirs: Iterable[str]) -> Iterator[Finding]:
-    """P4。記録は証拠で立っている。揃わないまま公開すると、あとから足せない。"""
-    table = record_times((root / "README.md").read_text(encoding="utf-8"))
+def evidence_findings(files: Iterable[str], read: Reader, dirs: Iterable[str]) -> Iterator[Finding]:
+    """P4。記録は証拠で立っている。揃わないまま公開すると、あとから足せない。
+
+    ⚠️ 作業ディレクトリではなく**公開される側**を見る。手元にあるだけでコミット
+    していない `verify.txt` は、push したあと誰にも見えない。
+    """
+    present = set(files)
+    table = record_times(read("README.md")) if "README.md" in present else {}
     for rel in dirs:
-        directory = root / rel
-        missing = [name for name in EVIDENCE if not (directory / name).is_file()]
+        missing = [name for name in EVIDENCE if f"{rel}{name}" not in present]
         if missing:
-            yield ("P4", rel, f"証拠が足りない ({' / '.join(missing)})")
+            yield ("P4", rel, f"証拠がコミットされていない ({' / '.join(missing)})")
             continue
 
-        env = (directory / "env.txt").read_text(encoding="utf-8")
+        env = read(f"{rel}env.txt")
         for field in ENV_REQUIRED:
             if not has_field(env, field):
                 yield ("P4", f"{rel}env.txt", f"{field} が無い")
@@ -270,19 +350,19 @@ def evidence_findings(root: pathlib.Path, dirs: Iterable[str]) -> Iterator[Findi
         if has_field(env, name) and not has_field(env, digest):
             yield ("P4", f"{rel}env.txt", f"{name} を指しているのに {digest} が無い")
 
-        if "PASS" not in (directory / "verify.txt").read_text(encoding="utf-8"):
+        if "PASS" not in read(f"{rel}verify.txt"):
             yield ("P4", f"{rel}verify.txt", "オラクル検証が PASS していない")
 
-        yield from time_findings(root, rel, table)
+        yield from time_findings(read(f"{rel}time.txt"), rel, table)
 
 
-def time_findings(root: pathlib.Path, rel: str, table: dict[int, int]) -> Iterator[Finding]:
+def time_findings(time_txt: str, rel: str, table: dict[int, int]) -> Iterator[Finding]:
     """`time.txt` の実測と記録表のタイムを突き合わせる。
 
     同じ数字を2か所に持っているので、片方だけ直すと食い違う。記録は凍結物なので、
     公開してしまうと訂正を足すことしかできない。
     """
-    m = ELAPSED.search((root / rel / "time.txt").read_text(encoding="utf-8"))
+    m = ELAPSED.search(time_txt)
     measured = to_seconds(m.group(1)) if m else None
     if measured is None:
         yield ("P4", f"{rel}time.txt", "Elapsed (wall clock) time を読めない")
@@ -299,37 +379,44 @@ def time_findings(root: pathlib.Path, rel: str, table: dict[int, int]) -> Iterat
         )
 
 
-def session_findings(messages: Iterable[tuple[str, str]]) -> Iterator[Finding]:
-    """P5。公開リポジトリのコミットログに会話ログへの恒久的なポインタを残さない。"""
-    for sha, body in messages:
-        if SESSION_LINE.search(body):
-            yield ("P5", sha, "コミットメッセージに Claude-Session: の行がある")
+def head_reader(root: pathlib.Path, ref: str = "HEAD") -> Reader:
+    """`ref` の中身を読む。作業ディレクトリは見ない。"""
+
+    def read(path: str) -> str:
+        return git(root, "show", f"{ref}:{path}")
+
+    return read
 
 
-def commit_messages(text: str) -> list[tuple[str, str]]:
-    """`git log --format=%H%n%B%x00` を (sha, 本文) にする。"""
-    out: list[tuple[str, str]] = []
-    for chunk in text.split("\0"):
-        if chunk.strip():
-            sha, _, body = chunk.strip().partition("\n")
-            out.append((sha[:7], body))
-    return out
+def files_at(root: pathlib.Path, ref: str = "HEAD") -> list[str]:
+    """`ref` が持っているファイル。未追跡のものは入らない。"""
+    return git(root, "ls-tree", "-r", "--name-only", ref).splitlines()
+
+
+def commit_messages(root: pathlib.Path, shas: Iterable[str]) -> list[tuple[str, str]]:
+    return [(sha[:7], git(root, "log", "-1", "--format=%B", sha)) for sha in shas]
 
 
 def collect(root: pathlib.Path, base: str) -> tuple[list[Finding], int, int]:
-    """(指摘, 見たコミット数, 見たファイル数)。"""
-    rng = f"{base}..HEAD"
-    changes = parse_name_status(git(root, "diff", "--name-status", rng).stdout)
-    added = parse_added_lines(git(root, "diff", "--unified=0", rng).stdout)
-    commits = commit_messages(git(root, "log", "--format=%H%n%B%x00", rng).stdout)
+    """(指摘, 見たコミット数, 見たファイル数)。git が答えないときは GitError。"""
+    shas = git(root, "rev-list", "--reverse", f"{base}..HEAD").split()
+    changes = parse_name_status(git(root, "diff", "--name-status", f"{base}..HEAD"))
 
     found: list[Finding] = []
-    found += secret_findings(added)
-    found += identity_findings(added)
-    found += frozen_findings(changes, recorded_impls(root))
-    found += evidence_findings(root, new_result_dirs(changes))
-    found += session_findings(commits)
-    return found, len(commits), len(changes)
+    # ⚠️ コミットを1つずつ見る。最終差分だけだと「足して次のコミットで消した鍵」が
+    #    素通りする (blob は履歴に残り、SHA を知っていれば取れる)
+    for sha in shas:
+        added = parse_added_lines(git(root, "show", "--format=", "--unified=0", "-m", sha))
+        where = f"{sha[:7]} "
+        found += secret_findings(added, where)
+        found += identity_findings(added, where)
+    found += message_findings(commit_messages(root, shas))
+
+    files = files_at(root)
+    read = head_reader(root)
+    found += frozen_findings(changes, recorded_impls(files, read))
+    found += evidence_findings(files, read, new_result_dirs(changes))
+    return found, len(shas), len(changes)
 
 
 def main(argv: list[str]) -> int:
@@ -338,11 +425,17 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--root", type=pathlib.Path, default=ROOT, help="検査するリポジトリ")
     args = parser.parse_args(argv)
 
-    if git(args.root, "rev-parse", "--verify", f"{args.base}^{{commit}}").returncode != 0:
+    if not has_commit(args.root, args.base):
         print(f"publish_lint: {args.base} が見えない。git fetch してから回すこと")
         return 2
 
-    found, n_commits, n_files = collect(args.root, args.base)
+    try:
+        found, n_commits, n_files = collect(args.root, args.base)
+    except GitError as exc:
+        # ⚠️ ここで 0 を返さない。検査できなかったことを合格と区別する
+        print(f"publish_lint: 検査できなかった (終了コード 2)。{exc}")
+        return 2
+
     if found:
         print(f"publish_lint: 公開すると取り消せない指摘が {len(found)} 件\n")
         for rule, where, what in found:

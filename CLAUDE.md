@@ -173,10 +173,15 @@ make publish-check         # push の前だけ。取り消せないものだけ�
 pre-commit フックは `.git/hooks` にあって clone に付いてこない。
 clone 直後は `make hooks` を忘れないこと（CI はその保険でもある）。
 
-`make publish-check` は `origin/main..HEAD` の追加行を見て、鍵・計測機や個人の同定情報・
-凍結物の変更・記録の証拠の欠損・`Claude-Session:` 行だけを落とす
-（`tools/publish_lint.py`）。説明の誤りや命名は**わざと見ない**。直せるものを門番に
-積むと、鳴っても push を止めない癖がつくため。比較先は `BASE=` で変えられる。
+`make publish-check`（`tools/publish_lint.py`）は、鍵・計測機や個人の同定情報・
+凍結物の変更・記録の証拠の欠損・`Claude-Session:` 行だけを落とす。説明の誤りや命名は
+**わざと見ない**。直せるものを門番に積むと、鳴っても push を止めない癖がつくため。
+比較先は `BASE=` で変えられる。
+
+鍵と同定情報は `origin/main..HEAD` の**コミットを1つずつ**と、その**メッセージ**を見る
+（足して次のコミットで消しても blob は履歴に残る）。凍結と証拠は base との差と `HEAD` の
+中身を見る（手元にあるだけでコミットしていない証拠は、push しても誰にも見えない）。
+git が答えを返さなかったときは指摘ゼロではなく**終了コード 2**。
 
 機械に持たせられない観点（主張とログの突き合わせ、帯の引き方、C と Python をまたぐ
 不変条件など）は [`docs/review-checklist.md`](docs/review-checklist.md) にまとめてある。

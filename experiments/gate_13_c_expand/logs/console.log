@@ -1,0 +1,37 @@
+=== 開始 2026-09-20T06:36:20+00:00 ===
+=== 終了 2026-09-20T06:47:53+00:00 (exit=0) ===
+全探索の所要時間：693.14 秒
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 11:33.19
+	Maximum resident set size (kbytes): 7068548
+	File system outputs: 13584752
+rounds	74
+F0	52.5686
+F1	206.7718
+F2	179.4068
+F3	0.0063
+S	0.0002
+F4	0.0091
+F4_diff	0.0045
+F4_union	0.0046
+F5	198.0549
+F6	54.8529
+release_wl	0.0838
+release_seen	0.2386
+sum_rounds_F	636.8178
+sum_round_total	637.9297
+residual_in_rounds	1.1119
+forward_total	693.1348
+residual_total	1.1418
+rss_F6_begin	5743366144
+hwm_F6_begin	7238193152
+rss_F6	5743366144
+hwm_F6	7238193152
+rss_release_wl	4407566336
+hwm_release_wl	7238193152
+rss_release_seen	22528000
+hwm_release_seen	7238193152
+--- 全探索直後の状態と指紋照合 ---
+PASS: 3 項目の指紋が一致 (集合の完全一致を証明するものではない)
+  照合した局面数の合計: 246,803,167
+=== 完了 2026-09-20T06:53:22+00:00 ===

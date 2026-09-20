@@ -37,7 +37,12 @@ PAIRS = [
     ("09_no_reslice", "10_setdiff"),
     ("10_setdiff", "11_c_seen"),
     ("11_c_seen", "12_c_predecessors"),
+    ("12_c_predecessors", "13_c_expand"),
 ]
+
+# ⚠️ #13 は展開ループを C へ移したので、集合の一致とサブログだけでは足りない
+# (順序が動いてもここは通る)。dat/ のバイト比較は
+# tests/test_impl_13_c_expand.py が別に持っている。
 
 
 @pytest.mark.parametrize(("prev", "cur"), PAIRS)

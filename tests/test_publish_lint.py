@@ -103,10 +103,16 @@ def test_a_malformed_hunk_header_resets_the_line_number() -> None:
     assert publish_lint.parse_added_lines(diff) == [("a.md", 0, "なかみ")]
 
 
-def test_a_merge_diff_does_not_report_the_same_line_twice() -> None:
-    """マージを `-m` で見ると親の数だけ同じ追加行が並ぶ。"""
-    diff = "+++ b/a.md\n@@@ -1,0 +1,1 @@@\n+なかみ\n+++ b/a.md\n@@@ -1,0 +1,1 @@@\n+なかみ\n"
-    assert publish_lint.parse_added_lines(diff) == [("a.md", 1, "なかみ")]
+def test_a_combined_diff_counts_only_lines_added_against_every_parent() -> None:
+    """マージは `--cc` で見る。片方の親から来た行は、その親の側で既に履歴にある。
+
+    ⚠️ ここを緩めると、`main` を取り込んだだけで base 側の公開済みの内容が
+    新規として鳴る。逆に締めすぎると、解決のときに書いた行を見逃す。
+    """
+    diff = (
+        "+++ b/a.md\n@@@ -1,1 -1,1 +1,3 @@@\n +main から来た\n++マージで書いた\n- 片方から消えた\n"
+    )
+    assert publish_lint.parse_added_lines(diff) == [("a.md", 2, "マージで書いた")]
 
 
 # --------------------------------------------------------------------------
@@ -526,6 +532,53 @@ def test_a_fully_committed_record_passes(repo: pathlib.Path) -> None:
     git(repo, "add", "-A")
     git(repo, "commit", "-qm", "記録を足す")
     assert run(repo) == 0
+
+
+def test_a_secret_is_caught_even_when_color_output_is_forced(repo: pathlib.Path) -> None:
+    """`color.ui=always` だと差分の行頭にエスケープが入り、追加行が1つも見えなくなる。"""
+    git(repo, "config", "color.ui", "always")
+    write(repo, "leak.md", f"token = {TOKEN}\n")
+    git(repo, "add", "-A")
+    git(repo, "commit", "-qm", "鍵入り")
+    assert run(repo) == 1
+
+
+def test_merging_the_base_branch_does_not_report_its_content(repo: pathlib.Path) -> None:
+    """⚠️ base 側は既に公開済み。取り込んだだけで鳴ると main を merge するたびに止まる。"""
+    git(repo, "checkout", "-qb", "feature")
+    write(repo, "a.md", "無害な変更\n")
+    git(repo, "add", "-A")
+    git(repo, "commit", "-qm", "無害な変更")
+    git(repo, "checkout", "-q", "main")
+    write(repo, "public.md", f"report from {EMAIL}\n")
+    git(repo, "add", "-A")
+    git(repo, "commit", "-qm", "公開済みの内容")
+    git(repo, "branch", "-f", "base", "main")
+    git(repo, "checkout", "-q", "feature")
+    git(repo, "merge", "-q", "--no-edit", "main")
+    assert run(repo) == 0
+
+
+def test_a_secret_written_while_resolving_a_merge_is_caught(repo: pathlib.Path) -> None:
+    """誤検知を消したぶんで見逃しを作っていないこと。"""
+    write(repo, "c.md", "もと\n")
+    git(repo, "add", "-A")
+    git(repo, "commit", "-qm", "もと")
+    git(repo, "branch", "-f", "base", "HEAD")
+    git(repo, "checkout", "-qb", "ours")
+    write(repo, "c.md", "ours\n")
+    git(repo, "add", "-A")
+    git(repo, "commit", "-qm", "ours")
+    git(repo, "checkout", "-q", "main")
+    write(repo, "c.md", "theirs\n")
+    git(repo, "add", "-A")
+    git(repo, "commit", "-qm", "theirs")
+    git(repo, "checkout", "-q", "ours")
+    subprocess.run(["git", "merge", "main"], cwd=repo, check=False, capture_output=True)
+    write(repo, "c.md", f"key = {TOKEN}\n")  # 解決のときに書いてしまった
+    git(repo, "add", "c.md")
+    git(repo, "commit", "-qm", "競合を解決")
+    assert run(repo) == 1
 
 
 def test_main_reports_a_missing_base(

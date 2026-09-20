@@ -29,6 +29,7 @@
 
 - P1・P2 は**履歴に入ること**が問題。足して次のコミットで消しても blob は残り、
   SHA を知っていれば取れる。だから最終差分ではなく**コミットを1つずつ**見る
+  (マージは `--cc` で、そのマージ独自の追加だけを見る。親から来た行は既に履歴にある)
 - P3・P4 は**公開後の状態**が問題。範囲の中で足して直したものは、まだ公開されて
   いないので凍結を破っていない。だから base との差と、HEAD の中身を見る
 
@@ -143,9 +144,12 @@ def git(root: pathlib.Path, *args: str) -> str:
     """git を呼んで標準出力を返す。失敗したら GitError。
 
     `core.quotepath=false` はパスを quote させないため (日本語のパスをそのまま扱う)。
+    ⚠️ `color.ui=false` を明示する。`color.ui=always` を設定した環境では差分の行頭に
+    エスケープが入り、`+` で始まらなくなって**追加行が1つも見えなくなる**。
+    設定ファイル側の値に `-c` が勝つ。
     """
     proc = subprocess.run(
-        ["git", "-c", "core.quotepath=false", *args],
+        ["git", "-c", "core.quotepath=false", "-c", "color.ui=false", *args],
         cwd=root,
         capture_output=True,
         text=True,
@@ -192,21 +196,32 @@ def parse_name_status(text: str) -> list[tuple[str, str]]:
 def parse_added_lines(text: str) -> list[Added]:
     """`--unified=0` の出力から追加行だけを拾う。同じ行は1回だけ返す。
 
-    マージを `-m` で見ると親の数だけ同じ追加行が並ぶので、ここで潰す。
+    マージは `--cc` (結合差分) で見る。印の桁が親の数だけ並ぶので、
+    **全ての親に対して `+`** の行だけを「この範囲で入った行」として数える。
+
+    ⚠️ 片方の親から来ただけの行 (` +`) を数えない。`main` を取り込んだマージで、
+    base 側に既にある＝公開済みの内容を新規として鳴らしてしまう。
     """
     out: list[Added] = []
     path = ""
     lineno = 0
+    width = 1
     for line in text.splitlines():
         if line.startswith("+++ "):
             target = line[4:]
             path = "" if target == "/dev/null" else target.removeprefix("b/")
         elif line.startswith("@@"):
-            m = re.match(r"@@+ -\S+ \+(\d+)", line)
+            marks = len(line) - len(line.lstrip("@"))
+            width = max(marks - 1, 1)
+            m = re.search(r"\+(\d+)(?:,\d+)?\s@@", line)
             lineno = int(m.group(1)) if m else 0
-        elif line.startswith("+") and not line.startswith("+++") and path:
-            out.append((path, lineno, line[1:]))
-            lineno += 1
+        elif path and len(line) > width and not line.startswith("+++ "):
+            prefix = line[:width]
+            if set(prefix) == {"+"}:
+                out.append((path, lineno, line[width:]))
+                lineno += 1
+            elif "-" not in prefix:
+                lineno += 1  # どれかの親から来た行。結果には残るので行番号は進む
     return list(dict.fromkeys(out))
 
 
@@ -406,7 +421,7 @@ def collect(root: pathlib.Path, base: str) -> tuple[list[Finding], int, int]:
     # ⚠️ コミットを1つずつ見る。最終差分だけだと「足して次のコミットで消した鍵」が
     #    素通りする (blob は履歴に残り、SHA を知っていれば取れる)
     for sha in shas:
-        added = parse_added_lines(git(root, "show", "--format=", "--unified=0", "-m", sha))
+        added = parse_added_lines(git(root, "show", "--format=", "--unified=0", "--cc", sha))
         where = f"{sha[:7]} "
         found += secret_findings(added, where)
         found += identity_findings(added, where)

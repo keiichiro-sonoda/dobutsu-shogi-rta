@@ -47,6 +47,10 @@ def finished_run(
             "総未知盤面数：{:d}, 総勝ち盤面数：{:d}, 総負け盤面数：{:d}".format(*forward_totals),
             file=f,
         )
+    # ⚠️ 後退解析が散らす前に、全探索が書いた未知盤面の「並び」を控える。
+    # これが P0 の採番順そのもので、組み直しでは戻らない (下の検査で固定する)
+    with (work / "forward_unknown_order.pickle").open("wb") as f:
+        pickle.dump(load_all(work / "dat", "unknown*.pickle"), f)
     run_retreat(module, work)
     return work
 
@@ -84,6 +88,36 @@ def test_the_rebuilt_fixture_has_the_three_families_back(
         with path.open("rb") as f:
             before |= set(pickle.load(f))
     assert su | sc | sl == before, "組み直しで局面が増減した"
+
+
+def test_the_rebuilt_fixture_does_not_restore_the_numbering_order(
+    finished_run: pathlib.Path, tmp_path: pathlib.Path
+) -> None:
+    """⚠️ 戻るのは集合だけ。採番順 (P0 が読む並び) は戻らない。
+
+    後退解析は未知盤面を手数別のファイルへ散らすので、組み直しは「手数の順」に
+    詰め直すことになり、全探索の発見順には戻らない。
+
+    ⚠️ **門番でフェーズ単独の効果量を測るとき、これを「本走と同じ条件」と書けない。**
+    P4 (前任リストの乱書き) は採番順に反応する段で、記録 #12 の門番は実際に
+    本走より旧新どちらも 4〜6% 遅かった。impl/11 の実データで確かめると、
+    集合は一致したまま **2,925 件中 2,903 件 (99.2%) の位置が変わった**。
+    旧新を同じ入力で交互に比べるぶんには影響しない。
+    """
+    with (finished_run / "forward_unknown_order.pickle").open("rb") as f:
+        before: list[int] = pickle.load(f)
+    assert len(before) > 100, "フィクスチャが小さすぎて検査にならない"
+
+    dst = tmp_path / "dat"
+    rff.rebuild(finished_run / "dat", finished_run / "kaiseki_log" / "kaizenkaiseki1.txt", dst)
+    after = load_all(dst, "unknown*.pickle")
+
+    assert set(before) == set(after), "集合が戻っていない (組み直しの不具合)"
+    moved = sum(1 for x, y in zip(before, after, strict=True) if x != y)
+    assert moved > 0, (
+        "採番順まで戻っている。門番の効果量の扱いを見直すこと "
+        "(experiments/gate_12_c_predecessors/README.md の「本走の P4 とは一致していない」)"
+    )
 
 
 def test_the_rebuilt_fixture_only_has_what_the_retreat_reads(

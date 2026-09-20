@@ -190,6 +190,7 @@ class Expand:
         self.lib.expandNewCount.argtypes = ()
         self.lib.expandFreeBuffer.restype = None
         self.lib.expandFreeBuffer.argtypes = ()
+        self.last_out: list[int] = []
         assert self.lib.seenInit() == 0
 
     def close(self) -> None:
@@ -208,6 +209,7 @@ class Expand:
             return cast(a.buffer_info()[0], POINTER(c_uint64))
 
         rc = self.lib.expandRound(ptr(arr), n, ptr(win), ptr(lose), ptr(uk), ptr(out))
+        self.last_out = list(out)
         k = self.lib.expandNewCount()
         new = array("Q")
         if k:
@@ -286,6 +288,37 @@ def test_an_empty_round_is_allowed(expand: Expand) -> None:
     """
     rc, win, lose, uk, new = expand.round([])
     assert (rc, win, lose, uk, new) == (0, [], [], [], [])
+
+
+def test_an_empty_round_after_a_full_one_is_a_known_defect(expand: Expand) -> None:
+    """★既知の不具合。impl/13 は凍結なので直さず、ここで固定する。
+
+    expandRound の `n == 0` の早期 return が `g_exp_n = 0` より前にあるため、
+    空入力のラウンドで expandNewCount() が**前のラウンドの値**を返す。
+    Python 側はそれを見て初見の後続を読むので、同じ局面がもう一度
+    未探索盤面に積まれる。
+
+    ⚠️ 記録 #13 の本走には空入力のラウンドが無く、成果物は #12 とバイト一致
+    しているので記録への影響は無い。空の unexplored*.pickle は落ちた直後に
+    再開したときだけ現れる (CLAUDE.md の「再開ではなく再走」で塞いでいる窓)。
+
+    原因はリセットが早期 return の後ろにあることだけ。次の実装では
+    `g_exp_n = 0` を引数検査より前に出す。
+    """
+    rc, _, _, uk, new = expand.round([INITIAL_BOARD])
+    assert rc == 0 and uk == [INITIAL_BOARD] and new, "初期局面から後続が出ていない"
+    first = list(new)
+
+    rc, win, lose, uk, new = expand.round([])
+    assert (rc, win, lose, uk) == (0, [], [], []), "空入力の分類がおかしい"
+    assert new == first, (
+        "空入力で初見バッファが戻っている。impl/13 は凍結なので、直すのは次の実装。"
+        "CLAUDE.md の「次の実装で必ず直すもの」を見ること"
+    )
+    # 壊れているのは g_exp_n だけ。out[3] (生成した後続の延べ数) は 0 のまま
+    # ⚠️ out[3] は expandNewCount() の代わりにはならない。同じ局面を2回展開すると
+    #    out[3]=4 / expandNewCount()=0 と食い違う (延べ数と初見の数は別物)
+    assert expand.last_out[3] == 0, "空入力なのに後続を生成したことになっている"
 
 
 def test_the_buffer_is_reset_at_the_start_of_each_round(expand: Expand) -> None:

@@ -36,8 +36,9 @@ lint-sh:  ## シェルスクリプトを lint する (shellcheck)
 type:  ## 型検査する (mypy)
 	$(UV) run mypy
 
-doc:  ## 文書の分量を検査する (doc_lint)
+doc:  ## 文書を検査する (doc_lint / noise_table)
 	$(UV) run python tools/doc_lint.py
+	$(UV) run python tools/noise_table.py
 
 test:  ## テストを走らせる (pytest)
 	$(UV) run pytest

@@ -185,3 +185,22 @@ def test_write_then_check_round_trips(tmp_path: pathlib.Path) -> None:
     text = doc.read_text(encoding="utf-8")
     assert text.startswith("前\n") and text.endswith("後\n"), "マーカーの外を書き換えた"
     assert "手で書いた古い表" not in text
+
+
+def test_a_pattern_that_matches_nothing_is_refused() -> None:
+    with pytest.raises(FileNotFoundError, match=re.escape("に合う main.log が無い")):
+        noise_table.labels("numa_bind", "n", r"n\d[xy]")
+
+
+def test_the_pattern_splits_the_arms_without_overlap_or_gap() -> None:
+    """★numa_bind の2行が、16本を重複なく取りこぼしなく2つに割っていること。
+
+    腕は接尾辞 (a/d が plain、b/c が numa) で分かれていて接頭辞では割れない。
+    ⚠️ 片方のパターンを間違えると、同じ本が両方の行に入るか、どこにも入らない。
+    どちらも表の見た目には出ないので、ここで見る。
+    """
+    plain = noise_table.labels("numa_bind", "n", r"n\d[ad]")
+    numa = noise_table.labels("numa_bind", "n", r"n\d[bc]")
+    assert len(plain) == 8 and len(numa) == 8
+    assert not set(plain) & set(numa), "同じ本が両方の行に入っている"
+    assert set(plain) | set(numa) == set(noise_table.labels("numa_bind", "n"))

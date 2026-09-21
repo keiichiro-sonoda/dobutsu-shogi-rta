@@ -19,9 +19,10 @@
 切り捨てられているので、整数がそのまま生値。
 
 載せる条件は2つ。**このツールが読める形でログがコミットされていること**
-（`<ラベル>_main.log` と `console.log` を並べた形。いまは `gate_12` / `gate_14` /
-`gate_15` / `retreat_profile` の4つ）と、**その段のコードがその本たちでバイト同一で
-あること**。P4 は `gate_12` の、P2 は `gate_15` のレバーなので、その組み合わせは載せない。
+（`<ラベル>_main.log` と `console.log` を並べた形。いまはこの5つ）と、
+**その段のコードがその本たちでバイト同一であること**。P4 は `gate_12` の、
+P2 は `gate_15` のレバーなので、その組み合わせは載せない。
+⚠️ `numa_bind` の2行はコードが同じで**起動コマンドだけ**が違う。腕ごとに別の行にしてある。
 
 ⚠️ **「全部載っている」とは言っていない。** 条件を満たす組み合わせは他にもある。
 条件を満たさない観測の置き場所は `docs/measurement-noise.md` に書いてある。
@@ -77,6 +78,8 @@ class Row:
     prefix: str
     note: str
     highlight: bool = False
+    # ラベルの形で絞りたいとき (腕が接尾辞で分かれている門番). 接頭辞のあとに当てる
+    pattern: str | None = None
 
 
 # ⚠️ 並べるのは「その段のコードがバイト同一な観測」だけ。
@@ -90,6 +93,8 @@ ROWS = (
     Row("P2 後続生成", "P2", "gate_12_c_predecessors", "", "旧新6本"),
     Row("**P2 後続生成**", "P2", "gate_14_c_retreat", "", "旧新6本", True),
     Row("P2 後続生成", "P2", "gate_15_c_successors", "old", "旧8本"),
+    Row("P2 後続生成", "P2", "numa_bind", "n", "固定していない8本", False, r"n\d[ad]"),
+    Row("**P2 後続生成**", "P2", "numa_bind", "n", "片ノードに固定した8本", True, r"n\d[bc]"),
     Row("P4 前任リスト", "P4", "gate_15_c_successors", "old", "旧8本"),
     Row("**174段＋残差**", RESIDUAL, "gate_14_c_retreat", "old", "旧3本", True),
 )
@@ -110,14 +115,22 @@ def logs_dir(gate: str) -> pathlib.Path:
     return d
 
 
-def labels(gate: str, prefix: str) -> list[str]:
+def labels(gate: str, prefix: str, pattern: str | None = None) -> list[str]:
+    """門番のログにある本のラベル。接頭辞で絞り、pattern があればさらに当てる。
+
+    numa_bind のように腕が接尾辞で分かれている (n1a/n1d が plain、n1b/n1c が numa)
+    門番は接頭辞では割れないので、ラベル全体に当てる正規表現を受ける。
+    """
+    rx = re.compile(pattern) if pattern else None
     found = sorted(
-        p.name[: -len("_main.log")]
+        name
         for p in logs_dir(gate).glob("*_main.log")
-        if p.name.startswith(prefix)
+        if (name := p.name[: -len("_main.log")]).startswith(prefix)
+        and (rx is None or rx.fullmatch(name))
     )
     if not found:
-        raise FileNotFoundError(f"{gate} に {prefix!r} で始まる main.log が無い")
+        want = f"{prefix!r} で始まる" if rx is None else f"{prefix!r} で始まり {pattern!r} に合う"
+        raise FileNotFoundError(f"{gate} に {want} main.log が無い")
     return found
 
 
@@ -149,7 +162,7 @@ def retreat_totals(gate: str) -> dict[str, float]:
 
 
 def samples(row: Row) -> list[float]:
-    names = labels(row.gate, row.prefix)
+    names = labels(row.gate, row.prefix, row.pattern)
     if row.phase != RESIDUAL:
         return sorted(float(phase_seconds(row.gate, n, row.phase)) for n in names)
     totals = retreat_totals(row.gate)

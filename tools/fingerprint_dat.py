@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""完全解析の成果物 (dat/) の指紋を取り、2つの実行が同じ答えを出したか照合する。
+"""完全解析の成果物 (dat/) の指紋を取り、同じ答えが出たかを照合する。
 
-    python3 tools/fingerprint_dat.py <dat>            指紋を出力
-    python3 tools/fingerprint_dat.py <dat> <dat2>     2つを照合 (終了コード 0 = 一致)
+    python3 tools/fingerprint_dat.py <dat>                     指紋を表で出力
+    python3 tools/fingerprint_dat.py <dat> --tsv               指紋を機械可読で出力
+    python3 tools/fingerprint_dat.py <dat> <dat2>              2つの dat/ を照合
+    python3 tools/fingerprint_dat.py <dat> --against <tsv>     固定した指紋と照合
 
 `tools/verify_log.py` は手数別の「局面数」しか見ない。実装を書き換えたとき、
 数が合っていて中身が違う、という壊れ方は検出できない。ここでは
@@ -12,58 +14,94 @@
 チャンクの分かれ方が違っても同じ値になる。同じ答えでも win003te_000 と _001 の
 分割は集合の pop 順で変わるため、バイト比較や件数比較では足りない。
 異なる集合でも同じ指紋になりうるため、PASS は集合の完全一致を証明しない。
-完走とオラクル一致を別途確認した、自分で生成した pickle データに使う。
+完走とオラクル一致を別途確認した、自分で生成したデータに使う。
+
+⚠️ `--against` の相手 (oracle/fingerprint.tsv) は**オラクルではない**。
+2021年の原典ではなく #15 の成果物から取った値で、由来が違う。
+`dat/` は 2.2 GB あって git に入らないので、照合のたびに2本ぶん
+ディスクに置いておく代わりに、値のほうを固定してある。
+
+形式の知識は Format にまとめてある。保存形式を pickle から変える記録では、
+Format をもう1つ書いて FORMATS に足す。ここには pickle 以外を書かない
+(形式がまだ無いうちに書くと、ツールが先に形式を決めてしまう)。
 """
 
 from __future__ import annotations
 
+import dataclasses
 import pathlib
 import pickle
 import re
 import sys
+from collections.abc import Callable, Iterable
 
 MASK64 = (1 << 64) - 1
-
-# dat/ に並ぶファイル名。深さとチャンク番号を持つ
-WIN_RE = re.compile(r"^win(\d+)te_(\d+)\.pickle$")
-LOSE_RE = re.compile(r"^lose(\d+)te_(\d+)\.pickle$")
-UNKNOWN_RE = re.compile(r"^unknown(\d+)\.pickle$")
 
 # (深さ, 勝敗) -> (件数, 総和, XOR)。引き分けは深さを持たないので None を使う
 Key = tuple[int | None, str]
 Print = tuple[int, int, int]
 
 
-def _load(path: pathlib.Path) -> set[int]:
+@dataclasses.dataclass(frozen=True)
+class Format:
+    """dat/ の保存形式。ファイル名の読み方と中身の読み方をひとまとめにする。"""
+
+    name: str
+    suffix: str
+    win: re.Pattern[str]
+    lose: re.Pattern[str]
+    unknown: re.Pattern[str]
+    # 中間ファイルの語幹。答えではないので数えない
+    skip: tuple[str, ...]
+    load: Callable[[pathlib.Path], Iterable[int]]
+
+
+def _load_pickle(path: pathlib.Path) -> set[int]:
     with path.open("rb") as f:
         obj = pickle.load(f)
     return set(obj)
 
 
-def fingerprint(dat: pathlib.Path) -> dict[Key, Print]:
+PICKLE = Format(
+    name="pickle",
+    suffix=".pickle",
+    win=re.compile(r"^win(\d+)te_(\d+)\.pickle$"),
+    lose=re.compile(r"^lose(\d+)te_(\d+)\.pickle$"),
+    unknown=re.compile(r"^unknown(\d+)\.pickle$"),
+    skip=("_next", "_next_win"),
+    load=_load_pickle,
+)
+
+# ⚠️ ここは1つだけ。増やすのは保存形式を変える記録の仕事
+# (tests/test_fingerprint_dat.py がそれを固定している)
+FORMATS: tuple[Format, ...] = (PICKLE,)
+
+
+def fingerprint(dat: pathlib.Path, fmt: Format = PICKLE) -> dict[Key, Print]:
     """dat/ を走査して深さごとの指紋を返す。
 
     中間ファイル (_next / _next_win) は答えではないので無視する。
     最後まで確定しなかった unknown が引き分け局面。
     """
     acc: dict[Key, list[int]] = {}
+    skip = tuple(stem + fmt.suffix for stem in fmt.skip)
 
     for path in sorted(dat.iterdir()):
         name = path.name
-        if name.endswith("_next.pickle") or name.endswith("_next_win.pickle"):
+        if name.endswith(skip):
             continue
 
-        if m := WIN_RE.match(name):
+        if m := fmt.win.match(name):
             key: Key = (int(m.group(1)), "win")
-        elif m := LOSE_RE.match(name):
+        elif m := fmt.lose.match(name):
             key = (int(m.group(1)), "lose")
-        elif UNKNOWN_RE.match(name):
+        elif fmt.unknown.match(name):
             key = (None, "draw")
         else:
             continue
 
         cell = acc.setdefault(key, [0, 0, 0])
-        for v in _load(path):
+        for v in fmt.load(path):
             cell[0] += 1
             cell[1] = (cell[1] + v) & MASK64
             cell[2] ^= v
@@ -78,6 +116,7 @@ def _sort_key(key: Key) -> tuple[int, int, str]:
 
 
 def render(fp: dict[Key, Print]) -> str:
+    """人が読む表。⚠️ 桁区切りと幅揃えが入るので .tsv には使わない (dump を使う)。"""
     lines = [f"{'depth':>6} {'result':<6} {'count':>12} {'sum(mod 2^64)':>18} {'xor':>18}"]
     total = 0
     for key in sorted(fp, key=_sort_key):
@@ -88,6 +127,48 @@ def render(fp: dict[Key, Print]) -> str:
         lines.append(f"{d:>6} {result:<6} {count:>12,} {s:>#18x} {x:>#18x}")
     lines.append(f"{'':>6} {'合計':<6} {total:>12,}")
     return "\n".join(lines)
+
+
+TSV_HEADER = "# depth\tresult\tcount\tsum\txor"
+
+
+def dump(fp: dict[Key, Print]) -> str:
+    """機械可読の TSV。引き分けの深さは `-`。
+
+    総和と XOR は10進で書く。oracle/distribution.tsv と totals.tsv が10進で、
+    tests/conftest.py の読み手も int() をそのまま当てている。
+    """
+    lines = [TSV_HEADER]
+    for key in sorted(fp, key=_sort_key):
+        depth, result = key
+        count, s, x = fp[key]
+        d = "-" if depth is None else str(depth)
+        lines.append(f"{d}\t{result}\t{count}\t{s}\t{x}")
+    return "\n".join(lines) + "\n"
+
+
+def load_tsv(text: str) -> dict[Key, Print]:
+    """dump() の逆。`#` で始まる行と空行は読み飛ばす。"""
+    out: dict[Key, Print] = {}
+    for lineno, line in enumerate(text.splitlines(), 1):
+        if not line.strip() or line.startswith("#"):
+            continue
+        parts = line.split("\t")
+        if len(parts) != 5:
+            raise ValueError(f"{lineno} 行目: 5 列でない: {line!r}")
+        d, result, count, s, x = parts
+        try:
+            depth = None if d == "-" else int(d)
+            key: Key = (depth, result)
+            value: Print = (int(count), int(s), int(x))
+        except ValueError as e:
+            raise ValueError(f"{lineno} 行目: 数として読めない: {line!r}") from e
+        if key in out:
+            raise ValueError(f"{lineno} 行目: depth={d} {result} が2度出てくる")
+        out[key] = value
+    if not out:
+        raise ValueError("指紋が1行も無い")
+    return out
 
 
 def compare(a: dict[Key, Print], b: dict[Key, Print]) -> list[str]:
@@ -114,43 +195,87 @@ def compare(a: dict[Key, Print], b: dict[Key, Print]) -> list[str]:
     return bad
 
 
-def main(argv: list[str]) -> int:
-    if not 2 <= len(argv) <= 3:
-        print(__doc__, file=sys.stderr)
-        return 2
+def _take_option(args: list[str], name: str) -> tuple[list[str], str | None]:
+    """`--name <値>` を取り出して、残りの引数と値を返す。"""
+    if name not in args:
+        return args, None
+    i = args.index(name)
+    if i + 1 >= len(args):
+        raise ValueError(f"{name} に値が無い")
+    return args[:i] + args[i + 2 :], args[i + 1]
 
-    first = pathlib.Path(argv[1])
-    if not first.is_dir():
-        print(f"ディレクトリが無い: {first}", file=sys.stderr)
-        return 2
 
-    fp_a = fingerprint(first)
-    if not any(count for count, _, _ in fp_a.values()):
-        print("照合対象の局面が無い (1つ目)", file=sys.stderr)
-        return 2
-    if len(argv) == 2:
-        print(render(fp_a))
-        return 0
+def _read_dat(path: pathlib.Path, which: str) -> dict[Key, Print] | None:
+    """dat/ の指紋。読めないか空なら None (呼び手が終了コード 2 にする)。"""
+    if not path.is_dir():
+        print(f"ディレクトリが無い: {path}", file=sys.stderr)
+        return None
+    fp = fingerprint(path)
+    if not any(count for count, _, _ in fp.values()):
+        print(f"照合対象の局面が無い ({which})", file=sys.stderr)
+        return None
+    return fp
 
-    second = pathlib.Path(argv[2])
-    if not second.is_dir():
-        print(f"ディレクトリが無い: {second}", file=sys.stderr)
-        return 2
 
-    fp_b = fingerprint(second)
-    if not any(count for count, _, _ in fp_b.values()):
-        print("照合対象の局面が無い (2つ目)", file=sys.stderr)
-        return 2
+def _report(fp_a: dict[Key, Print], fp_b: dict[Key, Print], against: str | None) -> int:
     bad = compare(fp_a, fp_b)
     if bad:
         print(f"FAIL: {len(bad)} 項目が不一致")
         print("\n".join(bad))
         return 1
-
     total = sum(c for c, _, _ in fp_a.values())
-    print(f"PASS: {len(fp_a)} 項目の指紋が一致 (集合の完全一致を証明するものではない)")
+    what = f" ({against} と照合)" if against else ""
+    print(f"PASS: {len(fp_a)} 項目の指紋が一致{what} (集合の完全一致を証明するものではない)")
     print(f"  照合した局面数の合計: {total:,}")
     return 0
+
+
+def main(argv: list[str]) -> int:
+    args = argv[1:]
+    try:
+        args, against = _take_option(args, "--against")
+    except ValueError as e:
+        print(e, file=sys.stderr)
+        return 2
+    tsv = "--tsv" in args
+    args = [a for a in args if a != "--tsv"]
+    if tsv and against is not None:
+        print("--tsv と --against は同時に使えない", file=sys.stderr)
+        return 2
+
+    # <dat> --tsv と <dat> --against <tsv> は dat が1つ、位置引数だけなら1つか2つ
+    ok = len(args) == 1 if (tsv or against is not None) else 1 <= len(args) <= 2
+    if not ok:
+        print(__doc__, file=sys.stderr)
+        return 2
+
+    fp_a = _read_dat(pathlib.Path(args[0]), "1つ目")
+    if fp_a is None:
+        return 2
+
+    if against is not None:
+        ref = pathlib.Path(against)
+        if not ref.is_file():
+            print(f"指紋のファイルが無い: {ref}", file=sys.stderr)
+            return 2
+        try:
+            fp_b = load_tsv(ref.read_text(encoding="utf-8"))
+        except ValueError as e:
+            print(f"{ref}: {e}", file=sys.stderr)
+            return 2
+        return _report(fp_a, fp_b, against)
+
+    if len(args) == 1:
+        if tsv:
+            print(dump(fp_a), end="")
+        else:
+            print(render(fp_a))
+        return 0
+
+    fp_second = _read_dat(pathlib.Path(args[1]), "2つ目")
+    if fp_second is None:
+        return 2
+    return _report(fp_a, fp_second, None)
 
 
 if __name__ == "__main__":

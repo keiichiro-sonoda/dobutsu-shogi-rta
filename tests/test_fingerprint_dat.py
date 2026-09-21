@@ -199,3 +199,154 @@ def test_colliding_fingerprints_do_not_claim_exact_equality(
     b = write_dat(tmp_path / "b", {"win001te_000.pickle": [2, 5]})
     assert fingerprint_dat.main(["fingerprint_dat.py", str(a), str(b)]) == 0
     assert "集合の完全一致を証明するものではない" in capsys.readouterr().out
+
+
+# --------------------------------------------------------------------------
+# 指紋を値として固定する側 (oracle/fingerprint.tsv と --against)
+#
+# dat/ は 2.2 GB で git に入らない。2つの dat/ を両方ディスクに置いておかないと
+# 照合できない、という状態を解くために値のほうを固定する。保存形式を変える記録で
+# バイト比較の鎖が切れるので、その前に入れておく必要がある。
+# --------------------------------------------------------------------------
+
+# 2^64 の境目。総和は mod 2^64 なので、ここが10進で往復することを見る
+NEAR_MASK64 = (1 << 64) - 1
+
+
+def test_dump_and_load_tsv_round_trip() -> None:
+    """★辞書 → TSV → 辞書 が元に戻ること。引き分けの `-` と 64 ビット境界を含む。"""
+    fp: dict[fingerprint_dat.Key, fingerprint_dat.Print] = {
+        (1, "win"): (9118571, NEAR_MASK64, 0),
+        (0, "lose"): (7018985, 0, NEAR_MASK64),
+        (174, "lose"): (0, 0, 0),
+        (None, "draw"): (2682700, 12345678901234567890, 42),
+    }
+    assert fingerprint_dat.load_tsv(fingerprint_dat.dump(fp)) == fp
+
+
+def test_dump_writes_the_draw_depth_as_a_dash() -> None:
+    """★引き分けは深さを持たない。`-` で書き、`render()` の桁区切りは混ぜない。"""
+    text = fingerprint_dat.dump({(None, "draw"): (2682700, 7, 7)})
+    body = [line for line in text.splitlines() if not line.startswith("#")]
+    assert body == ["-\tdraw\t2682700\t7\t7"], text
+    assert "," not in text, "桁区切りが入っている (render を .tsv に使っていないか)"
+
+
+def test_only_the_pickle_format_is_registered() -> None:
+    """★形式の実装は pickle だけ。
+
+    ⚠️ **保存形式を変える記録でここが落ちる。それが目印。**
+    そのときは Format をもう1つ書いて FORMATS に足し、この行を更新する。
+    先に生バイナリの読み方を書いてしまうと、拡張子やヘッダの有無を
+    ツールが先に決めることになる。
+    """
+    assert [f.name for f in fingerprint_dat.FORMATS] == ["pickle"]
+    assert [f.suffix for f in fingerprint_dat.FORMATS] == [".pickle"]
+
+
+def test_against_a_matching_tsv_passes(
+    tmp_path: pathlib.Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """★dat/ から書いた TSV が、その dat/ と照合して通ること。"""
+    dat = write_dat(tmp_path, {"win001te_000.pickle": [1, 2, 3], "unknown000.pickle": [9]})
+    ref = tmp_path / "fingerprint.tsv"
+    ref.write_text(fingerprint_dat.dump(fingerprint_dat.fingerprint(dat)), encoding="utf-8")
+    assert fingerprint_dat.main(["fingerprint_dat.py", str(dat), "--against", str(ref)]) == 0
+    out = capsys.readouterr().out
+    assert "PASS" in out and str(ref) in out
+    assert "集合の完全一致を証明するものではない" in out
+
+
+@pytest.mark.parametrize(
+    ("column", "word"),
+    [(2, "件数"), (3, "総和"), (4, "XOR")],
+)
+def test_against_a_broken_tsv_fails(
+    tmp_path: pathlib.Path, capsys: pytest.CaptureFixture[str], column: int, word: str
+) -> None:
+    """★件数・総和・XOR を1つずつ崩すと落ち、どの深さのどれが違うか出ること。
+
+    3つとも独立に見ていないと、片方だけ壊れた TSV を見逃す。
+    """
+    dat = write_dat(tmp_path, {"win003te_000.pickle": [4, 5, 6]})
+    rows = fingerprint_dat.dump(fingerprint_dat.fingerprint(dat)).splitlines()
+    body = [r for r in rows if not r.startswith("#")]
+    cells = body[0].split("\t")
+    cells[column] = str(int(cells[column]) + 1)
+    ref = tmp_path / "fingerprint.tsv"
+    ref.write_text("\n".join([rows[0], "\t".join(cells)]) + "\n", encoding="utf-8")
+
+    assert fingerprint_dat.main(["fingerprint_dat.py", str(dat), "--against", str(ref)]) == 1
+    out = capsys.readouterr().out
+    assert "FAIL" in out and "depth=  3" in out and word in out
+
+
+def test_tsv_output_can_be_fed_back_in(
+    tmp_path: pathlib.Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """★`--tsv` で出したものが、そのまま `--against` の相手になること。"""
+    dat = write_dat(tmp_path, {"lose002te_000.pickle": [11, 13]})
+    assert fingerprint_dat.main(["fingerprint_dat.py", str(dat), "--tsv"]) == 0
+    ref = tmp_path / "fingerprint.tsv"
+    ref.write_text(capsys.readouterr().out, encoding="utf-8")
+    assert fingerprint_dat.main(["fingerprint_dat.py", str(dat), "--against", str(ref)]) == 0
+    capsys.readouterr()
+
+
+@pytest.mark.parametrize(
+    ("text", "match"),
+    [
+        ("1\twin\t2\t3\n", "5 列でない"),
+        ("1\twin\t2\t3\tx\n", "数として読めない"),
+        ("1\twin\t2\t3\t4\n1\twin\t9\t9\t9\n", "2度出てくる"),
+        ("# 見出しだけ\n\n", "1行も無い"),
+    ],
+)
+def test_a_broken_tsv_is_refused(text: str, match: str) -> None:
+    """★読めない TSV は黙って空にせず、どこが悪いか言って落ちること。"""
+    with pytest.raises(ValueError, match=match):
+        fingerprint_dat.load_tsv(text)
+
+
+def test_a_broken_tsv_file_returns_2(
+    tmp_path: pathlib.Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    dat = write_dat(tmp_path, {"win001te_000.pickle": [1]})
+    ref = tmp_path / "fingerprint.tsv"
+    ref.write_text("1\twin\t2\n", encoding="utf-8")
+    assert fingerprint_dat.main(["fingerprint_dat.py", str(dat), "--against", str(ref)]) == 2
+    assert "5 列でない" in capsys.readouterr().err
+
+
+def test_a_missing_tsv_returns_2(
+    tmp_path: pathlib.Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    dat = write_dat(tmp_path, {"win001te_000.pickle": [1]})
+    nope = str(tmp_path / "nope.tsv")
+    assert fingerprint_dat.main(["fingerprint_dat.py", str(dat), "--against", nope]) == 2
+    assert "指紋のファイルが無い" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize(
+    ("extra", "match"),
+    [
+        (["--against"], "--against に値が無い"),
+        (["--tsv", "--against", "x.tsv"], "同時に使えない"),
+    ],
+)
+def test_option_misuse_returns_2(
+    tmp_path: pathlib.Path, capsys: pytest.CaptureFixture[str], extra: list[str], match: str
+) -> None:
+    dat = write_dat(tmp_path, {"win001te_000.pickle": [1]})
+    assert fingerprint_dat.main(["fingerprint_dat.py", str(dat), *extra]) == 2
+    assert match in capsys.readouterr().err
+
+
+def test_tsv_with_two_directories_returns_2(
+    tmp_path: pathlib.Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """★`--tsv` は dat/ 1つ。2つ渡されたら黙って片方を無視しない。"""
+    a = write_dat(tmp_path / "a", {"win001te_000.pickle": [1]})
+    b = write_dat(tmp_path / "b", {"win001te_000.pickle": [1]})
+    assert fingerprint_dat.main(["fingerprint_dat.py", str(a), str(b), "--tsv"]) == 2
+    capsys.readouterr()

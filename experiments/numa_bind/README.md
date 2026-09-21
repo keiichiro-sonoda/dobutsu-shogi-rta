@@ -128,11 +128,14 @@ P2 は [`docs/measurement-noise.md`](../../docs/measurement-noise.md) の表に2
 
 | | |
 |---|---|
-| オラクル | **16本とも174行一致** |
-| 指紋 | `n1b`（`numa` 側）の `dat/` を [`oracle/fingerprint.tsv`](../../oracle/fingerprint.tsv) と照合して **176 項目一致** |
+| オラクル | **16本とも174行一致**（`logs/console.log` に16回） |
+| 指紋 | `n1b`（`numa` 側）の `dat/` を [`oracle/fingerprint.tsv`](../../oracle/fingerprint.tsv) と照合して **176 項目一致**（`logs/n1b_fingerprint.txt`） |
 
-⚠️ 指紋の照合は**この実験のために固定した値の最初の使用**でもある。
-`dat/` を2本ディスクに置かずに照合できた。
+⚠️ **照合の出力そのものを `logs/` に置いてある。** この `dat/` は `runs/` の下にあって
+git 管理外なので、消せば再現できない。結論だけ残して根拠が消えるのを避ける
+（CLAUDE.md の「生ログを `experiments/<名前>/logs/` に入れてコミットする」）。
+指紋の照合は**この実験のために固定した値の最初の使用**でもあり、
+`dat/` を2本ディスクに置かずに済んだ最初の場面でもある。
 
 ## レギュレーション上の扱い
 
@@ -159,6 +162,7 @@ P2 は [`docs/measurement-noise.md`](../../docs/measurement-noise.md) の表に2
 | `run_all.sh` | 16本。`plain numa numa plain` を4回 |
 | `logs/<ラベル>_retreat_summary.tsv` | 段ごとの所要時間と、11の境界の `t_` / `rss_` / `hwm_` / `min_` / `maj_`（絶対値） |
 | `logs/<ラベル>_vmstat.tsv` | 解析の直前と直後の2行。NUMA・移動・コンパクションの10カウンタ（絶対値） |
+| `logs/n1b_fingerprint.txt` | `oracle/fingerprint.tsv` との照合の出力。`numa` 側の1本ぶん |
 | `logs/<ラベル>_freq.log` | 1分おき。8列（`retreat_profile` と同じ） |
 
 ⚠️ `maj_` はどの境界でも **0** だった（16本とも。スワップには落ちていない）。

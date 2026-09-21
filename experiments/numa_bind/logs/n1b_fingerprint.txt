@@ -1,0 +1,13 @@
+# oracle/fingerprint.tsv との照合 (numa 側の1本, n1b)
+# python3 tools/fingerprint_dat.py <n1b の dat> --against oracle/fingerprint.tsv
+#
+# numactl --cpunodebind=0 --membind=0 を付けて走らせても答えが変わっていないこと。
+# 止める条件の2つ目 (1つ目は console.log にある16本ぶんのオラクル174行)。
+#
+# ⚠️ 指紋は件数・総和・XOR の3つだけなので、一致は集合の完全一致を証明しない。
+#    verify_log.py の174行 (局面数だけ) より強く、バイト比較より弱い。
+#
+# この dat/ は runs/ の下にあって git 管理外なので、消せば再現できない。
+# 結論だけでなく出力をここに置く (CLAUDE.md「生ログを入れてコミットする」)。
+PASS: 176 項目の指紋が一致 (oracle/fingerprint.tsv と照合) (集合の完全一致を証明するものではない)
+  照合した局面数の合計: 246,803,167

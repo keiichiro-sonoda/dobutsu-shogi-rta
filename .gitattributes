@@ -1,3 +1,4 @@
 # 計測機は Linux。改行は必ず LF で保存する (shebang が \r で壊れるため)
 * text=auto eol=lf
 *.pickle binary
+*.bin binary

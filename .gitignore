@@ -7,7 +7,9 @@ g1*.out
 # ビルド生成物
 *.so
 *.o
+# 成果物 dat/ の中身 (#15 までが .pickle、#16 からが生バイナリの .bin)
 *.pickle
+*.bin
 
 # Python
 __pycache__/

@@ -3,7 +3,7 @@
 
 記録 #6 の門番 G1 は、全規模の後退解析だけを走らせて答え合わせをする。
 そのためには全探索の出力が要るが、**その状態はもう残っていない**。
-後退解析が `unknown*.pickle` を消し、`win001te_*` に追記し、
+後退解析が `unknown*` を消し、`win001te_*` に追記し、
 `win{N}te_*` / `lose{N}te_*` を積み上げてしまうからである。
 
 戻し方は、後退解析がしたことをちょうど逆にたどるだけ:
@@ -21,8 +21,13 @@
 空き副番号から新しいファイルを作るので、境界は必ずファイルの切れ目に来る。
 
 ⚠️ 出来上がるのは**後退解析の入力として完全な** `dat/` であって、全探索の作業
-途中のファイル (`unexplored*.pickle`) は含まない。`retreatAnalysis()` は
+途中のファイル (`unexplored*`) は含まない。`retreatAnalysis()` は
 `unknown*` / `win001te_*` / `lose000te_*` しか読まないので、これで足りる。
+
+読む形式は元の `dat/` の中身から決める (#15 までの `.pickle` も #16 以降の
+`.bin` も読む)。**書き出しは必ず新形式 (`.bin`)** で、記録 #16 以降の実装が
+そのまま読める。形式の知識は `tools/fingerprint_dat.py` の `Format` に持たせて
+2か所に置かない。
 
 使い方:
 
@@ -34,16 +39,17 @@ from __future__ import annotations
 import functools
 import operator
 import pathlib
-import pickle
 import re
 import sys
+from array import array
+
+import fingerprint_dat
 
 # 1ファイルに入れる盤面数。実装側の BOARD_NUM_MAX と合わせる
 BOARD_NUM_MAX = 5000000
 
-WIN_RE = re.compile(r"^win(\d+)te_(\d+)\.pickle$")
-LOSE_RE = re.compile(r"^lose(\d+)te_(\d+)\.pickle$")
-UNKNOWN_RE = re.compile(r"^unknown(\d+)\.pickle$")
+# 書き出しは常に新形式 (記録 #16 以降の実装が読む形)。読みは元の dat/ に合わせる
+OUT = fingerprint_dat.RAW
 
 # 全探索が完了時に書く行
 TOTALS_RE = re.compile(r"総未知盤面数：(\d+), 総勝ち盤面数：(\d+), 総負け盤面数：(\d+)")
@@ -77,9 +83,13 @@ def read_forward_totals(main_log: pathlib.Path) -> tuple[int, int, int]:
     raise SystemExit(f"{main_log} に全探索の総数の行が無い")
 
 
-def load(path: pathlib.Path) -> list[int]:
-    with path.open("rb") as f:
-        return list(pickle.load(f))
+def load(path: pathlib.Path, fmt: fingerprint_dat.Format) -> list[int]:
+    return list(fmt.load(path))
+
+
+def write(boards: list[int], path: pathlib.Path) -> None:
+    """新形式で書き出す。⚠️ set() を通す順序が採番順になるので、ここも実装に揃える。"""
+    path.write_bytes(array("Q", set(boards)).tobytes())
 
 
 def sorted_subs(dat: pathlib.Path, pattern: re.Pattern[str], depth: int) -> list[pathlib.Path]:
@@ -92,30 +102,34 @@ def sorted_subs(dat: pathlib.Path, pattern: re.Pattern[str], depth: int) -> list
     return [p for _, p in sorted(out)]
 
 
-def other_files(dat: pathlib.Path, catch_files: set[pathlib.Path]) -> list[pathlib.Path]:
+def other_files(
+    dat: pathlib.Path, catch_files: set[pathlib.Path], fmt: fingerprint_dat.Format
+) -> list[pathlib.Path]:
     """キャッチと 0手負け以外＝未知に戻すファイル。"""
     out: list[pathlib.Path] = []
     for p in sorted(dat.iterdir()):
         if p in catch_files:
             continue
-        m = WIN_RE.match(p.name) or LOSE_RE.match(p.name)
+        m = fmt.win.match(p.name) or fmt.lose.match(p.name)
         if m:
-            if LOSE_RE.match(p.name) and int(m.group(1)) == 0:
+            if fmt.lose.match(p.name) and int(m.group(1)) == 0:
                 continue  # 0手負けはそのまま残す
             out.append(p)
-        elif UNKNOWN_RE.match(p.name):
+        elif fmt.unknown.match(p.name):
             out.append(p)  # 引き分け
     return out
 
 
-def pick_catch_files(dat: pathlib.Path, n_catch: int) -> list[pathlib.Path]:
+def pick_catch_files(
+    dat: pathlib.Path, n_catch: int, fmt: fingerprint_dat.Format
+) -> list[pathlib.Path]:
     """win001te_* の先頭から、キャッチの件数ちょうどになるまで取る。"""
     picked: list[pathlib.Path] = []
     seen = 0
-    for path in sorted_subs(dat, WIN_RE, 1):
+    for path in sorted_subs(dat, fmt.win, 1):
         if seen == n_catch:
             break
-        seen += len(load(path))
+        seen += len(load(path, fmt))
         picked.append(path)
         if seen > n_catch:
             raise SystemExit(
@@ -130,8 +144,7 @@ def pick_catch_files(dat: pathlib.Path, n_catch: int) -> list[pathlib.Path]:
 def write_unknown(boards: list[int], dst: pathlib.Path, sub: int, digest: Digest) -> int:
     """未知盤面を1ファイル書き出し、次の副番号を返す。"""
     digest.add(boards)
-    with (dst / f"unknown{sub:03d}.pickle").open("wb") as f:
-        pickle.dump(set(boards), f)
+    write(boards, dst / f"unknown{sub:03d}{OUT.suffix}")
     return sub + 1
 
 
@@ -142,29 +155,31 @@ def rebuild(src: pathlib.Path, main_log: pathlib.Path, dst: pathlib.Path) -> Non
     if any(dst.iterdir()):
         raise SystemExit(f"{dst} が空でない")
 
+    # 元の dat/ の形式は中身から決める。#15 までの .pickle も #16 以降の .bin も読む
+    fmt = fingerprint_dat.detect(src)
+    print(f"元の形式: {fmt.name} ({fmt.suffix}) → 書き出し: {OUT.name} ({OUT.suffix})")
+
     before = Digest()
     after = Digest()
 
     # キャッチ: win001te_* の先頭から件数ぶん
-    catch_files = pick_catch_files(src, n_catch)
+    catch_files = pick_catch_files(src, n_catch, fmt)
     for sub, path in enumerate(catch_files):
-        boards = load(path)
+        boards = load(path, fmt)
         before.add(boards)
         after.add(boards)
-        with (dst / f"win001te_{sub:03d}.pickle").open("wb") as f:
-            pickle.dump(set(boards), f)
+        write(boards, dst / f"win001te_{sub:03d}{OUT.suffix}")
     print(f"キャッチ: {len(catch_files)} ファイル")
 
     # トライ負け: lose000te_* をそのまま
-    lose_files = sorted_subs(src, LOSE_RE, 0)
+    lose_files = sorted_subs(src, fmt.lose, 0)
     n_lose_seen = 0
     for sub, path in enumerate(lose_files):
-        boards = load(path)
+        boards = load(path, fmt)
         n_lose_seen += len(boards)
         before.add(boards)
         after.add(boards)
-        with (dst / f"lose000te_{sub:03d}.pickle").open("wb") as f:
-            pickle.dump(set(boards), f)
+        write(boards, dst / f"lose000te_{sub:03d}{OUT.suffix}")
     if n_lose_seen != n_lose:
         raise SystemExit(f"0手負けが合わない: {n_lose_seen} / {n_lose}")
     print(f"トライ負け: {len(lose_files)} ファイル")
@@ -173,8 +188,8 @@ def rebuild(src: pathlib.Path, main_log: pathlib.Path, dst: pathlib.Path) -> Non
     buf: list[int] = []
     sub = 0
     n_uk_seen = 0
-    for path in other_files(src, set(catch_files)):
-        boards = load(path)
+    for path in other_files(src, set(catch_files), fmt):
+        boards = load(path, fmt)
         before.add(boards)
         n_uk_seen += len(boards)
         buf += boards

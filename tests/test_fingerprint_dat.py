@@ -9,6 +9,7 @@ from __future__ import annotations
 import pathlib
 import pickle
 import sys
+from array import array
 
 import fingerprint_dat
 import pytest
@@ -22,6 +23,15 @@ def write_dat(root: pathlib.Path, layout: dict[str, list[Board]]) -> pathlib.Pat
     for name, boards in layout.items():
         with (dat / name).open("wb") as f:
             pickle.dump(set(boards), f)
+    return dat
+
+
+def write_raw_dat(root: pathlib.Path, layout: dict[str, list[Board]]) -> pathlib.Path:
+    """記録 #16 の形式。8 バイト整数を並べるだけで、ヘッダは無い。"""
+    dat = root / "dat"
+    dat.mkdir(parents=True, exist_ok=True)
+    for name, boards in layout.items():
+        (dat / name).write_bytes(array("Q", set(boards)).tobytes())
     return dat
 
 
@@ -232,16 +242,103 @@ def test_dump_writes_the_draw_depth_as_a_dash() -> None:
     assert "," not in text, "桁区切りが入っている (render を .tsv に使っていないか)"
 
 
-def test_only_the_pickle_format_is_registered() -> None:
-    """★形式の実装は pickle だけ。
+def test_the_registered_formats_are_pickle_and_raw() -> None:
+    """★形式の実装は pickle (#15 まで) と生バイナリ (#16 以降) の2つ。
 
-    ⚠️ **保存形式を変える記録でここが落ちる。それが目印。**
+    ⚠️ **さらに形式を増やす記録でここが落ちる。それが目印。**
     そのときは Format をもう1つ書いて FORMATS に足し、この行を更新する。
-    先に生バイナリの読み方を書いてしまうと、拡張子やヘッダの有無を
-    ツールが先に決めることになる。
     """
-    assert [f.name for f in fingerprint_dat.FORMATS] == ["pickle"]
-    assert [f.suffix for f in fingerprint_dat.FORMATS] == [".pickle"]
+    assert [f.name for f in fingerprint_dat.FORMATS] == ["pickle", "raw"]
+    assert [f.suffix for f in fingerprint_dat.FORMATS] == [".pickle", ".bin"]
+
+
+def test_the_pickle_patterns_did_not_move_when_they_were_generated() -> None:
+    """★_names() が組み立てる pickle の3つの規則が、手で書いていた頃と同一であること。
+
+    ⚠️ **oracle/fingerprint.tsv は #15 の dat/ をこの規則で走査して作った値。**
+    規則が1文字でも変われば、数えた対象が変わっていたことになり、
+    あの値と過去の results/*/fingerprint.txt を比べてよい根拠が崩れる。
+    """
+    assert fingerprint_dat.PICKLE.win.pattern == r"^win(\d+)te_(\d+)\.pickle$"
+    assert fingerprint_dat.PICKLE.lose.pattern == r"^lose(\d+)te_(\d+)\.pickle$"
+    assert fingerprint_dat.PICKLE.unknown.pattern == r"^unknown(\d+)\.pickle$"
+    assert fingerprint_dat.PICKLE.skip == ("_next", "_next_win")
+
+
+def test_the_raw_format_reads_little_endian_eight_byte_integers() -> None:
+    """★ヘッダ無しで、8 バイト整数がそのまま並んでいること。"""
+    assert array("Q").itemsize == 8
+    raw = array("Q", [1, 1 << 63]).tobytes()
+    assert len(raw) == 16
+    assert raw[:8] == b"\x01\x00\x00\x00\x00\x00\x00\x00", "リトルエンディアンでない"
+    assert len(raw) // 8 == 2, "件数はバイト数 // 8 で出る"
+
+
+def test_the_two_formats_give_the_same_fingerprint(tmp_path: pathlib.Path) -> None:
+    """★同じ盤面なら、pickle でも生バイナリでも指紋が一致すること。
+
+    記録 #16 で dat/ のバイト比較が使えなくなるので、**形式をまたいで
+    比べられること自体がこの先の主検査**になる。
+    """
+    layout = {"win001te_000": [1, 2, 3], "lose000te_000": [9], "unknown000": [7, 8]}
+    a = write_dat(tmp_path / "a", {f"{k}.pickle": v for k, v in layout.items()})
+    b = write_raw_dat(tmp_path / "b", {f"{k}.bin": v for k, v in layout.items()})
+    fa = fingerprint_dat.fingerprint(a, fingerprint_dat.PICKLE)
+    fb = fingerprint_dat.fingerprint(b, fingerprint_dat.RAW)
+    assert fa == fb
+    assert fingerprint_dat.compare(fa, fb) == []
+
+
+def test_the_format_is_detected_from_the_directory(tmp_path: pathlib.Path) -> None:
+    """★拡張子を指定しなくても、dat/ の中身から形式が決まること。"""
+    a = write_dat(tmp_path / "a", {"win001te_000.pickle": [1]})
+    b = write_raw_dat(tmp_path / "b", {"win001te_000.bin": [1]})
+    assert fingerprint_dat.detect(a) is fingerprint_dat.PICKLE
+    assert fingerprint_dat.detect(b) is fingerprint_dat.RAW
+
+
+def test_a_mixed_directory_is_refused(tmp_path: pathlib.Path) -> None:
+    """★途中まで変換した dat/ を、片方だけ数えて通さないこと。
+
+    ⚠️ 黙って片方だけ数えると、件数が足りないまま指紋が通る経路ができる。
+    """
+    dat = write_dat(tmp_path, {"win001te_000.pickle": [1]})
+    (dat / "win003te_000.bin").write_bytes(array("Q", [3]).tobytes())
+    with pytest.raises(ValueError, match="2つの形式が混ざっている"):
+        fingerprint_dat.detect(dat)
+
+
+def test_a_directory_without_answers_is_refused(tmp_path: pathlib.Path) -> None:
+    dat = tmp_path / "dat"
+    dat.mkdir()
+    (dat / "notes.txt").write_text("メモ", encoding="utf-8")
+    with pytest.raises(ValueError, match="答えのファイルが1つも無い"):
+        fingerprint_dat.detect(dat)
+
+
+def test_the_cli_reads_a_raw_dat(
+    tmp_path: pathlib.Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """★生バイナリの dat/ を、形式を渡さずに --against で照合できること。
+
+    oracle/fingerprint.tsv は #15 の pickle から作った値。それが #16 の .bin に
+    そのまま使えることが、記録 #16 の主検査そのもの。
+    """
+    pick = write_dat(tmp_path / "a", {"win001te_000.pickle": [4, 5, 6], "unknown000.pickle": [7]})
+    ref = tmp_path / "fingerprint.tsv"
+    ref.write_text(fingerprint_dat.dump(fingerprint_dat.fingerprint(pick)), encoding="utf-8")
+    raw = write_raw_dat(tmp_path / "b", {"win001te_000.bin": [6, 4, 5], "unknown000.bin": [7]})
+    assert fingerprint_dat.main(["fingerprint_dat.py", str(raw), "--against", str(ref)]) == 0
+    assert "PASS" in capsys.readouterr().out
+
+
+def test_a_mixed_dat_returns_2_from_the_cli(
+    tmp_path: pathlib.Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    dat = write_dat(tmp_path, {"win001te_000.pickle": [1]})
+    (dat / "unknown000.bin").write_bytes(array("Q", [2]).tobytes())
+    assert fingerprint_dat.main(["fingerprint_dat.py", str(dat)]) == 2
+    assert "混ざっている" in capsys.readouterr().err
 
 
 def test_against_a_matching_tsv_passes(

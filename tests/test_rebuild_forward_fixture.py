@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import pathlib
 import pickle
+from array import array
 
 import pytest
 import rebuild_forward_fixture as rff
@@ -21,12 +22,21 @@ FORWARD_ROUNDS = 9
 SMALL_BOARD_NUM_MAX = 400
 IMPL = "05_batch_wl_write"
 
+# 組み直しの書き出し形式 (記録 #16 以降の実装が読む形)
+OUT = ".bin"
+
 
 def load_all(dat: pathlib.Path, pattern: str) -> list[int]:
+    """拡張子で読み方を選ぶ。入力は #15 までの .pickle、出力は #16 以降の .bin。"""
     out: list[int] = []
     for path in sorted(dat.glob(pattern)):
-        with path.open("rb") as f:
-            out += list(pickle.load(f))
+        if path.suffix == OUT:
+            a = array("Q")
+            a.frombytes(path.read_bytes())
+            out += list(a)
+        else:
+            with path.open("rb") as f:
+                out += list(pickle.load(f))
     return out
 
 
@@ -66,9 +76,9 @@ def test_the_rebuilt_fixture_has_the_three_families_back(
     dst = tmp_path / "dat"
     rff.rebuild(finished_run / "dat", log, dst)
 
-    unknown = load_all(dst, "unknown*.pickle")
-    catch = load_all(dst, "win001te_*.pickle")
-    lose = load_all(dst, "lose000te_*.pickle")
+    unknown = load_all(dst, "unknown*" + OUT)
+    catch = load_all(dst, "win001te_*" + OUT)
+    lose = load_all(dst, "lose000te_*" + OUT)
     assert len(unknown) == n_uk, "未知の件数が全探索時と違う"
     assert len(catch) == n_catch, "キャッチの件数が全探索時と違う"
     assert len(lose) == n_lose, "トライ負けの件数が全探索時と違う"
@@ -110,7 +120,7 @@ def test_the_rebuilt_fixture_does_not_restore_the_numbering_order(
 
     dst = tmp_path / "dat"
     rff.rebuild(finished_run / "dat", finished_run / "kaiseki_log" / "kaizenkaiseki1.txt", dst)
-    after = load_all(dst, "unknown*.pickle")
+    after = load_all(dst, "unknown*" + OUT)
 
     assert set(before) == set(after), "集合が戻っていない (組み直しの不具合)"
     moved = sum(1 for x, y in zip(before, after, strict=True) if x != y)
@@ -136,9 +146,7 @@ def test_the_rebuilt_fixture_only_has_what_the_retreat_reads(
     # 副番号は 0 から連番 (実装が「最初に見つからない番号で break」する)
     for prefix in ("unknown", "win001te_", "lose000te_"):
         subs = sorted(
-            int(n.removeprefix(prefix).removesuffix(".pickle"))
-            for n in names
-            if n.startswith(prefix)
+            int(n.removeprefix(prefix).removesuffix(OUT)) for n in names if n.startswith(prefix)
         )
         assert subs == list(range(len(subs))), f"{prefix} の副番号が飛んでいる"
 
@@ -149,7 +157,7 @@ def test_it_refuses_to_write_into_a_used_directory(
     """既にファイルがあるところへ書くと、古い残骸と混ざる。"""
     dst = tmp_path / "dat"
     dst.mkdir()
-    (dst / "unknown000.pickle").write_bytes(b"")
+    (dst / ("unknown000" + OUT)).write_bytes(b"")
     with pytest.raises(SystemExit):
         rff.rebuild(finished_run / "dat", finished_run / "kaiseki_log" / "kaizenkaiseki1.txt", dst)
 
@@ -201,7 +209,7 @@ def test_it_splits_the_unknown_boards_into_chunks(
     monkeypatch.setattr(rff, "BOARD_NUM_MAX", max(1, n_uk // 3))
     dst = tmp_path / "dat"
     rff.rebuild(finished_run / "dat", finished_run / "kaiseki_log" / "kaizenkaiseki1.txt", dst)
-    chunks = sorted(dst.glob("unknown*.pickle"))
+    chunks = sorted(dst.glob("unknown*" + OUT))
     assert len(chunks) >= 3, "分割されていない"
     assert sum(len(load_all(dst, c.name)) for c in chunks) == n_uk
 
@@ -270,4 +278,39 @@ def test_the_cli_rebuilds_end_to_end(finished_run: pathlib.Path, tmp_path: pathl
         ]
     )
     assert rc == 0
-    assert (dst / "unknown000.pickle").exists()
+    assert (dst / ("unknown000" + OUT)).exists()
+
+
+def test_it_rebuilds_from_a_raw_source_too(
+    finished_run: pathlib.Path, tmp_path: pathlib.Path
+) -> None:
+    """★完走した dat/ が新形式でも組み直せること。
+
+    ⚠️ **記録 #16 以降の門番はここだけに懸かっている。** 本走が .bin を吐くように
+    なると、組み直しの入力も .bin になる。読めなければ #17 以降の門番が
+    一切回せない (全規模の後退解析だけを走らせる入力が作れない)。
+    """
+    log = finished_run / "kaiseki_log" / "kaizenkaiseki1.txt"
+
+    # 完走した dat/ を丸ごと新形式に写して、#16 の本走の出力に見立てる
+    raw_src = tmp_path / "raw_src"
+    raw_src.mkdir()
+    for path in sorted((finished_run / "dat").iterdir()):
+        if path.suffix != ".pickle":
+            continue
+        with path.open("rb") as f:
+            boards = pickle.load(f)
+        (raw_src / (path.stem + OUT)).write_bytes(array("Q", boards).tobytes())
+
+    from_pickle = tmp_path / "from_pickle"
+    from_raw = tmp_path / "from_raw"
+    rff.rebuild(finished_run / "dat", log, from_pickle)
+    rff.rebuild(raw_src, log, from_raw)
+
+    assert sorted(p.name for p in from_raw.iterdir()) == sorted(
+        p.name for p in from_pickle.iterdir()
+    ), "ファイルの顔ぶれが元の形式で変わっている"
+    for family in ("unknown*", "win001te_*", "lose000te_*"):
+        a = load_all(from_pickle, family + OUT)
+        b = load_all(from_raw, family + OUT)
+        assert set(a) == set(b), f"{family} の集合が元の形式で変わっている"

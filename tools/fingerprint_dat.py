@@ -21,9 +21,10 @@
 `dat/` は 2.2 GB あって git に入らないので、照合のたびに2本ぶん
 ディスクに置いておく代わりに、値のほうを固定してある。
 
-形式の知識は Format にまとめてある。保存形式を pickle から変える記録では、
-Format をもう1つ書いて FORMATS に足す。ここには pickle 以外を書かない
-(形式がまだ無いうちに書くと、ツールが先に形式を決めてしまう)。
+形式の知識は Format にまとめてある。いまは #15 までの pickle と、
+記録 #16 で入った生バイナリ (.bin) の2つ。どちらの dat/ かは中身から見分けるので、
+コマンドの打ち方は形式が変わっても同じ。さらに形式が増えるときは
+Format をもう1つ書いて FORMATS に足す。
 """
 
 from __future__ import annotations
@@ -33,6 +34,7 @@ import pathlib
 import pickle
 import re
 import sys
+from array import array
 from collections.abc import Callable, Iterable
 
 MASK64 = (1 << 64) - 1
@@ -56,25 +58,75 @@ class Format:
     load: Callable[[pathlib.Path], Iterable[int]]
 
 
+def _names(suffix: str) -> dict[str, re.Pattern[str]]:
+    """拡張子からファイル名の3つの規則を組み立てる。
+
+    形式が増えても命名規則は同じ (深さとチャンク番号の並べ方は変えない) ので、
+    ここで作る。形式ごとに手で書くと、片方だけ直して食い違う。
+    """
+    esc = re.escape(suffix)
+    return {
+        "win": re.compile(rf"^win(\d+)te_(\d+){esc}$"),
+        "lose": re.compile(rf"^lose(\d+)te_(\d+){esc}$"),
+        "unknown": re.compile(rf"^unknown(\d+){esc}$"),
+    }
+
+
 def _load_pickle(path: pathlib.Path) -> set[int]:
     with path.open("rb") as f:
         obj = pickle.load(f)
     return set(obj)
 
 
+def _load_raw(path: pathlib.Path) -> array[int]:
+    """8 バイトのリトルエンディアン符号なし整数を並べただけのファイル。
+
+    ヘッダが無いので件数は os.path.getsize(path) // 8 で開かずに分かる。
+    pickle と違って要素ごとの PyLong を作らない (memcpy 1回) ので、
+    大きい dat/ ではここが桁で速い。
+    """
+    a = array("Q")
+    a.frombytes(path.read_bytes())
+    return a
+
+
 PICKLE = Format(
     name="pickle",
     suffix=".pickle",
-    win=re.compile(r"^win(\d+)te_(\d+)\.pickle$"),
-    lose=re.compile(r"^lose(\d+)te_(\d+)\.pickle$"),
-    unknown=re.compile(r"^unknown(\d+)\.pickle$"),
+    **_names(".pickle"),
     skip=("_next", "_next_win"),
     load=_load_pickle,
 )
 
-# ⚠️ ここは1つだけ。増やすのは保存形式を変える記録の仕事
-# (tests/test_fingerprint_dat.py がそれを固定している)
-FORMATS: tuple[Format, ...] = (PICKLE,)
+RAW = Format(
+    name="raw",
+    suffix=".bin",
+    **_names(".bin"),
+    skip=("_next", "_next_win"),
+    load=_load_raw,
+)
+
+# 記録 #16 で pickle から生バイナリへ移った。#15 までの dat/ も読めるよう両方残す
+FORMATS: tuple[Format, ...] = (PICKLE, RAW)
+
+
+def detect(dat: pathlib.Path) -> Format:
+    """dat/ に並んでいるファイル名から形式を見分ける。
+
+    ⚠️ 2つの形式が混ざっていたら**落とす**。途中まで変換した dat/ を
+    黙って片方だけ数えると、件数が合わないまま PASS しかねない。
+    """
+    names = [p.name for p in dat.iterdir() if p.is_file()]
+    hit = [
+        f
+        for f in FORMATS
+        if any(f.win.match(n) or f.lose.match(n) or f.unknown.match(n) for n in names)
+    ]
+    if len(hit) == 1:
+        return hit[0]
+    if not hit:
+        raise ValueError(f"答えのファイルが1つも無い: {dat}")
+    raise ValueError(f"2つの形式が混ざっている ({'/'.join(f.name for f in hit)}): {dat}")
 
 
 def fingerprint(dat: pathlib.Path, fmt: Format = PICKLE) -> dict[Key, Print]:
@@ -206,11 +258,20 @@ def _take_option(args: list[str], name: str) -> tuple[list[str], str | None]:
 
 
 def _read_dat(path: pathlib.Path, which: str) -> dict[Key, Print] | None:
-    """dat/ の指紋。読めないか空なら None (呼び手が終了コード 2 にする)。"""
+    """dat/ の指紋。読めないか空なら None (呼び手が終了コード 2 にする)。
+
+    形式は中身から見分ける。#15 までの .pickle と #16 以降の .bin を
+    同じコマンドで扱えるようにするため。
+    """
     if not path.is_dir():
         print(f"ディレクトリが無い: {path}", file=sys.stderr)
         return None
-    fp = fingerprint(path)
+    try:
+        fmt = detect(path)
+    except ValueError as e:
+        print(f"{e} ({which})", file=sys.stderr)
+        return None
+    fp = fingerprint(path, fmt)
     if not any(count for count, _, _ in fp.values()):
         print(f"照合対象の局面が無い ({which})", file=sys.stderr)
         return None

@@ -8,6 +8,11 @@ pre-commit の `end-of-file-fixer` が `PermissionError` で落ちて気づい�
 一括追加をやめるのが本筋（CLAUDE.md の「コミット」）だが、それだけだと1回の
 打ち間違いで通ってしまうので、**追跡してよい名前をここに列挙して機械に見張らせる**。
 
+網は2枚で、役目が違う。**追跡されているもの**を見る側（`ALLOWED`）と、
+**`.gitignore` の方針**を見る側（無視してよい名前／無視してはいけない名前／
+深さによらず無視すべき名前）。前者だけだと、共有すべき名前をうっかり
+`.gitignore` に入れても気づけない。
+
 ⚠️ **新しく共有したいドットファイルが出たら、ここに足してから `git add` する。**
 落ちるのは仕様。`.gitignore` に入れて黙らせるのは、その名前が
 プロジェクトのファイルには絶対ならないと言い切れるときだけ。
@@ -41,7 +46,15 @@ def tracked_dotfiles() -> list[str]:
         text=True,
         check=True,
     )
-    return sorted(p for p in out.stdout.split("\0") if p.startswith("."))
+    # ⚠️ 先頭だけでなく、どの成分が `.` で始まっても拾う。
+    #    impl/<番号>_<名前>/.claude/.cc-writes/ がまさにその形で、そこは
+    #    tools/run.sh の impl_sha256 が find . -type f で見ている場所。
+    #    いま追跡中のファイルに入れ子のドット成分は1つも無いので、広げても誤検知は増えない
+    return sorted(
+        p
+        for p in out.stdout.split("\0")
+        if p and any(part.startswith(".") for part in p.split("/"))
+    )
 
 
 def test_only_named_dotfiles_are_tracked() -> None:
@@ -71,23 +84,81 @@ def test_the_allowlist_is_not_stale() -> None:
         )
 
 
-def test_the_shadows_are_ignored_or_visible() -> None:
-    """★0 バイトの覆いが「追跡されている」状態になっていないこと。
+def ignored_by_repo(path: str) -> bool:
+    """このリポジトリの .gitignore だけで無視されるか。
 
-    `.gitignore` に入れたもの（`.gitconfig` など）は `git status` から消え、
-    入れていないもの（`.gitmodules` / `.mcp.json` / `.claude/*`）は未追跡として
-    見え続ける。⚠️ **どちらでもよいが「追跡されている」だけは駄目。**
+    ⚠️ `core.excludesFile=/dev/null` でグローバル ignore を外す。外さないと
+    「手元では無視されるが clone では無視されない」を見逃す。実際 `.cc-writes` は
+    リポジトリ側がルート固定で、入れ子は作者のグローバル設定が肩代わりしていた。
     """
-    shadows = (
-        ".bashrc",
-        ".zshrc",
-        ".gitconfig",
-        ".ripgreprc",
-        ".gitmodules",
-        ".mcp.json",
-        ".claude/settings.json",
-        ".claude/agents",
+    return (
+        subprocess.run(
+            ["git", "-c", "core.excludesFile=/dev/null", "check-ignore", "-q", "--no-index", path],
+            cwd=ROOT,
+            check=False,
+        ).returncode
+        == 0
     )
-    tracked = set(tracked_dotfiles())
-    for name in shadows:
-        assert name not in tracked, f"{name} が追跡されている（覆いを巻き込んだ?）"
+
+
+# プロジェクトのファイルには絶対ならない名前。無視してよい
+SAFE_TO_IGNORE = (
+    ".bashrc",
+    ".bash_profile",
+    ".zshrc",
+    ".zprofile",
+    ".profile",
+    ".gitconfig",
+    ".ripgreprc",
+    ".idea",
+    ".vscode",
+)
+
+# 同じ 0 バイトの覆いが置かれるが、共有すべき本物が同名で来る名前。無視してはいけない
+MUST_STAY_VISIBLE = (
+    ".gitmodules",
+    ".mcp.json",
+    ".claude/settings.json",
+    ".claude/agents",
+    ".claude/commands",
+    ".claude/hooks",
+    ".claude/workflows",
+)
+
+# Claude Code がどの階層にも作るもの。深さによらず無視されていなければならない
+LOCAL_ANYWHERE = (
+    ".claude/.cc-writes/x",
+    "impl/16_example/.claude/.cc-writes/x",
+    "experiments/gate_16_example/.claude/.cc-writes/x",
+    ".claude/settings.local.json",
+    "impl/16_example/.claude/settings.local.json",
+)
+
+
+def test_the_safe_shadows_are_ignored() -> None:
+    """★覆いのうち、無視してよいものが実際に無視されていること。"""
+    visible = [n for n in SAFE_TO_IGNORE if not ignored_by_repo(n)]
+    assert visible == [], f"無視されていない: {visible}"
+
+
+def test_the_shareable_names_are_not_ignored() -> None:
+    """★共有すべき本物が同名で来る名前を、無視してしまっていないこと。
+
+    ⚠️ これを無視すると `git add` が `-f` を要求し、本物を入れるときに詰まる。
+    `.claude/settings.local.json` だけを無視する上流の区別を壊さないための歯止め。
+    """
+    hidden = [n for n in MUST_STAY_VISIBLE if ignored_by_repo(n)]
+    assert hidden == [], (
+        f"無視されている: {hidden}。どれも共有すべき本物が同名で来る。.gitignore から外すこと"
+    )
+
+
+def test_the_local_generated_files_are_ignored_at_any_depth() -> None:
+    """★Claude Code のローカル生成物が、深さによらず無視されること。
+
+    中間にスラッシュのあるパターンはルートに固定されるので `**/` が要る。
+    impl/<番号>_<名前>/ の下に置かれると `tools/run.sh` の `impl_sha256`
+    （`find . -type f`）に入り、記録の証拠のハッシュが動く。
+    """
+    visible = [n for n in LOCAL_ANYWHERE if not ignored_by_repo(n)]
+    assert visible == [], f"深いところで無視されていない: {visible}"

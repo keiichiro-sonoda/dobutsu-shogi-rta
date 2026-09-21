@@ -19,8 +19,8 @@
 切り捨てられているので、整数がそのまま生値。
 
 載せる条件は2つ。**このツールが読める形でログがコミットされていること**
-（`<ラベル>_main.log` と `console.log` を並べた門番の形。いまは `gate_12` /
-`gate_14` / `gate_15` の3つだけがこの形）と、**その段のコードが旧新でバイト同一で
+（`<ラベル>_main.log` と `console.log` を並べた形。いまは `gate_12` / `gate_14` /
+`gate_15` / `retreat_profile` の4つ）と、**その段のコードがその本たちでバイト同一で
 あること**。P4 は `gate_12` の、P2 は `gate_15` のレバーなので、その組み合わせは載せない。
 
 ⚠️ **「全部載っている」とは言っていない。** 条件を満たす組み合わせは他にもある。
@@ -86,6 +86,7 @@ ROWS = (
     Row("P0 読み込み", "P0", "gate_15_c_successors", "old", "旧8本"),
     Row("P1 索引", "P1", "gate_12_c_predecessors", "", "旧新6本"),
     Row("P1 索引", "P1", "gate_14_c_retreat", "", "旧新6本"),
+    Row("**P1 索引**", "P1", "retreat_profile", "p", "計装8本", True),
     Row("P2 後続生成", "P2", "gate_12_c_predecessors", "", "旧新6本"),
     Row("**P2 後続生成**", "P2", "gate_14_c_retreat", "", "旧新6本", True),
     Row("P2 後続生成", "P2", "gate_15_c_successors", "old", "旧8本"),

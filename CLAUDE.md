@@ -159,17 +159,6 @@
   `-2` の経路の `outside += degree - n_found;` が `n_found > degree` の検査より前にある。
   `out[2]` は正常終了のときしか書かないので外には出ないが、検査を先に置くほうが素直。
 
-- （済み: 記録 #13・#14 の `expandRound` が空入力で初見バッファの件数を戻さない件は、
-  記録 #15 で `g_exp_n = 0` を早期 return より前に出して直した。`impl/13`・`impl/14` は
-  凍結のままなので、**まだ残っていること**を `tests/test_impl_13_c_expand.py` と
-  `tests/test_impl_14_c_retreat.py` が、**直っていること**を
-  `tests/test_impl_15_c_successors.py` が固定している。
-  ⚠️ **`out[3]` は `expandNewCount()` の代わりには使えない。** あれは「生成した後続の
-  延べ数」（重複込み）で「初見の数」とは別物。同じ落とし穴を作らないための記録）
-
-- （済み: 記録 #11 の `-3` 握りつぶしは記録 #12 で直した。`impl/11` 側は凍結のままで、
-  直っていることは `tests/test_impl_12_c_predecessors.py` が検査している）
-
 ## 記録に残さないもの
 
 - **ホスト名。** `tools/run.sh` からは削除済み。`results/` に置く `env.txt` にも入れない。

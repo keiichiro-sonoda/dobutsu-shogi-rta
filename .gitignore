@@ -22,5 +22,24 @@ coverage.xml
 htmlcov/
 
 # Claude Code のローカル生成物
-.claude/.cc-writes/
-.claude/settings.local.json
+# ⚠️ `**/` を付ける。中間にスラッシュがあるパターンはルートに固定されるので、
+#    `.claude/.cc-writes/` だけだと impl/<番号>_<名前>/.claude/.cc-writes/ に効かない。
+#    そこは tools/run.sh の impl_sha256 が find . -type f で見ている場所
+#    (CLAUDE.md の「計測したディレクトリへ cd しない」)。
+**/.claude/.cc-writes/
+**/.claude/settings.local.json
+
+# サンドボックスが置く 0 バイトの覆い (読み取りを塞ぐためのもので、中身は空)
+# ⚠️ ここに入れるのは「プロジェクトのファイルには絶対ならない名前」だけ。
+#    .gitmodules / .mcp.json / .claude/settings.json / .claude/{agents,commands,hooks,
+#    workflows} にも同じ覆いが置かれるが、どれも共有すべき本物が同名で来るので
+#    無視しない (無視すると git add が -f を要求して、本物を入れるときに詰まる)。
+.bash_profile
+.bashrc
+.zprofile
+.zshrc
+.profile
+.gitconfig
+.ripgreprc
+.idea
+.vscode

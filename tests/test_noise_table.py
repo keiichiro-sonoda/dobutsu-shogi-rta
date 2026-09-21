@@ -5,6 +5,10 @@
 
 ⚠️ 残る2件（無い記述を引用した・下書きの状態を指した）は文章の誤りで、
 ここでは捕まえられない。**このテストが緑でも文章の正しさは保証しない。**
+
+実際、この検査を入れた回にも「ログが git 管理外で再計算できない」と書いた理由が
+事実と違っていた（P1 の3本は commit 済みで、違うのはレイアウトだった）。
+機械が見ているのは数字の導出だけ。
 """
 
 from __future__ import annotations
@@ -93,6 +97,11 @@ def test_inline_spreads_match_the_table(path: pathlib.Path) -> None:
     """★「sd X / Y%」と書いた箇所が、表の行と食い違っていないこと。
 
     記録 #15 のレビューで、表を直したときにこの書き方をした2か所が取り残された。
+
+    ⚠️ **走査先に `docs/records/` と `results/` が入っている。** そこは凍結物に
+    準じるので本文を直せない。つまり `noise_table.ROWS` から行を外すと、
+    直せない文書のせいでこの検査が赤になりうる。**行は消さずに足す**運用で避ける。
+    どうしても外すなら、外す前にその行を引用している箇所を grep すること。
     """
     known = noise_table.spreads()
     for sd, cv in INLINE_SPREAD.findall(path.read_text(encoding="utf-8")):

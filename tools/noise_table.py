@@ -18,9 +18,13 @@
 から出るのは 2.52。`s2hms()` を通した段（P0〜P4）はログの時点で秒未満が
 切り捨てられているので、整数がそのまま生値。
 
-対象にするのは **`experiments/` にログをコミットしてある門番だけ**。それより古い
-観測（記録 #6 の後退解析合計、記録 #8 の P1 など）はログが git 管理外なので
-再計算できない。数字は CLAUDE.md と各記録ノートにあり、この表には載せない。
+載せる条件は2つ。**このツールが読める形でログがコミットされていること**
+（`<ラベル>_main.log` と `console.log` を並べた門番の形。いまは `gate_12` /
+`gate_14` / `gate_15` の3つだけがこの形）と、**その段のコードが旧新でバイト同一で
+あること**。P4 は `gate_12` の、P2 は `gate_15` のレバーなので、その組み合わせは載せない。
+
+⚠️ **「全部載っている」とは言っていない。** 条件を満たす組み合わせは他にもある。
+条件を満たさない観測の置き場所は `docs/measurement-noise.md` に書いてある。
 
 使い方:
 
@@ -78,12 +82,15 @@ class Row:
 # ⚠️ 並べるのは「その段のコードがバイト同一な観測」だけ。
 #    評価しようとしている測定を雑音の基準に使うと循環する（CLAUDE.md）。
 ROWS = (
-    Row("**P2 後続生成**", "P2", "gate_14_c_retreat", "", "旧新6本（P2 は未変更）", True),
-    Row("P2 後続生成", "P2", "gate_15_c_successors", "old", "旧8本（新版は C 側なので別系列）"),
-    Row("**174段＋残差**", RESIDUAL, "gate_14_c_retreat", "old", "旧3本", True),
+    Row("P0 読み込み", "P0", "gate_12_c_predecessors", "", "旧新6本"),
     Row("P0 読み込み", "P0", "gate_15_c_successors", "old", "旧8本"),
-    Row("P1 索引", "P1", "gate_14_c_retreat", "", "旧新6本（buildIndex は未変更）"),
+    Row("P1 索引", "P1", "gate_12_c_predecessors", "", "旧新6本"),
+    Row("P1 索引", "P1", "gate_14_c_retreat", "", "旧新6本"),
+    Row("P2 後続生成", "P2", "gate_12_c_predecessors", "", "旧新6本"),
+    Row("**P2 後続生成**", "P2", "gate_14_c_retreat", "", "旧新6本", True),
+    Row("P2 後続生成", "P2", "gate_15_c_successors", "old", "旧8本"),
     Row("P4 前任リスト", "P4", "gate_15_c_successors", "old", "旧8本"),
+    Row("**174段＋残差**", RESIDUAL, "gate_14_c_retreat", "old", "旧3本", True),
 )
 
 

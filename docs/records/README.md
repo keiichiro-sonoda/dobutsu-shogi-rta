@@ -25,5 +25,6 @@ frontmatter の2か所にある。読み物としては記録表、機械可読�
 | [#13](13-c-expand.md) | [`impl/13_c_expand/`](../../impl/13_c_expand/) |
 | [#14](14-c-retreat.md) | [`impl/14_c_retreat/`](../../impl/14_c_retreat/) |
 | [#15](15-c-successors.md) | [`impl/15_c_successors/`](../../impl/15_c_successors/) |
+| [#16](16-raw-binary.md) | [`impl/16_raw_binary/`](../../impl/16_raw_binary/) |
 
 試行をまたぐ話は [`../measurement-noise.md`](../measurement-noise.md) にある。

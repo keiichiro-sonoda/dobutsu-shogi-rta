@@ -1,0 +1,3 @@
+when	numa_hint_faults	numa_hint_faults_local	numa_pages_migrated	numa_local	numa_other	pgmigrate_success	pgmigrate_fail	compact_stall	compact_success	compact_fail
+before	442782381	71678542	253882560	3011901431	59651761	283964781	23611	17	1	16
+after	445147803	71734765	256147191	3027465571	59908792	286427159	23612	17	1	16

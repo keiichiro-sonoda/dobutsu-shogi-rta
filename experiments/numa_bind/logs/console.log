@@ -1,0 +1,1426 @@
+=== 開始 n1a (plain) 2026-09-21T10:43:46+00:00 ===
+=== 終了 n1a 2026-09-21T10:52:11+00:00 (exit=0) ===
+後退解析の所要時間：503.06 秒
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 8:23.11
+	Maximum resident set size (kbytes): 14515788
+読み込んだ局面：246803167 (未知 99485568 / キャッチ 140298614 / トライ負け 7018985)
+P0 読み込み：00時間01分33秒
+P1 索引：00時間00分20秒
+辺の総数：938671869 (未発見の後続 0)
+P2 後続生成：00時間01分52秒
+P4 前任リスト：00時間02分46秒
+--- 段ごとの要約 ---
+P0	93.8757
+P1	20.9003
+P2_alloc	0.3148
+P2_loop	112.5225
+P2	112.8373
+P2_free	0.3628
+P4_count	23.2436
+P4_scatter	143.2858
+P4	166.5294
+R_dtm	0.6255
+loop174	101.8713
+R_uk	5.6589
+retreat_total	502.6612
+t_R_start	0.0000
+rss_R_start	14929920
+hwm_R_start	15060992
+min_R_start	2033
+maj_R_start	0
+t_P0	93.8757
+rss_P0	2022821888
+hwm_P0	4682084352
+min_P0	5754982
+maj_P0	0
+t_P1	114.7760
+rss_P1	10612760576
+hwm_P1	10612760576
+min_P1	7852135
+maj_P1	0
+t_P2_alloc	115.0908
+rss_P2_alloc	11110191104
+hwm_P2_alloc	11110191104
+min_P2_alloc	7973578
+maj_P2_alloc	0
+t_P2	227.6133
+rss_P2	14864879616
+hwm_P2	14864879616
+min_P2	8890340
+maj_P2	0
+t_P2_free	227.9761
+rss_P2_free	6274940928
+hwm_P2_free	14864166912
+min_P2_free	8890346
+maj_P2_free	0
+t_P4_count	251.2197
+rss_P4_count	7262154752
+hwm_P4_count	14864166912
+min_P4_count	9758749
+maj_P4_count	0
+t_P4	394.5055
+rss_P4	6864211968
+hwm_P4	14864166912
+min_P4	10938282
+maj_P4	0
+t_R_dtm	395.1310
+rss_R_dtm	7508959232
+hwm_R_dtm	14864166912
+min_R_dtm	11171125
+maj_R_dtm	0
+t_R_loop	497.0022
+rss_R_loop	7543320576
+hwm_R_loop	14864166912
+min_R_loop	13675837
+maj_R_loop	0
+t_R_uk	502.6612
+rss_R_uk	7500845056
+hwm_R_uk	14864166912
+min_R_uk	13761287
+maj_R_uk	0
+--- vmstat (前後) ---
+when	numa_hint_faults	numa_hint_faults_local	numa_pages_migrated	numa_local	numa_other	pgmigrate_success	pgmigrate_fail	compact_stall	compact_success	compact_fail
+before	433755758	70120377	246579783	2836621269	58130609	275745289	23038	17	1	16
+after	434924064	70797569	247070559	2850014414	58824518	276243453	23038	17	1	16
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+=== 完了 n1a 2026-09-21T10:52:11+00:00 ===
+=== 開始 n1b (numa) 2026-09-21T10:52:11+00:00 ===
+=== 終了 n1b 2026-09-21T11:00:25+00:00 (exit=0) ===
+後退解析の所要時間：491.49 秒
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 8:11.55
+	Maximum resident set size (kbytes): 14516264
+読み込んだ局面：246803167 (未知 99485568 / キャッチ 140298614 / トライ負け 7018985)
+P0 読み込み：00時間01分34秒
+P1 索引：00時間00分20秒
+辺の総数：938671869 (未発見の後続 0)
+P2 後続生成：00時間01分44秒
+P4 前任リスト：00時間02分44秒
+--- 段ごとの要約 ---
+P0	94.1936
+P1	20.6710
+P2_alloc	0.3076
+P2_loop	104.4630
+P2	104.7706
+P2_free	0.4023
+P4_count	22.4036
+P4_scatter	142.2811
+P4	164.6847
+R_dtm	0.5905
+loop174	100.3788
+R_uk	5.4007
+retreat_total	491.0922
+t_R_start	0.0000
+rss_R_start	14966784
+hwm_R_start	15097856
+min_R_start	2107
+maj_R_start	0
+t_P0	94.1936
+rss_P0	2022891520
+hwm_P0	4682571776
+min_P0	5755070
+maj_P0	0
+t_P1	114.8646
+rss_P1	10612830208
+hwm_P1	10612830208
+min_P1	7852223
+maj_P1	0
+t_P2_alloc	115.1722
+rss_P2_alloc	11110260736
+hwm_P2_alloc	11110260736
+min_P2_alloc	7973666
+maj_P2_alloc	0
+t_P2	219.6352
+rss_P2	14864949248
+hwm_P2	14864949248
+min_P2	8890338
+maj_P2	0
+t_P2_free	220.0375
+rss_P2_free	6275010560
+hwm_P2_free	14864654336
+min_P2_free	8890338
+maj_P2_free	0
+t_P4_count	242.4411
+rss_P4_count	7262224384
+hwm_P4_count	14864654336
+min_P4_count	9131357
+maj_P4_count	0
+t_P4	384.7222
+rss_P4	6864281600
+hwm_P4	14864654336
+min_P4	10048029
+maj_P4	0
+t_R_dtm	385.3128
+rss_R_dtm	7509028864
+hwm_R_dtm	14864654336
+min_R_dtm	10273944
+maj_R_dtm	0
+t_R_loop	485.6916
+rss_R_loop	7543398400
+hwm_R_loop	14864654336
+min_R_loop	12525700
+maj_R_loop	0
+t_R_uk	491.0922
+rss_R_uk	7500922880
+hwm_R_uk	14864654336
+min_R_uk	12611141
+maj_R_uk	0
+--- vmstat (前後) ---
+when	numa_hint_faults	numa_hint_faults_local	numa_pages_migrated	numa_local	numa_other	pgmigrate_success	pgmigrate_fail	compact_stall	compact_success	compact_fail
+before	434924089	70797590	247070560	2850581827	58824518	276243454	23038	17	1	16
+after	434962371	70832049	247071740	2864130335	58824540	276244634	23039	17	1	16
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+dat/ は残した (指紋の照合用): runs/exp_numa_bind_n1b/dat
+=== 完了 n1b 2026-09-21T11:00:25+00:00 ===
+=== 開始 n1c (numa) 2026-09-21T11:00:25+00:00 ===
+=== 終了 n1c 2026-09-21T11:08:39+00:00 (exit=0) ===
+後退解析の所要時間：492.09 秒
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 8:12.14
+	Maximum resident set size (kbytes): 14515852
+読み込んだ局面：246803167 (未知 99485568 / キャッチ 140298614 / トライ負け 7018985)
+P0 読み込み：00時間01分33秒
+P1 索引：00時間00分20秒
+辺の総数：938671869 (未発見の後続 0)
+P2 後続生成：00時間01分45秒
+P4 前任リスト：00時間02分45秒
+--- 段ごとの要約 ---
+P0	93.5506
+P1	20.5819
+P2_alloc	0.3125
+P2_loop	104.7197
+P2	105.0322
+P2_free	0.4061
+P4_count	22.5553
+P4_scatter	142.9897
+P4	165.5450
+R_dtm	0.5893
+loop174	100.5621
+R_uk	5.4230
+retreat_total	491.6901
+t_R_start	0.0000
+rss_R_start	14942208
+hwm_R_start	15073280
+min_R_start	2107
+maj_R_start	0
+t_P0	93.5506
+rss_P0	2022854656
+hwm_P0	4682117120
+min_P0	5755195
+maj_P0	0
+t_P1	114.1325
+rss_P1	10612793344
+hwm_P1	10612793344
+min_P1	7852348
+maj_P1	0
+t_P2_alloc	114.4450
+rss_P2_alloc	11110223872
+hwm_P2_alloc	11110223872
+min_P2_alloc	7973791
+maj_P2_alloc	0
+t_P2	219.1646
+rss_P2	14864912384
+hwm_P2	14864912384
+min_P2	8890464
+maj_P2	0
+t_P2_free	219.5707
+rss_P2_free	6274973696
+hwm_P2_free	14864232448
+min_P2_free	8890464
+maj_P2_free	0
+t_P4_count	242.1260
+rss_P4_count	7262187520
+hwm_P4_count	14864232448
+min_P4_count	9131483
+maj_P4_count	0
+t_P4	385.1157
+rss_P4	6864244736
+hwm_P4	14864232448
+min_P4	10048155
+maj_P4	0
+t_R_dtm	385.7050
+rss_R_dtm	7508992000
+hwm_R_dtm	14864232448
+min_R_dtm	10274070
+maj_R_dtm	0
+t_R_loop	486.2671
+rss_R_loop	7543382016
+hwm_R_loop	14864232448
+min_R_loop	12526098
+maj_R_loop	0
+t_R_uk	491.6901
+rss_R_uk	7499890688
+hwm_R_uk	14864232448
+min_R_uk	12611543
+maj_R_uk	0
+--- vmstat (前後) ---
+when	numa_hint_faults	numa_hint_faults_local	numa_pages_migrated	numa_local	numa_other	pgmigrate_success	pgmigrate_fail	compact_stall	compact_success	compact_fail
+before	434964677	70834352	247071741	2864697744	58824540	276244635	23039	17	1	16
+after	435000835	70865998	247074419	2878222113	58824559	276247313	23040	17	1	16
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+=== 完了 n1c 2026-09-21T11:08:39+00:00 ===
+=== 開始 n1d (plain) 2026-09-21T11:08:39+00:00 ===
+=== 終了 n1d 2026-09-21T11:17:27+00:00 (exit=0) ===
+後退解析の所要時間：525.95 秒
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 8:46.01
+	Maximum resident set size (kbytes): 14515804
+読み込んだ局面：246803167 (未知 99485568 / キャッチ 140298614 / トライ負け 7018985)
+P0 読み込み：00時間01分32秒
+P1 索引：00時間00分23秒
+辺の総数：938671869 (未発見の後続 0)
+P2 後続生成：00時間02分16秒
+P4 前任リスト：00時間02分45秒
+--- 段ごとの要約 ---
+P0	92.9247
+P1	23.6747
+P2_alloc	0.3894
+P2_loop	136.2009
+P2	136.5903
+P2_free	0.5950
+P4_count	22.5224
+P4_scatter	143.0917
+P4	165.6142
+R_dtm	0.6587
+loop174	100.0750
+R_uk	5.3849
+retreat_total	525.5174
+t_R_start	0.0000
+rss_R_start	14942208
+hwm_R_start	15073280
+min_R_start	2033
+maj_R_start	0
+t_P0	92.9247
+rss_P0	2022850560
+hwm_P0	4682080256
+min_P0	5754854
+maj_P0	0
+t_P1	116.5994
+rss_P1	10612789248
+hwm_P1	10612789248
+min_P1	7890351
+maj_P1	0
+t_P2_alloc	116.9887
+rss_P2_alloc	11110219776
+hwm_P2_alloc	11110219776
+min_P2_alloc	8011794
+maj_P2_alloc	0
+t_P2	253.1896
+rss_P2	14864908288
+hwm_P2	14864908288
+min_P2	11186943
+maj_P2	0
+t_P2_free	253.7846
+rss_P2_free	6274969600
+hwm_P2_free	14864183296
+min_P2_free	11186964
+maj_P2_free	0
+t_P4_count	276.3071
+rss_P4_count	7262183424
+hwm_P4_count	14864183296
+min_P4_count	11430018
+maj_P4_count	0
+t_P4	419.3988
+rss_P4	6864240640
+hwm_P4	14864183296
+min_P4	12347695
+maj_P4	0
+t_R_dtm	420.0575
+rss_R_dtm	7508987904
+hwm_R_dtm	14864183296
+min_R_dtm	12580506
+maj_R_dtm	0
+t_R_loop	520.1325
+rss_R_loop	7543332864
+hwm_R_loop	14864183296
+min_R_loop	14875006
+maj_R_loop	0
+t_R_uk	525.5174
+rss_R_uk	7500857344
+hwm_R_uk	14864183296
+min_R_uk	14960457
+maj_R_uk	0
+--- vmstat (前後) ---
+when	numa_hint_faults	numa_hint_faults_local	numa_pages_migrated	numa_local	numa_other	pgmigrate_success	pgmigrate_fail	compact_stall	compact_success	compact_fail
+before	435000977	70866106	247074429	2878789882	58824559	276247323	23040	17	1	16
+after	437376815	70935339	249341778	2894297211	59154625	278877204	23231	17	1	16
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+=== 完了 n1d 2026-09-21T11:17:27+00:00 ===
+=== 開始 n2a (plain) 2026-09-21T11:17:27+00:00 ===
+=== 終了 n2a 2026-09-21T11:25:43+00:00 (exit=0) ===
+後退解析の所要時間：493.78 秒
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 8:13.83
+	Maximum resident set size (kbytes): 14516052
+読み込んだ局面：246803167 (未知 99485568 / キャッチ 140298614 / トライ負け 7018985)
+P0 読み込み：00時間01分34秒
+P1 索引：00時間00分20秒
+辺の総数：938671869 (未発見の後続 0)
+P2 後続生成：00時間01分45秒
+P4 前任リスト：00時間02分45秒
+--- 段ごとの要約 ---
+P0	94.1844
+P1	20.8077
+P2_alloc	0.3100
+P2_loop	105.1355
+P2	105.4455
+P2_free	0.4069
+P4_count	22.5313
+P4_scatter	143.5522
+P4	166.0835
+R_dtm	0.5878
+loop174	100.2017
+R_uk	5.6630
+retreat_total	493.3805
+t_R_start	0.0000
+rss_R_start	14966784
+hwm_R_start	15097856
+min_R_start	2033
+maj_R_start	0
+t_P0	94.1844
+rss_P0	2022875136
+hwm_P0	4682473472
+min_P0	5755047
+maj_P0	0
+t_P1	114.9921
+rss_P1	10612813824
+hwm_P1	10612813824
+min_P1	7852200
+maj_P1	0
+t_P2_alloc	115.3021
+rss_P2_alloc	11110244352
+hwm_P2_alloc	11110244352
+min_P2_alloc	7973643
+maj_P2_alloc	0
+t_P2	220.4376
+rss_P2	14864932864
+hwm_P2	14864932864
+min_P2	8891339
+maj_P2	0
+t_P2_free	220.8445
+rss_P2_free	6274994176
+hwm_P2_free	14864437248
+min_P2_free	8891339
+maj_P2_free	0
+t_P4_count	243.3758
+rss_P4_count	7262208000
+hwm_P4_count	14864437248
+min_P4_count	9132358
+maj_P4_count	0
+t_P4	386.9280
+rss_P4	6864265216
+hwm_P4	14864437248
+min_P4	10050145
+maj_P4	0
+t_R_dtm	387.5157
+rss_R_dtm	7509012480
+hwm_R_dtm	14864437248
+min_R_dtm	10276076
+maj_R_dtm	0
+t_R_loop	487.7175
+rss_R_loop	7543390208
+hwm_R_loop	14864437248
+min_R_loop	12528204
+maj_R_loop	0
+t_R_uk	493.3805
+rss_R_uk	7499046912
+hwm_R_uk	14864437248
+min_R_uk	12613648
+maj_R_uk	0
+--- vmstat (前後) ---
+when	numa_hint_faults	numa_hint_faults_local	numa_pages_migrated	numa_local	numa_other	pgmigrate_success	pgmigrate_fail	compact_stall	compact_success	compact_fail
+before	437377020	70935497	249341787	2894865773	59154625	278877213	23231	17	1	16
+after	437424375	70969474	249343906	2908404372	59154652	278879332	23232	17	1	16
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+=== 完了 n2a 2026-09-21T11:25:44+00:00 ===
+=== 開始 n2b (numa) 2026-09-21T11:25:44+00:00 ===
+=== 終了 n2b 2026-09-21T11:33:56+00:00 (exit=0) ===
+後退解析の所要時間：490.68 秒
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 8:10.74
+	Maximum resident set size (kbytes): 14515348
+読み込んだ局面：246803167 (未知 99485568 / キャッチ 140298614 / トライ負け 7018985)
+P0 読み込み：00時間01分33秒
+P1 索引：00時間00分20秒
+辺の総数：938671869 (未発見の後続 0)
+P2 後続生成：00時間01分44秒
+P4 前任リスト：00時間02分44秒
+--- 段ごとの要約 ---
+P0	93.9618
+P1	20.5637
+P2_alloc	0.3114
+P2_loop	103.7451
+P2	104.0564
+P2_free	0.4028
+P4_count	22.3994
+P4_scatter	142.3364
+P4	164.7358
+R_dtm	0.5890
+loop174	100.5022
+R_uk	5.4644
+retreat_total	490.2760
+t_R_start	0.0000
+rss_R_start	14938112
+hwm_R_start	15069184
+min_R_start	2107
+maj_R_start	0
+t_P0	93.9618
+rss_P0	2022866944
+hwm_P0	4682002432
+min_P0	5754987
+maj_P0	0
+t_P1	114.5255
+rss_P1	10612805632
+hwm_P1	10612805632
+min_P1	7852140
+maj_P1	0
+t_P2_alloc	114.8368
+rss_P2_alloc	11110236160
+hwm_P2_alloc	11110236160
+min_P2_alloc	7973583
+maj_P2_alloc	0
+t_P2	218.5819
+rss_P2	14864924672
+hwm_P2	14864924672
+min_P2	8890255
+maj_P2	0
+t_P2_free	218.9847
+rss_P2_free	6274985984
+hwm_P2_free	14863716352
+min_P2_free	8890255
+maj_P2_free	0
+t_P4_count	241.3841
+rss_P4_count	7262199808
+hwm_P4_count	14863716352
+min_P4_count	9131274
+maj_P4_count	0
+t_P4	383.7205
+rss_P4	6864257024
+hwm_P4	14863716352
+min_P4	10047946
+maj_P4	0
+t_R_dtm	384.3095
+rss_R_dtm	7509004288
+hwm_R_dtm	14863716352
+min_R_dtm	10273861
+maj_R_dtm	0
+t_R_loop	484.8117
+rss_R_loop	7543365632
+hwm_R_loop	14863716352
+min_R_loop	12524641
+maj_R_loop	0
+t_R_uk	490.2760
+rss_R_uk	7498940416
+hwm_R_uk	14863716352
+min_R_uk	12610082
+maj_R_uk	0
+--- vmstat (前後) ---
+when	numa_hint_faults	numa_hint_faults_local	numa_pages_migrated	numa_local	numa_other	pgmigrate_success	pgmigrate_fail	compact_stall	compact_success	compact_fail
+before	437424400	70969489	249343906	2908972807	59154652	278879332	23232	17	1	16
+after	437476579	71020630	249344614	2922487524	59154660	278880040	23233	17	1	16
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+=== 完了 n2b 2026-09-21T11:33:57+00:00 ===
+=== 開始 n2c (numa) 2026-09-21T11:33:57+00:00 ===
+=== 終了 n2c 2026-09-21T11:42:07+00:00 (exit=0) ===
+後退解析の所要時間：488.11 秒
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 8:08.17
+	Maximum resident set size (kbytes): 14515588
+読み込んだ局面：246803167 (未知 99485568 / キャッチ 140298614 / トライ負け 7018985)
+P0 読み込み：00時間01分34秒
+P1 索引：00時間00分20秒
+辺の総数：938671869 (未発見の後続 0)
+P2 後続生成：00時間01分43秒
+P4 前任リスト：00時間02分42秒
+--- 段ごとの要約 ---
+P0	94.6753
+P1	20.6190
+P2_alloc	0.3118
+P2_loop	103.6580
+P2	103.9698
+P2_free	0.4104
+P4_count	22.2121
+P4_scatter	140.6266
+P4	162.8387
+R_dtm	0.5933
+loop174	99.2282
+R_uk	5.3774
+retreat_total	487.7121
+t_R_start	0.0000
+rss_R_start	14917632
+hwm_R_start	15048704
+min_R_start	2108
+maj_R_start	0
+t_P0	94.6753
+rss_P0	2022809600
+hwm_P0	4682117120
+min_P0	5755245
+maj_P0	0
+t_P1	115.2943
+rss_P1	10612748288
+hwm_P1	10612748288
+min_P1	7852398
+maj_P1	0
+t_P2_alloc	115.6061
+rss_P2_alloc	11110178816
+hwm_P2_alloc	11110178816
+min_P2_alloc	7973841
+maj_P2_alloc	0
+t_P2	219.2641
+rss_P2	14864867328
+hwm_P2	14864867328
+min_P2	8890513
+maj_P2	0
+t_P2_free	219.6745
+rss_P2_free	6274928640
+hwm_P2_free	14863962112
+min_P2_free	8890513
+maj_P2_free	0
+t_P4_count	241.8866
+rss_P4_count	7262142464
+hwm_P4_count	14863962112
+min_P4_count	9131532
+maj_P4_count	0
+t_P4	382.5132
+rss_P4	6864199680
+hwm_P4	14863962112
+min_P4	10048204
+maj_P4	0
+t_R_dtm	383.1065
+rss_R_dtm	7508946944
+hwm_R_dtm	14863962112
+min_R_dtm	10274119
+maj_R_dtm	0
+t_R_loop	482.3347
+rss_R_loop	7543345152
+hwm_R_loop	14863962112
+min_R_loop	12526463
+maj_R_loop	0
+t_R_uk	487.7121
+rss_R_uk	7499018240
+hwm_R_uk	14863962112
+min_R_uk	12611908
+maj_R_uk	0
+--- vmstat (前後) ---
+when	numa_hint_faults	numa_hint_faults_local	numa_pages_migrated	numa_local	numa_other	pgmigrate_success	pgmigrate_fail	compact_stall	compact_success	compact_fail
+before	437476815	71020865	249344615	2923056092	59154660	278880041	23233	17	1	16
+after	437484641	71028411	249344803	2936650855	59154683	278880229	23234	17	1	16
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+=== 完了 n2c 2026-09-21T11:42:07+00:00 ===
+=== 開始 n2d (plain) 2026-09-21T11:42:07+00:00 ===
+=== 終了 n2d 2026-09-21T11:51:01+00:00 (exit=0) ===
+後退解析の所要時間：532.07 秒
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 8:52.13
+	Maximum resident set size (kbytes): 14515612
+読み込んだ局面：246803167 (未知 99485568 / キャッチ 140298614 / トライ負け 7018985)
+P0 読み込み：00時間01分34秒
+P1 索引：00時間00分21秒
+辺の総数：938671869 (未発見の後続 0)
+P2 後続生成：00時間02分23秒
+P4 前任リスト：00時間02分45秒
+--- 段ごとの要約 ---
+P0	94.0938
+P1	21.1544
+P2_alloc	0.3924
+P2_loop	143.6023
+P2	143.9947
+P2_free	0.5944
+P4_count	22.3324
+P4_scatter	143.1918
+P4	165.5243
+R_dtm	0.6238
+loop174	100.2646
+R_uk	5.3978
+retreat_total	531.6477
+t_R_start	0.0000
+rss_R_start	14938112
+hwm_R_start	15069184
+min_R_start	2033
+maj_R_start	0
+t_P0	94.0938
+rss_P0	2022850560
+hwm_P0	4682121216
+min_P0	5755121
+maj_P0	0
+t_P1	115.2482
+rss_P1	10612789248
+hwm_P1	10612789248
+min_P1	7888978
+maj_P1	0
+t_P2_alloc	115.6405
+rss_P2_alloc	11110219776
+hwm_P2_alloc	11110219776
+min_P2_alloc	8010421
+maj_P2_alloc	0
+t_P2	259.2429
+rss_P2	14864908288
+hwm_P2	14864908288
+min_P2	11154409
+maj_P2	0
+t_P2_free	259.8373
+rss_P2_free	6274969600
+hwm_P2_free	14863986688
+min_P2_free	11154419
+maj_P2_free	0
+t_P4_count	282.1697
+rss_P4_count	7262183424
+hwm_P4_count	14863986688
+min_P4_count	11397344
+maj_P4_count	0
+t_P4	425.3615
+rss_P4	6864240640
+hwm_P4	14863986688
+min_P4	12314017
+maj_P4	0
+t_R_dtm	425.9854
+rss_R_dtm	7508987904
+hwm_R_dtm	14863986688
+min_R_dtm	12546822
+maj_R_dtm	0
+t_R_loop	526.2499
+rss_R_loop	7543369728
+hwm_R_loop	14863986688
+min_R_loop	14836843
+maj_R_loop	0
+t_R_uk	531.6477
+rss_R_uk	7499878400
+hwm_R_uk	14863986688
+min_R_uk	14922299
+maj_R_uk	0
+--- vmstat (前後) ---
+when	numa_hint_faults	numa_hint_faults_local	numa_pages_migrated	numa_local	numa_other	pgmigrate_success	pgmigrate_fail	compact_stall	compact_success	compact_fail
+before	437484682	71028451	249344804	2937219024	59154683	278880230	23234	17	1	16
+after	439844618	71078010	251613438	2952817954	59389285	281385769	23421	17	1	16
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+=== 完了 n2d 2026-09-21T11:51:01+00:00 ===
+=== 開始 n3a (plain) 2026-09-21T11:51:01+00:00 ===
+=== 終了 n3a 2026-09-21T11:59:14+00:00 (exit=0) ===
+後退解析の所要時間：490.34 秒
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 8:10.39
+	Maximum resident set size (kbytes): 14515484
+読み込んだ局面：246803167 (未知 99485568 / キャッチ 140298614 / トライ負け 7018985)
+P0 読み込み：00時間01分33秒
+P1 索引：00時間00分20秒
+辺の総数：938671869 (未発見の後続 0)
+P2 後続生成：00時間01分44秒
+P4 前任リスト：00時間02分44秒
+--- 段ごとの要約 ---
+P0	93.6956
+P1	20.5573
+P2_alloc	0.3032
+P2_loop	103.8382
+P2	104.1414
+P2_free	0.4054
+P4_count	22.2658
+P4_scatter	142.7723
+P4	165.0381
+R_dtm	0.6129
+loop174	100.0186
+R_uk	5.4656
+retreat_total	489.9349
+t_R_start	0.0000
+rss_R_start	14897152
+hwm_R_start	15028224
+min_R_start	2033
+maj_R_start	0
+t_P0	93.6956
+rss_P0	2022793216
+hwm_P0	4681965568
+min_P0	5755019
+maj_P0	0
+t_P1	114.2529
+rss_P1	10612731904
+hwm_P1	10612731904
+min_P1	7852172
+maj_P1	0
+t_P2_alloc	114.5561
+rss_P2_alloc	11110162432
+hwm_P2_alloc	11110162432
+min_P2_alloc	7973615
+maj_P2_alloc	0
+t_P2	218.3943
+rss_P2	14864850944
+hwm_P2	14864850944
+min_P2	8890799
+maj_P2	0
+t_P2_free	218.7997
+rss_P2_free	6274912256
+hwm_P2_free	14863855616
+min_P2_free	8890799
+maj_P2_free	0
+t_P4_count	241.0655
+rss_P4_count	7262126080
+hwm_P4_count	14863855616
+min_P4_count	9131818
+maj_P4_count	0
+t_P4	383.8378
+rss_P4	6864183296
+hwm_P4	14863855616
+min_P4	10506605
+maj_P4	0
+t_R_dtm	384.4507
+rss_R_dtm	7508930560
+hwm_R_dtm	14863855616
+min_R_dtm	10732520
+maj_R_dtm	0
+t_R_loop	484.4693
+rss_R_loop	7543308288
+hwm_R_loop	14863855616
+min_R_loop	12983571
+maj_R_loop	0
+t_R_uk	489.9349
+rss_R_uk	7498883072
+hwm_R_uk	14863855616
+min_R_uk	13069012
+maj_R_uk	0
+--- vmstat (前後) ---
+when	numa_hint_faults	numa_hint_faults_local	numa_pages_migrated	numa_local	numa_other	pgmigrate_success	pgmigrate_fail	compact_stall	compact_success	compact_fail
+before	439845186	71078345	251613540	2953385515	59389285	281385871	23421	17	1	16
+after	440351877	71582765	251614190	2966917835	59389301	281386521	23422	17	1	16
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+=== 完了 n3a 2026-09-21T11:59:14+00:00 ===
+=== 開始 n3b (numa) 2026-09-21T11:59:14+00:00 ===
+=== 終了 n3b 2026-09-21T12:07:25+00:00 (exit=0) ===
+後退解析の所要時間：489.37 秒
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 8:09.43
+	Maximum resident set size (kbytes): 14515128
+読み込んだ局面：246803167 (未知 99485568 / キャッチ 140298614 / トライ負け 7018985)
+P0 読み込み：00時間01分33秒
+P1 索引：00時間00分20秒
+辺の総数：938671869 (未発見の後続 0)
+P2 後続生成：00時間01分43秒
+P4 前任リスト：00時間02分44秒
+--- 段ごとの要約 ---
+P0	93.3930
+P1	20.6005
+P2_alloc	0.3147
+P2_loop	103.0030
+P2	103.3177
+P2_free	0.4063
+P4_count	22.4393
+P4_scatter	142.4066
+P4	164.8459
+R_dtm	0.5986
+loop174	100.3408
+R_uk	5.4544
+retreat_total	488.9572
+t_R_start	0.0000
+rss_R_start	14905344
+hwm_R_start	15036416
+min_R_start	2107
+maj_R_start	0
+t_P0	93.3930
+rss_P0	2022780928
+hwm_P0	4681740288
+min_P0	5755084
+maj_P0	0
+t_P1	113.9935
+rss_P1	10612719616
+hwm_P1	10612719616
+min_P1	7852237
+maj_P1	0
+t_P2_alloc	114.3082
+rss_P2_alloc	11110150144
+hwm_P2_alloc	11110150144
+min_P2_alloc	7973680
+maj_P2_alloc	0
+t_P2	217.3112
+rss_P2	14864838656
+hwm_P2	14864838656
+min_P2	8890352
+maj_P2	0
+t_P2_free	217.7175
+rss_P2_free	6274899968
+hwm_P2_free	14863491072
+min_P2_free	8890352
+maj_P2_free	0
+t_P4_count	240.1568
+rss_P4_count	7262113792
+hwm_P4_count	14863491072
+min_P4_count	9131371
+maj_P4_count	0
+t_P4	382.5634
+rss_P4	6864171008
+hwm_P4	14863491072
+min_P4	10048043
+maj_P4	0
+t_R_dtm	383.1620
+rss_R_dtm	7508918272
+hwm_R_dtm	14863491072
+min_R_dtm	10273958
+maj_R_dtm	0
+t_R_loop	483.5028
+rss_R_loop	7543296000
+hwm_R_loop	14863491072
+min_R_loop	12525009
+maj_R_loop	0
+t_R_uk	488.9572
+rss_R_uk	7498870784
+hwm_R_uk	14863491072
+min_R_uk	12610450
+maj_R_uk	0
+--- vmstat (前後) ---
+when	numa_hint_faults	numa_hint_faults_local	numa_pages_migrated	numa_local	numa_other	pgmigrate_success	pgmigrate_fail	compact_stall	compact_success	compact_fail
+before	440351926	71582808	251614193	2967486013	59389301	281386524	23422	17	1	16
+after	440391069	71606251	251616764	2981008997	59389320	281389287	23423	17	1	16
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+=== 完了 n3b 2026-09-21T12:07:26+00:00 ===
+=== 開始 n3c (numa) 2026-09-21T12:07:26+00:00 ===
+=== 終了 n3c 2026-09-21T12:15:35+00:00 (exit=0) ===
+後退解析の所要時間：487.11 秒
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 8:07.17
+	Maximum resident set size (kbytes): 14516116
+読み込んだ局面：246803167 (未知 99485568 / キャッチ 140298614 / トライ負け 7018985)
+P0 読み込み：00時間01分33秒
+P1 索引：00時間00分20秒
+辺の総数：938671869 (未発見の後続 0)
+P2 後続生成：00時間01分43秒
+P4 前任リスト：00時間02分42秒
+--- 段ごとの要約 ---
+P0	93.4352
+P1	20.5347
+P2_alloc	0.3086
+P2_loop	103.0403
+P2	103.3489
+P2_free	0.4051
+P4_count	22.3240
+P4_scatter	140.5471
+P4	162.8711
+R_dtm	0.5916
+loop174	100.1389
+R_uk	5.3783
+retreat_total	486.7039
+t_R_start	0.0000
+rss_R_start	14929920
+hwm_R_start	15060992
+min_R_start	2107
+maj_R_start	0
+t_P0	93.4352
+rss_P0	2022821888
+hwm_P0	4682117120
+min_P0	5755489
+maj_P0	0
+t_P1	113.9698
+rss_P1	10612760576
+hwm_P1	10612760576
+min_P1	7852642
+maj_P1	0
+t_P2_alloc	114.2784
+rss_P2_alloc	11110191104
+hwm_P2_alloc	11110191104
+min_P2_alloc	7974085
+maj_P2_alloc	0
+t_P2	217.3187
+rss_P2	14864879616
+hwm_P2	14864879616
+min_P2	8890757
+maj_P2	0
+t_P2_free	217.7239
+rss_P2_free	6274940928
+hwm_P2_free	14864502784
+min_P2_free	8890757
+maj_P2_free	0
+t_P4_count	240.0479
+rss_P4_count	7262154752
+hwm_P4_count	14864502784
+min_P4_count	9131776
+maj_P4_count	0
+t_P4	380.5950
+rss_P4	6864211968
+hwm_P4	14864502784
+min_P4	10048448
+maj_P4	0
+t_R_dtm	381.1866
+rss_R_dtm	7508959232
+hwm_R_dtm	14864502784
+min_R_dtm	10274363
+maj_R_dtm	0
+t_R_loop	481.3255
+rss_R_loop	7543357440
+hwm_R_loop	14864502784
+min_R_loop	12525431
+maj_R_loop	0
+t_R_uk	486.7039
+rss_R_uk	7498948608
+hwm_R_uk	14864502784
+min_R_uk	12610876
+maj_R_uk	0
+--- vmstat (前後) ---
+when	numa_hint_faults	numa_hint_faults_local	numa_pages_migrated	numa_local	numa_other	pgmigrate_success	pgmigrate_fail	compact_stall	compact_success	compact_fail
+before	440391105	71606267	251616770	2981577590	59389320	281389293	23423	17	1	16
+after	440435260	71646370	251618143	2995088448	59389347	281391050	23424	17	1	16
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+=== 完了 n3c 2026-09-21T12:15:35+00:00 ===
+=== 開始 n3d (plain) 2026-09-21T12:15:35+00:00 ===
+=== 終了 n3d 2026-09-21T12:24:22+00:00 (exit=0) ===
+後退解析の所要時間：525.00 秒
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 8:45.06
+	Maximum resident set size (kbytes): 14515808
+読み込んだ局面：246803167 (未知 99485568 / キャッチ 140298614 / トライ負け 7018985)
+P0 読み込み：00時間01分34秒
+P1 索引：00時間00分23秒
+辺の総数：938671869 (未発見の後続 0)
+P2 後続生成：00時間02分11秒
+P4 前任リスト：00時間02分46秒
+--- 段ごとの要約 ---
+P0	94.7379
+P1	23.7825
+P2_alloc	0.3876
+P2_loop	131.3013
+P2	131.6889
+P2_free	0.6055
+P4_count	22.7162
+P4_scatter	143.5394
+P4	166.2557
+R_dtm	0.6193
+loop174	101.4368
+R_uk	5.4522
+retreat_total	524.5787
+t_R_start	0.0000
+rss_R_start	14979072
+hwm_R_start	15175680
+min_R_start	2035
+maj_R_start	0
+t_P0	94.7379
+rss_P0	2022957056
+hwm_P0	4682547200
+min_P0	5754865
+maj_P0	0
+t_P1	118.5205
+rss_P1	10612895744
+hwm_P1	10612895744
+min_P1	7897817
+maj_P1	0
+t_P2_alloc	118.9081
+rss_P2_alloc	11110326272
+hwm_P2_alloc	11110326272
+min_P2_alloc	8019260
+maj_P2_alloc	0
+t_P2	250.2094
+rss_P2	14865014784
+hwm_P2	14865014784
+min_P2	11122981
+maj_P2	0
+t_P2_free	250.8148
+rss_P2_free	6275076096
+hwm_P2_free	14864187392
+min_P2_free	11122991
+maj_P2_free	0
+t_P4_count	273.5310
+rss_P4_count	7262289920
+hwm_P4_count	14864187392
+min_P4_count	11367336
+maj_P4_count	0
+t_P4	417.0705
+rss_P4	6864347136
+hwm_P4	14864187392
+min_P4	12287983
+maj_P4	0
+t_R_dtm	417.6898
+rss_R_dtm	7509094400
+hwm_R_dtm	14864187392
+min_R_dtm	12520789
+maj_R_dtm	0
+t_R_loop	519.1265
+rss_R_loop	7543439360
+hwm_R_loop	14864187392
+min_R_loop	14840972
+maj_R_loop	0
+t_R_uk	524.5787
+rss_R_uk	7500963840
+hwm_R_uk	14864187392
+min_R_uk	14926422
+maj_R_uk	0
+--- vmstat (前後) ---
+when	numa_hint_faults	numa_hint_faults_local	numa_pages_migrated	numa_local	numa_other	pgmigrate_success	pgmigrate_fail	compact_stall	compact_success	compact_fail
+before	440435312	71646422	251618143	2995656575	59389347	281391050	23424	17	1	16
+after	442782289	71678452	253882560	3011334171	59651761	283964781	23611	17	1	16
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+=== 完了 n3d 2026-09-21T12:24:23+00:00 ===
+=== 開始 n4a (plain) 2026-09-21T12:24:23+00:00 ===
+=== 終了 n4a 2026-09-21T12:33:08+00:00 (exit=0) ===
+後退解析の所要時間：523.12 秒
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 8:43.17
+	Maximum resident set size (kbytes): 14515820
+読み込んだ局面：246803167 (未知 99485568 / キャッチ 140298614 / トライ負け 7018985)
+P0 読み込み：00時間01分32秒
+P1 索引：00時間00分21秒
+辺の総数：938671869 (未発見の後続 0)
+P2 後続生成：00時間02分16秒
+P4 前任リスト：00時間02分44秒
+--- 段ごとの要約 ---
+P0	92.9298
+P1	21.0532
+P2_alloc	0.3904
+P2_loop	135.7266
+P2	136.1170
+P2_free	0.5992
+P4_count	22.5021
+P4_scatter	142.1473
+P4	164.6493
+R_dtm	0.6246
+loop174	101.2704
+R_uk	5.4463
+retreat_total	522.6899
+t_R_start	0.0000
+rss_R_start	14934016
+hwm_R_start	15065088
+min_R_start	2032
+maj_R_start	0
+t_P0	92.9298
+rss_P0	2022862848
+hwm_P0	4681842688
+min_P0	5754925
+maj_P0	0
+t_P1	113.9830
+rss_P1	10612801536
+hwm_P1	10612801536
+min_P1	7896337
+maj_P1	0
+t_P2_alloc	114.3734
+rss_P2_alloc	11110232064
+hwm_P2_alloc	11110232064
+min_P2_alloc	8017780
+maj_P2_alloc	0
+t_P2	250.1001
+rss_P2	14864920576
+hwm_P2	14864920576
+min_P2	11202329
+maj_P2	0
+t_P2_free	250.6992
+rss_P2_free	6274981888
+hwm_P2_free	14864199680
+min_P2_free	11202338
+maj_P2_free	0
+t_P4_count	273.2013
+rss_P4_count	7262195712
+hwm_P4_count	14864199680
+min_P4_count	11446618
+maj_P4_count	0
+t_P4	415.3486
+rss_P4	6864252928
+hwm_P4	14864199680
+min_P4	12366946
+maj_P4	0
+t_R_dtm	415.9732
+rss_R_dtm	7509000192
+hwm_R_dtm	14864199680
+min_R_dtm	12599752
+maj_R_dtm	0
+t_R_loop	517.2436
+rss_R_loop	7543361536
+hwm_R_loop	14864199680
+min_R_loop	14887571
+maj_R_loop	0
+t_R_uk	522.6899
+rss_R_uk	7499018240
+hwm_R_uk	14864199680
+min_R_uk	14973021
+maj_R_uk	0
+--- vmstat (前後) ---
+when	numa_hint_faults	numa_hint_faults_local	numa_pages_migrated	numa_local	numa_other	pgmigrate_success	pgmigrate_fail	compact_stall	compact_success	compact_fail
+before	442782381	71678542	253882560	3011901431	59651761	283964781	23611	17	1	16
+after	445147803	71734765	256147191	3027465571	59908792	286427159	23612	17	1	16
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+=== 完了 n4a 2026-09-21T12:33:08+00:00 ===
+=== 開始 n4b (numa) 2026-09-21T12:33:08+00:00 ===
+=== 終了 n4b 2026-09-21T12:41:16+00:00 (exit=0) ===
+後退解析の所要時間：486.49 秒
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 8:06.54
+	Maximum resident set size (kbytes): 14516264
+読み込んだ局面：246803167 (未知 99485568 / キャッチ 140298614 / トライ負け 7018985)
+P0 読み込み：00時間01分33秒
+P1 索引：00時間00分20秒
+辺の総数：938671869 (未発見の後続 0)
+P2 後続生成：00時間01分44秒
+P4 前任リスト：00時間02分42秒
+--- 段ごとの要約 ---
+P0	93.2358
+P1	20.3578
+P2_alloc	0.3055
+P2_loop	104.3789
+P2	104.6844
+P2_free	0.3833
+P4_count	22.1278
+P4_scatter	140.3850
+P4	162.5128
+R_dtm	0.5977
+loop174	98.9341
+R_uk	5.4029
+retreat_total	486.1087
+t_R_start	0.0000
+rss_R_start	14938112
+hwm_R_start	15069184
+min_R_start	2106
+maj_R_start	0
+t_P0	93.2358
+rss_P0	2022862848
+hwm_P0	4682113024
+min_P0	5754995
+maj_P0	0
+t_P1	113.5936
+rss_P1	10612801536
+hwm_P1	10612801536
+min_P1	7852148
+maj_P1	0
+t_P2_alloc	113.8991
+rss_P2_alloc	11110232064
+hwm_P2_alloc	11110232064
+min_P2_alloc	7973591
+maj_P2_alloc	0
+t_P2	218.2780
+rss_P2	14864920576
+hwm_P2	14864920576
+min_P2	8890291
+maj_P2	0
+t_P2_free	218.6612
+rss_P2_free	6274981888
+hwm_P2_free	14864654336
+min_P2_free	8890291
+maj_P2_free	0
+t_P4_count	240.7890
+rss_P4_count	7262195712
+hwm_P4_count	14864654336
+min_P4_count	9131310
+maj_P4_count	0
+t_P4	381.1741
+rss_P4	6864252928
+hwm_P4	14864654336
+min_P4	10047982
+maj_P4	0
+t_R_dtm	381.7717
+rss_R_dtm	7509000192
+hwm_R_dtm	14864654336
+min_R_dtm	10273897
+maj_R_dtm	0
+t_R_loop	480.7058
+rss_R_loop	7543361536
+hwm_R_loop	14864654336
+min_R_loop	12525981
+maj_R_loop	0
+t_R_uk	486.1087
+rss_R_uk	7499018240
+hwm_R_uk	14864654336
+min_R_uk	12611422
+maj_R_uk	0
+--- vmstat (前後) ---
+when	numa_hint_faults	numa_hint_faults_local	numa_pages_migrated	numa_local	numa_other	pgmigrate_success	pgmigrate_fail	compact_stall	compact_success	compact_fail
+before	445147851	71734810	256147191	3028033466	59908792	286427159	23612	17	1	16
+after	445214173	71796905	256148979	3041663704	59910701	286460763	24444	17	1	16
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+=== 完了 n4b 2026-09-21T12:41:17+00:00 ===
+=== 開始 n4c (numa) 2026-09-21T12:41:17+00:00 ===
+=== 終了 n4c 2026-09-21T12:49:33+00:00 (exit=0) ===
+後退解析の所要時間：493.76 秒
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 8:13.81
+	Maximum resident set size (kbytes): 14516268
+読み込んだ局面：246803167 (未知 99485568 / キャッチ 140298614 / トライ負け 7018985)
+P0 読み込み：00時間01分34秒
+P1 索引：00時間00分20秒
+辺の総数：938671869 (未発見の後続 0)
+P2 後続生成：00時間01分44秒
+P4 前任リスト：00時間02分46秒
+--- 段ごとの要約 ---
+P0	94.0477
+P1	20.7964
+P2_alloc	0.3130
+P2_loop	104.1582
+P2	104.4712
+P2_free	0.4158
+P4_count	22.7231
+P4_scatter	144.2491
+P4	166.9722
+R_dtm	0.5913
+loop174	100.6422
+R_uk	5.4035
+retreat_total	493.3401
+t_R_start	0.0000
+rss_R_start	14942208
+hwm_R_start	15073280
+min_R_start	2108
+maj_R_start	0
+t_P0	94.0477
+rss_P0	2022866944
+hwm_P0	4682117120
+min_P0	5754927
+maj_P0	0
+t_P1	114.8440
+rss_P1	10612805632
+hwm_P1	10612805632
+min_P1	7852080
+maj_P1	0
+t_P2_alloc	115.1570
+rss_P2_alloc	11110236160
+hwm_P2_alloc	11110236160
+min_P2_alloc	7973523
+maj_P2_alloc	0
+t_P2	219.3152
+rss_P2	14864924672
+hwm_P2	14864924672
+min_P2	8890197
+maj_P2	0
+t_P2_free	219.7310
+rss_P2_free	6274985984
+hwm_P2_free	14864658432
+min_P2_free	8890197
+maj_P2_free	0
+t_P4_count	242.4541
+rss_P4_count	7262199808
+hwm_P4_count	14864658432
+min_P4_count	9131216
+maj_P4_count	0
+t_P4	386.7032
+rss_P4	6864257024
+hwm_P4	14864658432
+min_P4	10047888
+maj_P4	0
+t_R_dtm	387.2944
+rss_R_dtm	7509004288
+hwm_R_dtm	14864658432
+min_R_dtm	10273803
+maj_R_dtm	0
+t_R_loop	487.9367
+rss_R_loop	7543365632
+hwm_R_loop	14864658432
+min_R_loop	12525225
+maj_R_loop	0
+t_R_uk	493.3401
+rss_R_uk	7499022336
+hwm_R_uk	14864658432
+min_R_uk	12610666
+maj_R_uk	0
+--- vmstat (前後) ---
+when	numa_hint_faults	numa_hint_faults_local	numa_pages_migrated	numa_local	numa_other	pgmigrate_success	pgmigrate_fail	compact_stall	compact_success	compact_fail
+before	445214689	71797298	256149074	3042231917	59910701	286460858	24444	17	1	16
+after	445238178	71818184	256150312	3055764034	59910723	286462144	24445	17	1	16
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+=== 完了 n4c 2026-09-21T12:49:33+00:00 ===
+=== 開始 n4d (plain) 2026-09-21T12:49:33+00:00 ===
+=== 終了 n4d 2026-09-21T12:58:18+00:00 (exit=0) ===
+後退解析の所要時間：523.43 秒
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 8:43.49
+	Maximum resident set size (kbytes): 14515808
+読み込んだ局面：246803167 (未知 99485568 / キャッチ 140298614 / トライ負け 7018985)
+P0 読み込み：00時間01分34秒
+P1 索引：00時間00分21秒
+辺の総数：938671869 (未発見の後続 0)
+P2 後続生成：00時間02分14秒
+P4 前任リスト：00時間02分45秒
+--- 段ごとの要約 ---
+P0	94.1094
+P1	21.1712
+P2_alloc	0.3901
+P2_loop	134.5909
+P2	134.9810
+P2_free	0.5973
+P4_count	22.8844
+P4_scatter	142.5672
+P4	165.4517
+R_dtm	0.6275
+loop174	100.6281
+R_uk	5.4284
+retreat_total	522.9947
+t_R_start	0.0000
+rss_R_start	14979072
+hwm_R_start	15175680
+min_R_start	2035
+maj_R_start	0
+t_P0	94.1094
+rss_P0	2022957056
+hwm_P0	4682563584
+min_P0	5754994
+maj_P0	0
+t_P1	115.2806
+rss_P1	10612895744
+hwm_P1	10612895744
+min_P1	7898517
+maj_P1	0
+t_P2_alloc	115.6707
+rss_P2_alloc	11110326272
+hwm_P2_alloc	11110326272
+min_P2_alloc	8019960
+maj_P2_alloc	0
+t_P2	250.2616
+rss_P2	14865014784
+hwm_P2	14865014784
+min_P2	11198342
+maj_P2	0
+t_P2_free	250.8589
+rss_P2_free	6275076096
+hwm_P2_free	14864187392
+min_P2_free	11198355
+maj_P2_free	0
+t_P4_count	273.7433
+rss_P4_count	7262289920
+hwm_P4_count	14864187392
+min_P4_count	11442928
+maj_P4_count	0
+t_P4	416.3106
+rss_P4	6864347136
+hwm_P4	14864187392
+min_P4	12367667
+maj_P4	0
+t_R_dtm	416.9381
+rss_R_dtm	7509094400
+hwm_R_dtm	14864187392
+min_R_dtm	12600475
+maj_R_dtm	0
+t_R_loop	517.5663
+rss_R_loop	7543455744
+hwm_R_loop	14864187392
+min_R_loop	14892654
+maj_R_loop	0
+t_R_uk	522.9947
+rss_R_uk	7500980224
+hwm_R_uk	14864187392
+min_R_uk	14978104
+maj_R_uk	0
+--- vmstat (前後) ---
+when	numa_hint_faults	numa_hint_faults_local	numa_pages_migrated	numa_local	numa_other	pgmigrate_success	pgmigrate_fail	compact_stall	compact_success	compact_fail
+before	445238219	71818211	256150325	3056329767	59910723	286462157	24445	17	1	16
+after	447669665	71922401	258420996	3072123179	60216291	289226043	24632	17	1	16
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+=== 完了 n4d 2026-09-21T12:58:19+00:00 ===
+=== 全16本 完了 2026-09-21T12:58:19+00:00 ===

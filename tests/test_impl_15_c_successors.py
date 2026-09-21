@@ -185,6 +185,31 @@ def test_the_expand_reset_is_now_first() -> None:
     )
 
 
+def test_the_expand_reset_is_still_behind_the_null_check() -> None:
+    """★既知の不具合。impl/15 は凍結なので直さず、ここで固定する。
+
+    `g_exp_n = 0;` の前にまだ `if (!out) return -1;` が残っていて、その経路だけは
+    前のラウンドの件数がそのまま残る。記録 #13 で直したのと同じ形の生き残り。
+
+    ⚠️ `buildSuccRange` の「NULL 検査だけが例外」という理屈は `out[]` への書き込みに
+    しか当てはまらない（書けないポインタには書けないから）。`g_exp_n` は static なので
+    `!out` の検査より前に出せる。次の実装では関数の先頭へ出す。
+
+    本走への影響は無い。Python 側は必ず有効な `counts` を渡すので `!out` を通らない。
+    """
+    body = c_function("expandRound")
+    body = body[: body.index("\n}")]
+    assert body.index("if (!out) return -1;") < body.index("g_exp_n = 0;"), (
+        "NULL 検査より前にリセットが出ている。直っているなら、この固定と "
+        "CLAUDE.md の「次の実装で必ず直すもの」を一緒に畳むこと"
+    )
+    # コメントは「どの早期 return よりも前」と言っているが、実コードはそうなっていない。
+    # ⚠️ この食い違いも impl/15 では直せないので、CLAUDE.md 側に書いてある
+    assert "どの早期 return よりも前" in (IMPL_DIR / "animal_shogi.c").read_text(
+        encoding="utf-8"
+    ), "コメントの文面が変わった。CLAUDE.md の積み残しの説明と突き合わせること"
+
+
 # --------------------------------------------------------------------------
 # C を実際に動かす
 # --------------------------------------------------------------------------

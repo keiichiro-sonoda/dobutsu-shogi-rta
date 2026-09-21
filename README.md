@@ -81,6 +81,7 @@ python3 tools/verify_log.py <実行ログ>
 ```bash
 python3 tools/fingerprint_dat.py <dat>          # 指紋を出す
 python3 tools/fingerprint_dat.py <datA> <datB>  # 2つを照合
+python3 tools/fingerprint_dat.py <dat> --against oracle/fingerprint.tsv  # 固定した値と照合
 ```
 
 指紋は深さごとの `(件数, 総和 mod 2^64, XOR)`。3つとも要素の順序に依存しないので、
@@ -90,6 +91,12 @@ python3 tools/fingerprint_dat.py <datA> <datB>  # 2つを照合
 例えば `{1, 6}` と `{2, 5}` はどちらも `(2, 7, 7)` になる。
 記録 #2 〜 #5 の `fingerprint.txt` もこの指紋の一致を記録したもの。
 完走とオラクル一致を別途確認した成果物に対する補助的な検査として使う。
+
+`--against` の相手 `oracle/fingerprint.tsv` は**オラクルではない**。2021年の原典ではなく
+記録 #15 の成果物から取った値で、`oracle/distribution.tsv` とは由来が違う。`dat/` は 2.2 GB
+あって git に入らないので、照合のたびに2本をディスクに置く代わりに値のほうを固定してある
+（件数の列は `distribution.tsv` と `totals.tsv` から導けるので `tests/test_oracle.py` が
+固定している。総和と XOR は導けない）。
 
 ## 記録
 

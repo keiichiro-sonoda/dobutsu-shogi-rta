@@ -173,6 +173,14 @@
 ## コミット
 
 - メッセージは日本語。何をしたかだけでなく **なぜそうしたか** を書く。
+- **`git add -A` と `git add .` を使わない。コミットするファイルは名指しする。**
+  作業ディレクトリにはサンドボックスが置く 0 バイトの覆い（`.gitconfig` や
+  `.claude/agents` など）が並んでいて、一括で足すと巻き込む。
+  ⚠️ **`.gitignore` に入れたのは「プロジェクトのファイルには絶対ならない名前」だけ。**
+  `.gitmodules` / `.mcp.json` / `.claude/settings.json` / `.claude/{agents,commands,hooks,
+  workflows}` にも覆いが置かれるが、どれも共有すべき本物が同名で来るので無視していない
+  （無視すると `git add` が `-f` を要求して、本物を入れるときに詰まる）。
+  追跡してよいドットファイルは `tests/test_tracked_files.py` が名指しで固定している。
 - `Co-Authored-By: Claude ...` の行は付けてよい。
 - **`Claude-Session:` の URL 行は付けない。** 公開リポジトリなので、コミットログに
   会話ログへの恒久的なポインタを残さない。

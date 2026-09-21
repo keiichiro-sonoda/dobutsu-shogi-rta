@@ -11,6 +11,7 @@ impl/04 は全探索を1バイトも触っていないので、ここが一致�
 from __future__ import annotations
 
 import pathlib
+import re
 
 import pytest
 from conftest import families, load_impl, run_forward
@@ -21,6 +22,9 @@ from conftest import families, load_impl, run_forward
 #    次のラウンドで取り出す盤面が変わるので、途中で切った集合が実装ごとに違う
 #    （impl/10 で差集合の書き方を変えたときに実際にそうなった）。完走すれば同じ。
 ROUNDS_BEFORE_SPLIT = 9
+
+# dat/ のファイル名に出る拡張子。#15 までが .pickle、#16 からが .bin
+SUFFIX_RE = re.compile(r"\.(?:pickle|bin)\b")
 
 # 分割を小さく起こすための上限。本番は 5,000,000。
 SMALL_BOARD_NUM_MAX = 3000
@@ -38,6 +42,10 @@ PAIRS = [
     ("10_setdiff", "11_c_seen"),
     ("11_c_seen", "12_c_predecessors"),
     ("12_c_predecessors", "13_c_expand"),
+    # ⚠️ #16 は dat/ の形式を pickle から生バイナリに変えた。**全探索の出力も
+    #    そこに乗っている**ので、4系統の集合が #15 と一致することをここで見る
+    #    (families() が dat/ の中身から形式を決めるので、形式をまたいで比べられる)。
+    ("15_c_successors", "16_raw_binary"),
 ]
 
 # ⚠️ #13 は展開ループを C へ移したので、集合の一致とサブログだけでは足りない
@@ -63,7 +71,10 @@ def test_the_forward_search_is_unchanged_from_the_previous_impl(
         assert fam_a[key] == fam_b[key], f"{key} の盤面集合が impl/{prev} と違う"
 
     def sublog(work: pathlib.Path) -> str:
-        return (work / "kaiseki_log" / "kaiseki_log7.txt").read_text(encoding="utf-8")
+        text = (work / "kaiseki_log" / "kaiseki_log7.txt").read_text(encoding="utf-8")
+        # サブログは探索中のファイル名をそのまま出すので、拡張子だけは食い違う
+        # (#16 で .pickle → .bin)。⚠️ **潰すのは拡張子だけ**。件数も順序も潰さない
+        return SUFFIX_RE.sub(".<形式>", text)
 
     assert sublog(works[prev]) == sublog(works[cur]), f"サブログが impl/{prev} と食い違う"
 

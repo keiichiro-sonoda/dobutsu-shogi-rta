@@ -14,12 +14,14 @@ from __future__ import annotations
 
 import itertools
 import pathlib
+import pickle
 import shutil
 import types
+from array import array
 
 import fingerprint_dat
 import pytest
-from conftest import chdir, load_impl, load_pickles, run_forward, run_retreat
+from conftest import chdir, dat_suffix, load_boards, load_impl, run_forward, run_retreat
 
 FORWARD_ROUNDS = 7
 
@@ -42,11 +44,31 @@ IMPLS = (
     "13_c_expand",
     "14_c_retreat",
     "15_c_successors",
+    "16_raw_binary",
 )
 PAIRS = list(itertools.pairwise(IMPLS))
 
 # 未知盤面を常駐させている実装 (loadAllUnknownBoards を持つ)
 RESIDENT_UNKNOWN = IMPLS[1:]
+
+
+def seed_dat(src: pathlib.Path, dst: pathlib.Path, suffix: str) -> None:
+    """打ち切った dat/ を配る。記録 #16 以降には生バイナリに写し替えて渡す。
+
+    ⚠️ **集合の反復順をそのままバイト列にする。** pickle が並べていた順序を
+    変えないので、写し替えても採番順は動かない。ここで並べ替えると、
+    #16 だけ別の採番順で後退解析することになり、対照にならない。
+
+    どちらの形式で渡すかは実装の UK_PATH_FORMAT の拡張子から決める
+    （実装名で分岐すると、次に形式を変える記録でまたここを直すことになる）。
+    """
+    for path in sorted(src.iterdir()):
+        if path.suffix == suffix:
+            shutil.copy(path, dst / path.name)
+            continue
+        with path.open("rb") as f:
+            boards = pickle.load(f)
+        (dst / (path.stem + suffix)).write_bytes(array("Q", boards).tobytes())
 
 
 @pytest.fixture(scope="module")
@@ -71,8 +93,7 @@ def retreat_runs(
     for impl in IMPLS:
         work = tmp_path_factory.mktemp(impl)
         module = load_impl(impl, work, shared_library)
-        for path in (src / "dat").iterdir():
-            shutil.copy(path, work / "dat" / path.name)
+        seed_dat(src / "dat", work / "dat", pathlib.PurePath(module.UK_PATH_FORMAT).suffix)
         # run_forward を通さないので、上限は自分で入れる (writeUnknownChunks が読む)
         vars(module)["BOARD_NUM_MAX"] = SMALL_BOARD_NUM_MAX
         run_retreat(module, work)
@@ -85,11 +106,13 @@ def test_the_artifacts_have_the_same_fingerprint(
     prev: str, cur: str, retreat_runs: dict[str, pathlib.Path]
 ) -> None:
     """手数別に「どの局面がどの手数か」まで一致すること。"""
-    a = fingerprint_dat.fingerprint(retreat_runs[prev] / "dat")
-    b = fingerprint_dat.fingerprint(retreat_runs[cur] / "dat")
+    da, db = retreat_runs[prev] / "dat", retreat_runs[cur] / "dat"
+    # ⚠️ #15 と #16 は形式が違う。指紋は形式に依らないので、ここだけが橋になる
+    a = fingerprint_dat.fingerprint(da, fingerprint_dat.detect(da))
+    b = fingerprint_dat.fingerprint(db, fingerprint_dat.detect(db))
     assert a, "後退解析が何も確定していない (テストが空振り)"
     assert len(a) > 2, f"深さが1段しか進んでいない: {sorted(a)}"
-    assert len(list((retreat_runs[cur] / "dat").glob("unknown*.pickle"))) > 1, (
+    assert len(list(db.glob("unknown*" + dat_suffix(db)))) > 1, (
         "未知盤面が1チャンクしかない (テストが空振り)"
     )
     assert fingerprint_dat.compare(a, b) == []
@@ -100,8 +123,8 @@ def test_the_draws_are_written_back_as_artifacts(
     prev: str, cur: str, retreat_runs: dict[str, pathlib.Path]
 ) -> None:
     """最後まで未知だった盤面が成果物に残っていること。"""
-    a = load_pickles(retreat_runs[prev] / "dat", "unknown*.pickle")
-    b = load_pickles(retreat_runs[cur] / "dat", "unknown*.pickle")
+    a = load_boards(retreat_runs[prev] / "dat", "unknown*")
+    b = load_boards(retreat_runs[cur] / "dat", "unknown*")
     assert a, "未知盤面が1つも残っていない (テストが空振り)"
     assert a == b
 
@@ -127,7 +150,7 @@ def test_the_win_lose_files_are_numbered_from_zero_without_gaps(
     """
     dat = retreat_runs[IMPLS[-1]] / "dat"
     depths: dict[tuple[str, int], set[int]] = {}
-    for path in dat.glob("*te_*.pickle"):
+    for path in dat.glob("*te_*" + dat_suffix(dat)):
         kind = "win" if path.name.startswith("win") else "lose"
         depth, sub = path.stem.removeprefix(kind).split("te_")
         depths.setdefault((kind, int(depth)), set()).add(int(sub))
@@ -145,12 +168,15 @@ def test_loading_the_unknown_boards_removes_the_files(
     module: types.ModuleType = load_impl(impl, work, shared_library)
     run_forward(module, work, 7, SMALL_BOARD_NUM_MAX)
     dat = work / "dat"
-    before = load_pickles(dat, "unknown*.pickle")
-    assert len(list(dat.glob("unknown*.pickle"))) > 1, "未知盤面が1チャンクしかない (空振り)"
+    before = load_boards(dat, "unknown*")
+    suffix = dat_suffix(dat)
+    assert len(list(dat.glob("unknown*" + suffix))) > 1, "未知盤面が1チャンクしかない (空振り)"
 
     with chdir(work):
         chunks = module.loadAllUnknownBoards()
 
-    assert not list(dat.glob("unknown*.pickle")), "未知盤面ファイルが残っている"
+    assert not list(dat.glob("unknown*" + suffix)), "未知盤面ファイルが残っている"
     assert {b for chunk in chunks for b in chunk} == before
-    assert all(isinstance(chunk, list) for chunk in chunks), "集合で持っている (リストで足りる)"
+    # #15 までは list、#16 からはファイルの生バイト列そのままの array("Q")。
+    # ⚠️ 見たいのは「集合で持っていないこと」（ハッシュ表を常駐させない）
+    assert not any(isinstance(chunk, set) for chunk in chunks), "集合で持っている"

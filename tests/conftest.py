@@ -12,6 +12,7 @@ import shutil
 import subprocess
 import tempfile
 import types
+from array import array
 
 import pytest
 
@@ -205,20 +206,47 @@ def run_retreat(module: types.ModuleType, work: pathlib.Path) -> None:
         module.retreatAnalysis()
 
 
-def load_pickles(dat: pathlib.Path, pattern: str) -> set[int]:
+# dat/ の系統。⚠️ unexplored は全探索の作業ファイルなので
+# tools/fingerprint_dat.py の Format には無い (あちらは答えだけを数える)
+FAMILY_PREFIXES = {
+    "unknown": "unknown*",
+    "win": "win001te_*",
+    "lose": "lose000te_*",
+    "unexplored": "unexplored*",
+}
+
+# 記録 #15 までが .pickle、#16 以降が生バイナリの .bin
+DAT_SUFFIXES = (".pickle", ".bin")
+
+
+def dat_suffix(dat: pathlib.Path) -> str:
+    """dat/ に並んでいるファイルから拡張子を決める。
+
+    ⚠️ 2つ混ざっていたら落とす。片方だけ数えると、件数が足りないまま
+    集合が一致して通る経路ができる。
+    """
+    found = {p.suffix for p in dat.iterdir() if p.is_file() and p.suffix in DAT_SUFFIXES}
+    assert len(found) == 1, f"dat/ の形式が決まらない ({sorted(found)}): {dat}"
+    return found.pop()
+
+
+def load_boards(dat: pathlib.Path, pattern: str) -> set[int]:
+    """系統の接頭辞 (拡張子なし) を渡すと、その系統の盤面集合を返す。
+
+    形式は dat/ から決めるので、呼ぶ側は .pickle か .bin かを知らなくてよい。
+    """
     boards: set[int] = set()
-    for path in sorted(dat.glob(pattern)):
-        with path.open("rb") as f:
-            boards |= set(pickle.load(f))
+    for path in sorted(dat.glob(pattern + dat_suffix(dat))):
+        if path.suffix == ".bin":
+            a = array("Q")
+            a.frombytes(path.read_bytes())
+            boards |= set(a)
+        else:
+            with path.open("rb") as f:
+                boards |= set(pickle.load(f))
     return boards
 
 
 def families(dat: pathlib.Path) -> dict[str, frozenset[int]]:
     """dat/ の4系統を、系統ごとの盤面集合にして返す。チャンクの分かれ方は潰れる。"""
-    prefixes = {
-        "unknown": "unknown*.pickle",
-        "win": "win001te_*.pickle",
-        "lose": "lose000te_*.pickle",
-        "unexplored": "unexplored*.pickle",
-    }
-    return {k: frozenset(load_pickles(dat, v)) for k, v in prefixes.items()}
+    return {k: frozenset(load_boards(dat, v)) for k, v in FAMILY_PREFIXES.items()}

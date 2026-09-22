@@ -1,0 +1,44 @@
+# 記録 #18 の5腕を -Wall -Wextra でビルドしたときの警告
+#
+# 18記録ぶん -O0 で走ってきたので、最適化を有効にしないと出ない警告
+# (-Wmaybe-uninitialized など) が初めて露出する可能性があった。
+#
+#   cd <impl/17_no_set の写し>
+#   gcc $CFLAGS animal_shogi.c -o animal_shogi_$ARM.so -Wall -Wextra -fPIC -shared
+#
+# ⚠️ -Wextra は記録実装の Makefile には入れていない。ここで見るだけ。
+#    入れると次の記録との差分が2つになる。
+#
+# 事前に1箇所を疑っていた: animal_shogi.c:95 の `int *moves;` は default: 経路
+# (koma ∈ {1,2,3,5}、実際に到達する) で未設定のまま抜ける。直後の
+# `if (!moves_num) continue;` で読まれないので挙動は正しいが、値域解析が
+# moves と moves_num の相関を追えないと -Wmaybe-uninitialized が出る。
+# GCC 13.3.0 は追えていて、5腕とも警告ゼロだった。
+
+gcc: gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+
+=== o0   gcc -Wall -Wextra -fPIC -shared ===
+(警告なし)
+=== o1   gcc -O1 -Wall -Wextra -fPIC -shared ===
+(警告なし)
+=== o2   gcc -O2 -Wall -Wextra -fPIC -shared ===
+(警告なし)
+=== o3   gcc -O3 -Wall -Wextra -fPIC -shared ===
+(警告なし)
+=== o2n  gcc -O2 -fno-semantic-interposition -Wall -Wextra -fPIC -shared ===
+(警告なし)
+
+# 検査が効いていることの対照 (わざと未初期化を読む関数を -O2 -Wall -Wextra に掛ける):
+#   int f(void){int x; return x;}
+#   -> warning: 'x' is used uninitialized [-Wuninitialized]
+#
+# フラグが効いていることの確認 (5腕とも別のオブジェクトになる):
+#   obj_o0   50639319dc2a94d553a85672be9e1b90
+#   obj_o1   3811473269a5f4563cfb8a5055bf8c4b
+#   obj_o2   a574b8dced6ccb84acdb2a2f0d88455e
+#   obj_o3   ecfe1c1600c334ed26ffb5b8ead8a84b
+#   obj_o2n  c40a7f900d970ee9084c76dad5cd049a
+#
+# -fno-semantic-interposition の効きの確認 (objdump -d で normalBoard への call を数える):
+#   o2  : 3 箇所 (PLT 経由のまま)
+#   o2n : 0 箇所 (インライン展開された)

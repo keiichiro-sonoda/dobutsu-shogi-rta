@@ -42,8 +42,8 @@ CLAUDE.md の「オラクル検証は実験でも毎回通す」に対しては�
 
 ## 書き出し3段が1桁落ちた
 
-表は [`../gate_17_no_set/stats.py`](../gate_17_no_set/stats.py) が [`logs/`](logs/) の
-生ログから組み立てる（`python3 experiments/gate_17_no_set/stats.py forward`）。
+表は [`../gate_stats.py`](../gate_stats.py) が [`logs/`](logs/) の
+生ログから組み立てる（`python3 experiments/gate_stats.py gate_17_forward forward`）。
 秒は `forward_summary.tsv` の生値で、`main.log` の表示値（秒未満切り捨て）ではない。
 
 | 段 | `old` 4本 | `new` 4本 | 差 | t | 自由度 | p | 95% 区間 |

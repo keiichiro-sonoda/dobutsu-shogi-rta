@@ -37,8 +37,8 @@
 
 ## 入力が同一なら、動くのは書き出しの段だけ
 
-表は [`stats.py`](stats.py) が [`logs/`](logs/) の生ログから組み立てる
-（`python3 experiments/gate_17_no_set/stats.py retreat`）。
+表は [`../gate_stats.py`](../gate_stats.py) が [`logs/`](logs/) の生ログから組み立てる
+（`python3 experiments/gate_stats.py gate_17_no_set retreat`）。
 
 | 段 | `old` 4本 | `new` 4本 | 差 | t | 自由度 | p | 95% 区間 |
 |---|---|---|---|---|---|---|---|
@@ -92,7 +92,6 @@ P1・P2・P4 の点推定（−0.50 / −0.75 / −1.00）の和とちょうど�
 |---|---|
 | `run.sh` | 1本ぶん。`run.sh <old\|new> <ラベル> [keep]` |
 | `run_all.sh` | 8本。`old new new old` を2回 |
-| `stats.py` | 生ログから上の表を組み立てる。`retreat` と `forward` の2モード（後者は隣の門番を読む） |
 | `logs/<ラベル>_main.log` | 段ごとの所要時間（`P0` / `P1` / `P2` / `P4`） |
 | `logs/<ラベル>_time.txt` | `/usr/bin/time -v` |
 | `logs/<ラベル>_freq.log` | 1分おき。8列（`numa_bind` と同じ） |

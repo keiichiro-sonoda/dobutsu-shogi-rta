@@ -1,0 +1,139 @@
+=== 開始 r1a_old (old / impl/18_optimized) 2026-09-22T15:32:03+00:00 ===
+gcc -O2 animal_shogi.c -o animal_shogi.so -Wall -fPIC -shared
+=== 終了 r1a_old 2026-09-22T15:37:10+00:00 (exit=0) ===
+後退解析の所要時間：306.14 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 5:06.18
+	Maximum resident set size (kbytes): 14498852
+	Minor (reclaiming a frame) page faults: 7254420
+読み込んだ局面：246803167 (未知 99485568 / キャッチ 140298614 / トライ負け 7018985)
+P0 読み込み：00時間00分04秒
+P1 索引：00時間00分14秒
+辺の総数：938671869 (未発見の後続 0)
+P2 後続生成：00時間01分10秒
+P4 前任リスト：00時間02分37秒
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+dat/ は残した (腕どうしのバイト比較用): runs/exp_gate19_r1a_old/dat
+=== 完了 r1a_old 2026-09-22T15:37:10+00:00 ===
+=== 開始 r1b_new (new / impl/19_c_gather) 2026-09-22T15:37:10+00:00 ===
+gcc -O2 animal_shogi.c -o animal_shogi.so -Wall -fPIC -shared
+=== 終了 r1b_new 2026-09-22T15:41:57+00:00 (exit=0) ===
+後退解析の所要時間：285.13 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 4:45.18
+	Maximum resident set size (kbytes): 14499188
+	Minor (reclaiming a frame) page faults: 6525724
+読み込んだ局面：246803167 (未知 99485568 / キャッチ 140298614 / トライ負け 7018985)
+P0 読み込み：00時間00分04秒
+P1 索引：00時間00分14秒
+辺の総数：938671869 (未発見の後続 0)
+P2 後続生成：00時間01分11秒
+P4 前任リスト：00時間02分37秒
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+dat/ は残した (腕どうしのバイト比較用): runs/exp_gate19_r1b_new/dat
+=== 完了 r1b_new 2026-09-22T15:41:57+00:00 ===
+=== 開始 r1c_new (new / impl/19_c_gather) 2026-09-22T15:41:57+00:00 ===
+gcc -O2 animal_shogi.c -o animal_shogi.so -Wall -fPIC -shared
+=== 終了 r1c_new 2026-09-22T15:46:39+00:00 (exit=0) ===
+後退解析の所要時間：279.64 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 4:39.68
+	Maximum resident set size (kbytes): 14499632
+	Minor (reclaiming a frame) page faults: 6525726
+読み込んだ局面：246803167 (未知 99485568 / キャッチ 140298614 / トライ負け 7018985)
+P0 読み込み：00時間00分04秒
+P1 索引：00時間00分14秒
+辺の総数：938671869 (未発見の後続 0)
+P2 後続生成：00時間01分08秒
+P4 前任リスト：00時間02分35秒
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+=== 完了 r1c_new 2026-09-22T15:46:39+00:00 ===
+=== 開始 r1d_old (old / impl/18_optimized) 2026-09-22T15:46:39+00:00 ===
+gcc -O2 animal_shogi.c -o animal_shogi.so -Wall -fPIC -shared
+=== 終了 r1d_old 2026-09-22T15:51:45+00:00 (exit=0) ===
+後退解析の所要時間：304.41 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 5:04.46
+	Maximum resident set size (kbytes): 14499436
+	Minor (reclaiming a frame) page faults: 7254418
+読み込んだ局面：246803167 (未知 99485568 / キャッチ 140298614 / トライ負け 7018985)
+P0 読み込み：00時間00分04秒
+P1 索引：00時間00分14秒
+辺の総数：938671869 (未発見の後続 0)
+P2 後続生成：00時間01分10秒
+P4 前任リスト：00時間02分36秒
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+=== 完了 r1d_old 2026-09-22T15:51:46+00:00 ===
+=== 開始 r2a_old (old / impl/18_optimized) 2026-09-22T15:51:46+00:00 ===
+gcc -O2 animal_shogi.c -o animal_shogi.so -Wall -fPIC -shared
+=== 終了 r2a_old 2026-09-22T15:56:51+00:00 (exit=0) ===
+後退解析の所要時間：303.40 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 5:03.44
+	Maximum resident set size (kbytes): 14499432
+	Minor (reclaiming a frame) page faults: 7254448
+読み込んだ局面：246803167 (未知 99485568 / キャッチ 140298614 / トライ負け 7018985)
+P0 読み込み：00時間00分04秒
+P1 索引：00時間00分14秒
+辺の総数：938671869 (未発見の後続 0)
+P2 後続生成：00時間01分08秒
+P4 前任リスト：00時間02分37秒
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+=== 完了 r2a_old 2026-09-22T15:56:51+00:00 ===
+=== 開始 r2b_new (new / impl/19_c_gather) 2026-09-22T15:56:51+00:00 ===
+gcc -O2 animal_shogi.c -o animal_shogi.so -Wall -fPIC -shared
+=== 終了 r2b_new 2026-09-22T16:01:34+00:00 (exit=0) ===
+後退解析の所要時間：281.23 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 4:41.27
+	Maximum resident set size (kbytes): 14499632
+	Minor (reclaiming a frame) page faults: 6525726
+読み込んだ局面：246803167 (未知 99485568 / キャッチ 140298614 / トライ負け 7018985)
+P0 読み込み：00時間00分04秒
+P1 索引：00時間00分14秒
+辺の総数：938671869 (未発見の後続 0)
+P2 後続生成：00時間01分08秒
+P4 前任リスト：00時間02分37秒
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+=== 完了 r2b_new 2026-09-22T16:01:35+00:00 ===
+=== 開始 r2c_new (new / impl/19_c_gather) 2026-09-22T16:01:35+00:00 ===
+gcc -O2 animal_shogi.c -o animal_shogi.so -Wall -fPIC -shared
+=== 終了 r2c_new 2026-09-22T16:06:19+00:00 (exit=0) ===
+後退解析の所要時間：282.08 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 4:42.12
+	Maximum resident set size (kbytes): 14499184
+	Minor (reclaiming a frame) page faults: 6525724
+読み込んだ局面：246803167 (未知 99485568 / キャッチ 140298614 / トライ負け 7018985)
+P0 読み込み：00時間00分04秒
+P1 索引：00時間00分14秒
+辺の総数：938671869 (未発見の後続 0)
+P2 後続生成：00時間01分08秒
+P4 前任リスト：00時間02分38秒
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+=== 完了 r2c_new 2026-09-22T16:06:19+00:00 ===
+=== 開始 r2d_old (old / impl/18_optimized) 2026-09-22T16:06:19+00:00 ===
+gcc -O2 animal_shogi.c -o animal_shogi.so -Wall -fPIC -shared
+=== 終了 r2d_old 2026-09-22T16:11:22+00:00 (exit=0) ===
+後退解析の所要時間：301.33 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 5:01.37
+	Maximum resident set size (kbytes): 14498984
+	Minor (reclaiming a frame) page faults: 7254541
+読み込んだ局面：246803167 (未知 99485568 / キャッチ 140298614 / トライ負け 7018985)
+P0 読み込み：00時間00分04秒
+P1 索引：00時間00分14秒
+辺の総数：938671869 (未発見の後続 0)
+P2 後続生成：00時間01分08秒
+P4 前任リスト：00時間02分35秒
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+=== 完了 r2d_old 2026-09-22T16:11:23+00:00 ===
+=== 全8本 完了 2026-09-22T16:11:23+00:00 ===

@@ -1,11 +1,12 @@
 #!/usr/bin/python3
 """門番の生ログから、段ごとの平均・標準偏差と Welch 検定の表を組み立てる。
 
-    python3 experiments/gate_stats.py <門番> <retreat|forward> [基準腕] [比較 ...]
+    python3 experiments/gate_stats.py <門番> <retreat|forward|spans> [基準腕] [比較 ...]
 
     python3 experiments/gate_stats.py gate_17_no_set retreat
     python3 experiments/gate_stats.py gate_17_forward forward
     python3 experiments/gate_stats.py gate_18_opt forward o0 o3:o2
+    python3 experiments/gate_stats.py gate_19_c_gather spans
 
 ⚠️ 表を手で書かない。CLAUDE.md の「段ごとの揺れの標本と統計値は手で書かない」と
 「統計値は生値から計算する。表示のために丸めた値から計算し直さない」を守るため、
@@ -23,6 +24,10 @@ README に貼る表はこのスクリプトの出力をそのまま使う。
            174段＋残差 = 合計 − 測った4段。
   forward  <ラベル>_forward_summary.tsv (秒の生値)。
            ⚠️ main.log の F 行は s2hms が秒未満を切り捨てた表示値なので使わない。
+  spans    <ラベル>_retreat_summary.tsv の区間 (秒の生値)。段の顔ぶれは
+           ファイルに並んでいる順で、実装の RETREAT_SPANS がそのまま出る。
+           ⚠️ main.log の P 行も s2hms の表示値なので、こちらが出る門番では
+           retreat モードではなくこちらで判定する。
 
 scipy を入れずに t 分布の分位点を出す。正則化不完全ベータ関数を連分数で
 評価し、二分法で反転する (記録 #7 の Welch 検定と同じやり方)。
@@ -204,6 +209,24 @@ def retreat_phase(logs: pathlib.Path, label: str, head: str) -> float:
     raise SystemExit(f"{label}_main.log に「{head}」の行が無い")
 
 
+def retreat_spans(logs: pathlib.Path, label: str) -> dict[str, float]:
+    """<ラベル>_retreat_summary.tsv の区間を、ファイルに並んでいる順で返す。
+
+    ⚠️ 区間はファイルの先頭にまとまっていて、そのあとに境界ごとの絶対値
+    (`t_` / `rss_` / `hwm_` / `min_` / `maj_`) が続く。境界のほうは引き算の
+    材料なので、ここでは区間だけを取る。
+    """
+    out: dict[str, float] = {}
+    for line in (logs / f"{label}_retreat_summary.tsv").read_text(encoding="utf-8").splitlines():
+        name, _, value = line.partition("\t")
+        if name.startswith("t_"):
+            break
+        out[name] = float(value)
+    if not out:
+        raise SystemExit(f"{label}_retreat_summary.tsv に区間の行が無い")
+    return out
+
+
 def forward_phase(logs: pathlib.Path, label: str, key: str) -> float:
     for line in (logs / f"{label}_forward_summary.tsv").read_text(encoding="utf-8").splitlines():
         name, _, value = line.partition("\t")
@@ -231,6 +254,14 @@ def collect(
         }
         rows.append(("**174段＋残差**", {lb: total[lb] - measured[lb] for lb in by_label}))
         rows.append(("後退解析 合計", total))
+    elif mode == "spans":
+        spans = {lb: retreat_spans(logs, lb) for lb in by_label}
+        names = list(next(iter(spans.values())))
+        for lb, one in spans.items():
+            if list(one) != names:
+                raise SystemExit(f"{lb} の区間の顔ぶれが他と違う: {list(one)}")
+        for name in names:
+            rows.append((name, {lb: spans[lb][name] for lb in by_label}))
     else:
         for name, key in FORWARD_PHASES:
             rows.append((name, {lb: forward_phase(logs, lb, key) for lb in by_label}))
@@ -324,7 +355,7 @@ def many_arm_tables(
 
 
 def main(argv: list[str]) -> int:
-    if len(argv) < 3 or argv[2] not in ("retreat", "forward"):
+    if len(argv) < 3 or argv[2] not in ("retreat", "forward", "spans"):
         print(__doc__, file=sys.stderr)
         return 2
     gate, mode = argv[1], argv[2]

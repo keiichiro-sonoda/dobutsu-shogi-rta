@@ -1,0 +1,16 @@
+# 門番 #19: old 腕と new 腕の成果物がバイト同一であることの照合
+# diff -rq <old の dat/> <new の dat/>  と  md5 一覧 (LC_ALL=C sort) の sha256
+#   cd <dat>; find . -type f -print0 | LC_ALL=C sort -z | xargs -0 md5sum | sha256sum
+#
+# 記録 #19 が動かしたのは「連番をパック値に戻す場所」だけで, 詰める順は
+# ① found の順 (j = 0..n-1), ② 連番の昇順 (i = 0..n_uk-1) のまま. dat/ に並ぶ
+# 順序は1ビットも動かないはずなので, 指紋ではなくバイト比較で見る.
+#
+# 腕は r1a_old (impl/18 + 計装) と r1b_new (impl/19). 両腕とも同じフィクスチャ
+# (runs/g1_11_fixture_bin/dat, 51 ファイル) から後退解析だけを走らせている.
+#
+files:        old 213 / new 213
+bytes:        old 1974425336 / new 1974425336
+md5_list_sha256: old efe4dc72eb7117f2b27f4d8dd893de150208b88ebbf2f3d4437011ff29ec7037
+                 new efe4dc72eb7117f2b27f4d8dd893de150208b88ebbf2f3d4437011ff29ec7037
+diff -rq:     exit=0

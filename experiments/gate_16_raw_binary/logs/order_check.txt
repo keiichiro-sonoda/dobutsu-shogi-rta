@@ -1,0 +1,24 @@
+# g1a (old, impl/15_c_successors, pickle) と g1b (new, impl/16_raw_binary, .bin) の
+# 採番順の照合。
+#
+# 「手つかず」の判定は、old の出力ファイルが runs/g1_11_fixture/dat の元 pickle と
+# バイト同一かどうかで見る (ファイル名の一致では判定できない。unknown* は
+# loadAllUnknownBoards() が全部読んで消し、writeUnknownChunks() が番号を
+# 0 から振り直して書くので、同じ名前でも中身は別物になる)。
+#
+# pickle が書いた順は pickletools.genops でストリームから直に取る。
+# pickle.load() を通した順と比べてはいけない (反復順を崩すので、採番順が
+# 同じでも食い違って見える。最初にこれで読み違えた)。
+#
+ファイル数: 213
+手つかず (old が元フィクスチャとバイト同一, win001te_*/lose000te_* のみ): 31 本
+後退解析が書いたファイル (unknown* を含む): 182 本
+書いたファイルのうち採番順が不一致: 0 本 []
+手つかずファイルで採番順が偶然一致: 0 / 31 本
+
+結論: 後退解析が書いた全ファイルで採番順が一致。手つかずのファイルは
+old が『元のフィクスチャが書いた順』、new が『convert_fixture.py が
+pickle.load した順』で最初から前提が違うので、一致しなくて当然。
+大事なのは両腕が『読む』順 (packed[] の並び) が同じことで、それは
+appendFamily と frombytes がどちらも同じ pickle.load 由来の並びを
+受け取ることで保証され、後退解析が書いたファイルの採番順一致として現れる。

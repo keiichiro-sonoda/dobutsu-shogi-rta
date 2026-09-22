@@ -309,7 +309,8 @@ def many_arm_tables(
             )
     print()
     print(f"⚠️ 基準腕 `{base}` に対して {len(order) - 1} 本引いている。")
-    print("   p は単一比較のものではないので、判断は区間で行う。")
+    print("   p 値・95%信頼区間は個々の比較についての値で、どちらも多重比較未補正。")
+    print("   区間で判断しても多重比較の問題は解消しない。")
     print()
     print("生値:")
     for name, values in rows:

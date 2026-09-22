@@ -1,0 +1,23 @@
+# 記録 #18 (impl/18_optimized) の成果物との照合 (バイト単位)
+# diff -rq <#18 の dat/> <#19 の dat/>  と  md5sum 一覧 (LC_ALL=C sort) の sha256
+#   cd <dat>; find . -type f -print0 | LC_ALL=C sort -z | xargs -0 md5sum | sha256sum
+#
+# #19 は「連番をパック値に戻す場所」を Python の内包から C の gatherPacked /
+# gatherDraws へ移しただけ。詰める順は ① found の順 (j = 0..n-1)、
+# ② 連番の昇順 (i = 0..n_uk-1) で、どちらも #18 の内包と同じ。
+# writeUnknownChunks の受け皿を list から array("Q") に替えたが、区切り方
+# (添字で BOARD_NUM_MAX ずつ) は動かしていない。
+#
+# 指紋 (件数・総和・XOR) より強い検査で、一致しなければ「どこかで順序が動いた」証拠になる。
+# ⚠️ #18 で戻った鎖がここで続く (#16 が形式を、#17 が並びを変えて切れていた)。
+#    門番でも old / new の成果物がバイト同一であることを別に確かめてある
+#    (experiments/gate_19_c_gather/logs/bytecompare_arms.txt)。
+#
+files:        #18 213 / #19 213
+bytes:        #18 1974425336 / #19 1974425336
+md5_list_sha256: #18 f18f3075ba25f13987c520fe98cba074a5916c08ead02eb4719af2a87141b488
+                 #19 f18f3075ba25f13987c520fe98cba074a5916c08ead02eb4719af2a87141b488
+diff -rq:     exit=0
+md5 list:     一致
+指紋:         176 項目すべて一致 (tools/fingerprint_dat.py --against oracle/fingerprint.tsv)
+PASS: 213 ファイル 1974425336 バイトがすべて一致

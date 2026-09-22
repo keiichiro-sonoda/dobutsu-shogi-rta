@@ -53,9 +53,9 @@ PAIRS = [
     #    ここは conftest.build_library() の -O0 ビルドどうしの比較になり、
     #    **-O2 の答えは見ていない**。それは本走のオラクルと指紋とバイト比較が見る。
     ("17_no_set", "18_optimized"),
-    # ⚠️ #19 が触ったのは後退解析の出力の準備だけで、全探索の経路は1行も通らない。
-    #    _profMark に getrusage を足したのは前向き側にも効くが、値を読むだけで
-    #    forward.tsv の列は PROFILE_COLUMNS が決めているので出力は動かない。
+    # ⚠️ #19 が C に足した関数 (gatherPacked / gatherDraws) は retreatAnalysis() からしか
+    #    呼ばれない。全探索の経路で変わったのは _profMark に足した getrusage だけで、
+    #    値を読むだけ。forward.tsv の列は PROFILE_COLUMNS が決めているので出力は動かない。
     ("18_optimized", "19_c_gather"),
 ]
 

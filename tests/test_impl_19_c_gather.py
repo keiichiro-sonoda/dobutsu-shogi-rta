@@ -214,9 +214,9 @@ def test_the_two_known_defects_are_still_here() -> None:
     どちらも直さなかった理由は [`docs/records/19-c-gather.md`](../docs/records/19-c-gather.md)
     に書いてある。要点だけ:
 
-    - `nextBoardInvNormal` の `int *moves` を初期化すると、**全探索の経路に1行入る**
-      (`expandRound` → `nextBoardSeenNormal` がこの関数を呼ぶ)。記録 #19 は
-      「全探索は1行も通らない」を予測に登録しているので、混ぜない。
+    - `nextBoardInvNormal` の `int *moves` を初期化すると、**全探索で実行される C の行が
+      変わる** (`expandRound` → `nextBoardSeenNormal` がこの関数を呼ぶ)。記録 #19 が
+      全探索の経路で変えたのは `_profMark` の `getrusage` だけなので、混ぜると2つになる。
     - `updateUKFile` の2分割は、CLAUDE.md が「直すとチャンクの切れ目が動く」と
       名指しで別の試行に回している。
 

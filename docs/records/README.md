@@ -27,5 +27,6 @@ frontmatter の2か所にある。読み物としては記録表、機械可読�
 | [#15](15-c-successors.md) | [`impl/15_c_successors/`](../../impl/15_c_successors/) |
 | [#16](16-raw-binary.md) | [`impl/16_raw_binary/`](../../impl/16_raw_binary/) |
 | [#17](17-no-set.md) | [`impl/17_no_set/`](../../impl/17_no_set/) |
+| [#18](18-optimized.md) | [`impl/18_optimized/`](../../impl/18_optimized/) |
 
 試行をまたぐ話は [`../measurement-noise.md`](../measurement-noise.md) にある。

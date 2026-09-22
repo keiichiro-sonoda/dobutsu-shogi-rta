@@ -1,0 +1,25 @@
+# 記録 #17 (impl/17_no_set) の成果物との照合 (バイト単位)
+# diff -rq <#17 の dat/> <#18 の dat/>  と  md5sum 一覧 (LC_ALL=C sort) の sha256
+#   cd <dat>; find . -type f -print0 | LC_ALL=C sort -z | xargs -0 md5sum | sha256sum
+#
+# #18 は Makefile の gcc 行に -O2 を足しただけ。C も .h も Python も #17 と
+# バイト同一で、変わるのは生成されたコードだけ。-O は「どう計算するか」を変えて
+# 「何を計算するか」は変えないので、値も順序も1ビットも動かないはず。
+#
+# ⚠️ #16 -> #17 で切れた鎖がここで戻る。#16 は保存形式を変え、#17 は書き出しの
+#    set(...) を外したので、どちらも並びが動いてバイト比較が使えなかった。
+#
+# 指紋 (件数・総和・XOR) より強い検査で、一致しなければ「どこかで順序が動いた」証拠になる。
+# ⚠️ -O2 は -fstrict-aliasing を有効にする。未定義動作があればここで初めて答えが
+#    変わりうるので、この検査がこの記録でいちばん強い。門番でも5腕 (o0/o1/o2/o3/o2n) の
+#    成果物がバイト同一であることを別に確かめてある
+#    (experiments/gate_18_opt/logs/bytecompare_arms.txt)。
+#
+files:        #17 213 / #18 213
+bytes:        #17 1974425336 / #18 1974425336
+md5_list_sha256: #17 f18f3075ba25f13987c520fe98cba074a5916c08ead02eb4719af2a87141b488
+                 #18 f18f3075ba25f13987c520fe98cba074a5916c08ead02eb4719af2a87141b488
+diff -rq:     exit=0
+md5 list:     一致
+指紋:         176 項目すべて一致 (tools/fingerprint_dat.py --against oracle/fingerprint.tsv)
+PASS: 213 ファイル 1974425336 バイトがすべて一致

@@ -82,6 +82,10 @@ class Row:
     pattern: str | None = None
 
 
+G18 = "gate_18_opt"
+G18_NOTE = "-O2 の4本（片ノードに固定）"
+G18_O2 = r"r\d[bc]_o2"
+
 # ⚠️ 並べるのは「その段のコードがバイト同一な観測」だけ。
 #    評価しようとしている測定を雑音の基準に使うと循環する（CLAUDE.md）。
 ROWS = (
@@ -102,6 +106,13 @@ ROWS = (
     Row("P1 索引", "P1", "gate_17_no_set", "g", "片ノードに固定した8本"),
     Row("P2 後続生成", "P2", "gate_17_no_set", "g", "片ノードに固定した8本"),
     Row("**P4 前任リスト**", "P4", "gate_17_no_set", "g", "片ノードに固定した8本", True),
+    # 記録 #18 のレバーはビルドのフラグなので、腕をまたぐと「コードがバイト同一」に
+    # ならない。腕ごとに別の行にする（numa_bind と同じ形）。ここは -O2 の4本で、
+    # #19 以降の帯はこちらが近い。174段＋残差は console.log を要るので載せない。
+    Row("P0 読み込み", "P0", G18, "r", G18_NOTE, False, G18_O2),
+    Row("P1 索引", "P1", G18, "r", G18_NOTE, False, G18_O2),
+    Row("**P2 後続生成**", "P2", G18, "r", G18_NOTE, True, G18_O2),
+    Row("P4 前任リスト", "P4", G18, "r", G18_NOTE, False, G18_O2),
     Row("**174段＋残差**", RESIDUAL, "gate_14_c_retreat", "old", "旧3本", True),
 )
 

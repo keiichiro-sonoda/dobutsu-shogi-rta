@@ -45,6 +45,7 @@ IMPLS = (
     "14_c_retreat",
     "15_c_successors",
     "16_raw_binary",
+    "17_no_set",
 )
 PAIRS = list(itertools.pairwise(IMPLS))
 

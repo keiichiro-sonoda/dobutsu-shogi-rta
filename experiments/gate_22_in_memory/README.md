@@ -20,8 +20,12 @@ F2 と F5 は末尾のファイルを読み直して継ぎ足すので、全探�
 | 腕 | 中身 | 1ラウンドで展開する数 | ラウンド数 |
 |---|---|---|---|
 | `old` | `impl/21_hugepages` そのまま（ファイルで受け渡す） | 最大500万 | 74 |
-| `chunk`（A） | `impl/22_in_memory` ＋ [`patches/chunk.patch`](patches/chunk.patch) | `min(5,000,000, 待ち行列の長さ)` | 74（#21 と同じ） |
-| `whole`（B） | `impl/22_in_memory` そのまま | そのとき並んでいる全部（幅優先の1層） | 未知（予測は下） |
+| `chunk`（A） | `impl/22_in_memory` そのまま（回した時点では `impl/22_in_memory` ＋ `patches/chunk.patch`） | `min(5,000,000, 待ち行列の長さ)` | 74（#21 と同じ） |
+| `whole`（B） | `impl/22_in_memory` ＋ [`patches/whole.patch`](patches/whole.patch)（回した時点では `impl/22_in_memory` そのまま） | そのとき並んでいる全部（幅優先の1層） | 未知（予測は下） |
+
+門番を回した時点（83924f5）では `impl/22_in_memory` が B で、A をパッチで組んでいた。A を採ったので
+`impl/22_in_memory` を A に確定させ、B をパッチにした。[`build_arm.sh`](build_arm.sh) が組む2腕のコードは同じで、
+`whole.patch` を当てると回した時点の `impl/22_in_memory` とバイト一致する。
 
 `chunk` と `whole` の差は `queuePush()` の1関数だけ（未知の持ち方、P0 の詰め方、F6 は共通。
 `tests/test_impl_22_in_memory.py` が固定している）。`.c` / `.h` / `Makefile` は3腕ともバイト同一。
@@ -188,8 +192,8 @@ F1 の文は #21 とバイト同一なので、同じ仕事にかかるカーネ
 | 全体のピーク RSS | 動かない（0.05 GiB 未満） | +0.01 / +0.02 | ✅ |
 | `dat/` | 18本とも #21 とバイト一致 | 一致 | ✅ |
 
-採った A のコードで `impl/22_in_memory` を確定させ、B は `patches/whole.patch` として残す（門番を回した時点では
-`impl/22_in_memory` が B で、A が `patches/chunk.patch` だった。どちらの時点でも `build_arm.sh` が組む2腕は同じ）。
+採った A のコードで `impl/22_in_memory` を確定させ、B は [`patches/whole.patch`](patches/whole.patch) として残した
+（上の「腕」の節）。
 
 ## 集計
 
@@ -211,4 +215,4 @@ python3 experiments/gate_stats.py gate_22_in_memory spans old whole:chunk
 | [`stop_rule.py`](stop_rule.py) | 止める条件 |
 | [`io_volume.py`](io_volume.py) | #21 の全探索が中間ファイルに書いた量を、`forward.tsv` の件数から数え直す |
 | [`lib.sh`](lib.sh) | 周波数の標本・vmstat・md5 一覧（`gate_21_hugepages` の写し） |
-| [`patches/chunk.patch`](patches/chunk.patch) | `chunk` 腕（A）。`queuePush()` だけを変える |
+| [`patches/whole.patch`](patches/whole.patch) | `whole` 腕（B、採らなかった腕）。`queuePush()` だけを変える |

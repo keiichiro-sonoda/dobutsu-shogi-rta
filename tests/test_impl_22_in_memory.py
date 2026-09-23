@@ -13,9 +13,10 @@ C (`.c` / `.h`) と `Makefile` は #21 とバイト同一。変えたのは Pyth
 
 ⚠️ **待ち行列の区切り方は、展開の順を変えない。** 先に入れたものから取り出すので、
 何件ずつ取り出しても、展開の順・未知の並び・終端の並びは同じになる。記録にする前に、
-区切り方だけが違う2腕を門番 (`experiments/gate_22_in_memory/`) で比べた。
-- `whole` (区切らない): この実装そのもの
-- `chunk` (500万件ずつ): この実装に `patches/chunk.patch` を当てたもの
+区切り方だけが違う2腕を門番 (`experiments/gate_22_in_memory/`) で比べ、`chunk` を採った
+(区切らない `whole` は J ＝ forward_total ＋ P0 が 2.48 秒遅かった)。
+- `chunk` (500万件ずつ): この実装そのもの
+- `whole` (区切らない): この実装に `patches/whole.patch` を当てたもの (採らなかった腕)
 
 `chunk` は #21 とラウンドの分け方まで同じになるので、小さく打ち切った走行で #21 と
 ラウンドごとに突き合わせられる。`whole` は1ラウンドが幅優先の1層になるので、`chunk` と
@@ -45,7 +46,7 @@ IMPL_DIR = ROOT / "impl" / "22_in_memory"
 PREV_DIR = ROOT / "impl" / "21_hugepages"
 SOURCE = IMPL_DIR / "animal_shogi.py"
 PREV_SOURCE = PREV_DIR / "animal_shogi.py"
-CHUNK_PATCH = ROOT / "experiments" / "gate_22_in_memory" / "patches" / "chunk.patch"
+WHOLE_PATCH = ROOT / "experiments" / "gate_22_in_memory" / "patches" / "whole.patch"
 
 # 変えた関数・足した関数・消した関数。これ以外は impl/21 から1バイトも動かさない
 CHANGED = {"searchNext", "searchAll", "flushTerminalBoards", "loadForwardResult"}
@@ -96,12 +97,12 @@ def statements(segment: str) -> list[str]:
 
 
 def patched_source(tmp: pathlib.Path) -> pathlib.Path:
-    """impl/22 に `chunk.patch` を当てた `animal_shogi.py` を作る (門番の `chunk` 腕と同じもの)。"""
+    """impl/22 に `whole.patch` を当てた `animal_shogi.py` を作る (門番の `whole` 腕と同じもの)。"""
     if shutil.which("patch") is None:
         pytest.skip("patch が無い")
     tmp.mkdir(parents=True, exist_ok=True)
     shutil.copy(SOURCE, tmp / "animal_shogi.py")
-    with CHUNK_PATCH.open("rb") as f:
+    with WHOLE_PATCH.open("rb") as f:
         done = subprocess.run(
             ["patch", "--forward", "--fuzz=0", "--no-backup-if-mismatch", "-p1", "-d", str(tmp)],
             stdin=f,
@@ -181,11 +182,11 @@ def test_the_forward_search_touches_no_file() -> None:
         assert word not in code, f"searchAll に {word} が残っている"
 
 
-def test_the_chunk_patch_changes_only_queue_push(tmp_path: pathlib.Path) -> None:
+def test_the_whole_patch_changes_only_queue_push(tmp_path: pathlib.Path) -> None:
     """★門番の2腕 (`chunk` / `whole`) の差は `queuePush()` の1関数だけ。"""
-    patched = patched_source(tmp_path / "chunk")
-    whole = top_level(SOURCE, ast.FunctionDef)
-    chunk = top_level(patched, ast.FunctionDef)
+    patched = patched_source(tmp_path / "whole")
+    chunk = top_level(SOURCE, ast.FunctionDef)
+    whole = top_level(patched, ast.FunctionDef)
     assert set(whole) == set(chunk)
     assert {n for n in whole if whole[n] != chunk[n]} == {"queuePush"}
     assert top_level(SOURCE, ast.Assign) == top_level(patched, ast.Assign)
@@ -324,7 +325,7 @@ def limited_run(module: types.ModuleType, work: pathlib.Path) -> dict[str, Any]:
 
 @pytest.fixture(scope="module")
 def paired(tmp_path_factory: pytest.TempPathFactory) -> Paired:
-    """#21 と #22 の chunk 腕を、同じ ROUNDS で打ち切って後退解析まで回す。
+    """#21 と #22 (chunk 腕) を、同じ ROUNDS で打ち切って後退解析まで回す。
 
     ⚠️ 実装を読み込むと前の実装の .so は閉じられるので、#21 は全部済ませてから #22 を読む。
     """
@@ -335,8 +336,7 @@ def paired(tmp_path_factory: pytest.TempPathFactory) -> Paired:
     module = load_impl("21_hugepages", work, impl_library("21_hugepages"))
     out["21"] = limited_run(module, work)
     work = tmp_path_factory.mktemp("chunk")
-    source = patched_source(tmp_path_factory.mktemp("chunk_src"))
-    out["chunk"] = limited_run(load22(work, source), work)
+    out["chunk"] = limited_run(load22(work), work)
     return out
 
 
@@ -442,7 +442,7 @@ def test_the_summaries_keep_their_rows(paired: Paired) -> None:
 
 
 # --------------------------------------------------------------------------
-# whole (この実装) と chunk: 区切りは展開の順を変えない
+# whole (採らなかった腕) と chunk (この実装): 区切りは展開の順を変えない
 # --------------------------------------------------------------------------
 
 # whole を何層回すか。次の層が SMALL_BOARD_NUM_MAX より大きくなるところで止める
@@ -483,16 +483,15 @@ def test_whole_and_chunk_expand_in_the_same_order(tmp_path_factory: pytest.TempP
     `chunk` の待ち行列は `whole` の待ち行列の残りから始まる。
     """
     work = tmp_path_factory.mktemp("whole")
-    whole = load22(work)
+    whole = load22(work, patched_source(tmp_path_factory.mktemp("whole_src")))
     layers = run_rounds(whole, work, lambda _e, r: r >= WHOLE_LAYERS)
     w = state(whole)
     e_w = sum(layers)
     assert layers[:2] == [1, 4], f"1層目・2層目が初期局面と4つの後続になっていない: {layers[:3]}"
     assert len(w["queue"]) > SMALL_BOARD_NUM_MAX, "次の層が小さすぎる (テストが空振り)"
 
-    source = patched_source(tmp_path_factory.mktemp("chunk_src2"))
     work = tmp_path_factory.mktemp("chunk2")
-    chunk = load22(work, source)
+    chunk = load22(work)
     rounds = run_rounds(chunk, work, lambda e, _r: e >= e_w + 1)
     c = state(chunk)
     e_c = sum(rounds)
@@ -527,7 +526,7 @@ def test_whole_and_chunk_expand_in_the_same_order(tmp_path_factory: pytest.TempP
 def test_whole_takes_one_breadth_first_layer_per_round(tmp_path: pathlib.Path) -> None:
     """★`whole` の待ち行列は常に1本で、1ラウンドが前のラウンドの初見の後続の全部になる。"""
     work = tmp_path / "w"
-    module = load22(work)
+    module = load22(work, patched_source(tmp_path / "whole_src"))
     news: list[int] = []
     vars(module)["BOARD_NUM_MAX"] = SMALL_BOARD_NUM_MAX
     with chdir(work):

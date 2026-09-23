@@ -1,0 +1,30 @@
+--- a/animal_shogi.py
++++ b/animal_shogi.py
+@@ -329,21 +329,14 @@
+ 
+ # 初見の後続を待ち行列の末尾に積む (記録 #22. F5)
+ #
+-# BOARD_NUM_MAX ずつの塊にする: 末尾の塊をまず BOARD_NUM_MAX まで埋め, 残りを
+-# BOARD_NUM_MAX ずつの新しい塊にする. #21 まで F5 が unexplored###.bin でやっていた
+-# 区切りと同じなので, 先頭の塊 (＝1ラウンドの入力) は min(BOARD_NUM_MAX, 行列の長さ) になる.
+-# 取り出した塊は F1 で手放すので, 消費した先頭を持ち続けない.
+-# 区切らない形 (門番の whole 腕. patches/whole.patch) は J ＝ forward_total ＋ P0 が
+-# 2.48 秒遅かった (F1 と F6 のカーネル時間. 機序は分けていない) ので, 区切りを残した
++# 区切らない: 積んだ array を写さずに1本のまま足す. 前のラウンドが行列の全部を
++# 取り出しているので行列の中身は常に1本で, 「前のラウンドの初見の後続」がそのまま
++# 次のラウンドの入力になる (1ラウンドが幅優先の1層になる).
++# 500万件ずつ区切っていたのは 2021 年のメモリ 2 GB に合わせたもの.
+ # ⚠️ 門番 gate_22_in_memory の2腕 (chunk / whole) はこの関数だけが違う
+ def queuePush(new) -> None:
+-    step = BOARD_NUM_MAX
+-    start = 0
+-    if queue and len(queue[-1]) < step:
+-        start = step - len(queue[-1])
+-        queue[-1].extend(new[:start])
+-    for s in range(start, len(new), step):
+-        queue.append(new[s:s + step])
++    if new:
++        queue.append(new)
+ 
+ # 全探索の入口 (記録 #22)
+ #

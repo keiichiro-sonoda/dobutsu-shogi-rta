@@ -48,6 +48,7 @@ IMPLS = (
     "17_no_set",
     "18_optimized",
     "19_c_gather",
+    "20_prefetch",
 )
 PAIRS = list(itertools.pairwise(IMPLS))
 

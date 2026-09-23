@@ -57,6 +57,10 @@ PAIRS = [
     #    呼ばれない。全探索の経路で変わったのは _profMark に足した getrusage だけで、
     #    値を読むだけ。forward.tsv の列は PROFILE_COLUMNS が決めているので出力は動かない。
     ("18_optimized", "19_c_gather"),
+    # ⚠️ #20 は全探索の経路にも入る (F1 の nextBoardSeenNormal の先読みと, nextBoardInvNormal の
+    #    moves = NULL)。先読みはヒントで書く値を変えず, moves は読まれない経路の初期化なので,
+    #    出力は動かない。
+    ("19_c_gather", "20_prefetch"),
 ]
 
 # ⚠️ #13 は展開ループを C へ移したので、集合の一致とサブログだけでは足りない

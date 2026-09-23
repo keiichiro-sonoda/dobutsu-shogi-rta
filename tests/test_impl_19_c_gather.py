@@ -220,7 +220,8 @@ def test_the_two_known_defects_are_still_here() -> None:
     - `updateUKFile` の2分割は、CLAUDE.md が「直すとチャンクの切れ目が動く」と
       名指しで別の試行に回している。
 
-    直したら、この固定と CLAUDE.md の「次の実装で必ず直すもの」を一緒に畳むこと。
+    `moves` は記録 #20 で直した (`tests/test_impl_20_prefetch.py` が固定している)。
+    `impl/19` は凍結なので、この固定は外さない (凍結した版には残り続ける)。
     """
     csrc = c_code((IMPL_DIR / "animal_shogi.c").read_text(encoding="utf-8"))
     decl = "int i, j, dst, own_num, own_p, *moves, moves_num, src_mod16, dst_mod16;"

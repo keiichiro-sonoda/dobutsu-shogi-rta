@@ -1,0 +1,46 @@
+--- a/animal_shogi.c
++++ b/animal_shogi.c
+@@ -220,6 +220,8 @@
+     // 0xff で埋めると key が INDEX_EMPTY になる
+     memset(g_index, 0xff, slots * sizeof(IndexEntry));
+     for (i = 0; i < (size_t)n; i++) {
++        // 実験 lever_scan の pf 腕: 16 個先のキーのスロットを先読みする (距離は固定)
++        if (i + 16 < (size_t)n) __builtin_prefetch(&g_index[INDEX_SLOT(packed[i + 16])], 1, 3);
+         key = packed[i];
+         if (key == INDEX_EMPTY) {
+             indexFree();
+@@ -255,6 +257,8 @@
+     nbn = nextBoardInvNormal(g_packed[src], nbs);
+     // 0 = キャッチ / -1 = トライ負け. どちらも後続を持たない
+     if (nbn <= 0) return nbn;
++    // 実験 lever_scan の pf 腕: 全後続のスロットを先読みしてから探査する
++    for (i = 0; i < nbn; i++) __builtin_prefetch(&g_index[INDEX_SLOT(nbs[i])], 0, 3);
+     for (i = 0; i < nbn; i++) {
+         key = nbs[i];
+         slot = INDEX_SLOT(key);
+@@ -412,6 +416,9 @@
+     if (nbn == 0) return -1;
+     if (nbn < 0) return -2;
+     g_seen_probes += (u_long)nbn;
++    // 実験 lever_scan の pf 腕: 全後続のスロットを先読みしてから挿入する.
++    // 先読みはヒントなので書く値は変わらない. 途中で seenGrow が表を替えても害は無い
++    for (i = 0; i < nbn; i++) __builtin_prefetch(&g_seen[SEEN_SLOT(nbs[i])], 1, 3);
+     for (i = 0; i < nbn; i++) {
+         rc = seenInsert(nbs[i]);
+         if (rc < 0) return -3;
+@@ -467,6 +474,15 @@
+         hi = succ_off[src + 1];
+         if (hi < lo || hi > n_edges) return -2;
+         for (e = lo; e < hi; e++) {
++            // 実験 lever_scan の pf 腕: 2段の先読み. 32 本先で pred_off[q] を,
++            // 16 本先で (もう届いているはずの) pred_off から pred の書き込み先を.
++            // succ は出発をまたいで連続しているので, 出発の境界は気にしなくてよい.
++            // ⚠️ pred_off[q16] は実際に読むので, 範囲外を読まないよう n_all 未満を確かめる
++            if (e + 32 < n_edges) __builtin_prefetch(&pred_off[succ[e + 32]], 1, 3);
++            if (e + 16 < n_edges) {
++                uint32_t q16 = succ[e + 16];
++                if (q16 < n_all) __builtin_prefetch(&pred[pred_off[q16]], 1, 3);
++            }
+             q = succ[e];
+             if (q >= n_all) return -2;
+             // pred_off[q] をカーソルとして進める. あとで1つずらして戻す

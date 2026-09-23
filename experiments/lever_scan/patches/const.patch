@@ -1,0 +1,43 @@
+--- a/animal_shogi.c
++++ b/animal_shogi.c
+@@ -2,10 +2,12 @@
+ #include <stdlib.h>
+ #include "animal_shogi.h"
+ 
+-int GIRAFFE_MOVE[4] = {-16, -4, 4, 16};
+-int ELEPHANT_MOVE[4] = {-20, -12, 12, 20};
+-int LION_MOVE[8] = {-20, -16, -12, -4, 4, 12, 16, 20};
+-int CHICKEN2_MOVE[6] = {-20, -16, -4, 4, 12, 16};
++// 実験 lever_scan の const 腕: 外部リンケージの非 const だと -fPIC では GOT 経由になり,
++// 定数畳み込みもされない. static const にして .h の extern 宣言を消す
++static const int GIRAFFE_MOVE[4] = {-16, -4, 4, 16};
++static const int ELEPHANT_MOVE[4] = {-20, -12, 12, 20};
++static const int LION_MOVE[8] = {-20, -16, -12, -4, 4, 12, 16, 20};
++static const int CHICKEN2_MOVE[6] = {-20, -16, -4, 4, 12, 16};
+ 
+ int main(void) {
+     int nbsn;
+@@ -92,7 +94,8 @@
+ // 冒頭で反転し, 後手目線の手を指す
+ int nextBoardInvNormal(u_long b, u_long *nbs) {
+     u_long nb, koma, dst_koma;
+-    int i, j, dst, own_num, own_p, *moves, moves_num, src_mod16, dst_mod16;
++    int i, j, dst, own_num, own_p, moves_num, src_mod16, dst_mod16;
++    const int *moves;
+     int emp_adrs[10];
+     int emp_num = 0;
+     int nbs_p = 0;
+--- a/animal_shogi.h
++++ b/animal_shogi.h
+@@ -39,11 +39,6 @@
+ 
+ enum PEACES {EMPTY, CHICK1, GIRAFFE1, ELEPHANT1, LION1, CHICKEN1, CHICK2=9, GIRAFFE2, ELEPHANT2, LION2, CHICKEN2};
+ 
+-extern int GIRAFFE_MOVE[4];
+-extern int ELEPHANT_MOVE[4];
+-extern int LION_MOVE[8];
+-extern int CHICKEN2_MOVE[6];
+-
+ void showBoard(u_long b);
+ 
+ // 盤面反転

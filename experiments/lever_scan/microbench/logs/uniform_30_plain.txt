@@ -1,0 +1,14 @@
+=== 開始 uniform_30_plain 2026-09-23T06:59:01+00:00 ===
+gcc -O2 -Wall -o scatter_bench scatter_bench.c (gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0)
+numactl --cpunodebind=0 --membind=0 ./scatter_bench uniform 30 plain 3 core
+辺 1073741824 / 行き先 282563637 / 出発 113864456 / 合計 10176 MB / 行き先の分布 一様
+巨大ページ 頼んでいない
+Rss:             9938848 kB
+AnonHugePages:         0 kB
+先読みした版の pred は全周で scatter とチェックサム一致
+kernel             min    median       max  (ns/辺, 3 周)
+count            23.90     23.93     24.09
+scatter         170.21    170.65    171.12
+store_indep      17.57     17.72     17.81
+pf2_32           36.60     36.61     36.79
+=== 終了 uniform_30_plain 2026-09-23T07:12:49+00:00 ===

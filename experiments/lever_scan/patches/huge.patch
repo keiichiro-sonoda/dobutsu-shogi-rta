@@ -1,0 +1,52 @@
+--- a/animal_shogi.c
++++ b/animal_shogi.c
+@@ -191,6 +191,22 @@
+ 
+ #define INDEX_SLOT(key) ((size_t)(((u_long)(key) * INDEX_MULT) >> g_index_shift))
+ 
++// ---- 2 MiB ページを頼んで確保する (実験 lever_scan の huge 腕) ------------------
++//
++// THP が [madvise] の機械では, 頼んだ領域にだけ巨大ページが付く.
++// ⚠️ memset より前に頼む. 触ったあとに頼んでも, その場では付かない.
++// 解放は free() のまま (aligned_alloc と対になっている).
++#include <sys/mman.h>
++#define HUGE_ALIGN ((size_t)1 << 21)
++
++static void *hugeAlloc(size_t bytes) {
++    size_t sz = (bytes + HUGE_ALIGN - 1) & ~(HUGE_ALIGN - 1);
++    void *p = aligned_alloc(HUGE_ALIGN, sz);
++    // 失敗しても 4 KiB ページのまま動く. 付いたかどうかは門番が AnonHugePages で見る
++    if (p) madvise(p, sz, MADV_HUGEPAGE);
++    return p;
++}
++
+ void indexFree(void) {
+     free(g_index);
+     g_index = NULL;
+@@ -213,7 +229,7 @@
+     indexFree();
+     slots = (size_t)1 << bits;
+     // 64B 境界に揃えて確保する. エントリ (16 B) がキャッシュラインを跨がないため
+-    g_index = (IndexEntry *)aligned_alloc(64, slots * sizeof(IndexEntry));
++    g_index = (IndexEntry *)hugeAlloc(slots * sizeof(IndexEntry));
+     if (!g_index) return -3;
+     g_index_mask = slots - 1;
+     g_index_shift = 64 - bits;
+@@ -307,7 +323,7 @@
+ int seenInit(void) {
+     size_t slots = (size_t)1 << SEEN_MIN_BITS;
+     seenFree();
+-    g_seen = (u_long *)aligned_alloc(64, slots * sizeof(u_long));
++    g_seen = (u_long *)hugeAlloc(slots * sizeof(u_long));
+     if (!g_seen) return -3;
+     // 0xff で埋めると全スロットが INDEX_EMPTY になる
+     memset(g_seen, 0xff, slots * sizeof(u_long));
+@@ -325,7 +341,7 @@
+     int bits = (64 - g_seen_shift) + 1;
+     if (bits > SEEN_MAX_BITS) return -3;
+     slots = (size_t)1 << bits;
+-    g_seen = (u_long *)aligned_alloc(64, slots * sizeof(u_long));
++    g_seen = (u_long *)hugeAlloc(slots * sizeof(u_long));
+     if (!g_seen) {
+         g_seen = old;
+         return -3;

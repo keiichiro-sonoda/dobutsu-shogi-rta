@@ -43,7 +43,9 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
 HMS = re.compile(r"(\d+)時間(\d+)分(\d+)秒")
-START = re.compile(r"^=== 開始 (?P<label>\S+) \((?P<arm>\S+)[ )]")
+# 腕の名前は空白・コロン・閉じ括弧の手前まで. 実験 lever_scan の開始行は
+# 「(base: gcc「…」パッチ「…」)」と腕のあとにコロンが来る
+START = re.compile(r"^=== 開始 (?P<label>\S+) \((?P<arm>[^\s:)]+)[:\s)]")
 RETREAT_TOTAL = re.compile(r"^後退解析の所要時間：(?P<sec>[\d.]+) 秒")
 FORWARD_TOTAL = re.compile(r"^全探索の所要時間：(?P<sec>[\d.]+) 秒")
 
@@ -163,8 +165,10 @@ def console(logs: pathlib.Path, mode: str) -> pathlib.Path:
     ⚠️ 1つの門番が全探索と後退解析の両方を測ることがある (記録 #18)。その場合は
     `console_forward.log` / `console_retreat.log` に分ける。片方しか測らない門番は
     `console.log` のまま (記録 #17 までの門番がそう)。
+    `spans` モードは後退解析の区間を読むので、`console_retreat.log` を見る
+    (実験 lever_scan が最初。`console_spans.log` という名前は作らない)。
     """
-    split = logs / f"console_{mode}.log"
+    split = logs / f"console_{'retreat' if mode == 'spans' else mode}.log"
     return split if split.exists() else logs / "console.log"
 
 

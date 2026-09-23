@@ -1,0 +1,274 @@
+=== 開始 r1_base (base: gcc「追加なし -O2」パッチ「なし」) 2026-09-23T06:01:22+00:00 ===
+=== 終了 r1_base 2026-09-23T06:04:15+00:00 (exit=0) ===
+後退解析の所要時間：173.31 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:53.35
+	Maximum resident set size (kbytes): 14499228
+	Minor (reclaiming a frame) page faults: 6525728
+indexFree の直前	Rss_kB	14499740	AnonHugePages_kB	0
+P0	3.9692 P1	14.2394 P2	63.4361 P4_count	6.2810 P4_scatter	57.1137 P4	63.3947 loop174	26.6163 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#19 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r1_base 2026-09-23T06:04:21+00:00 ===
+=== 開始 r1_fnsi (fnsi: gcc「-fno-semantic-interposition -O2」パッチ「なし」) 2026-09-23T06:04:23+00:00 ===
+=== 終了 r1_fnsi 2026-09-23T06:07:22+00:00 (exit=0) ===
+後退解析の所要時間：179.33 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:59.37
+	Maximum resident set size (kbytes): 14499232
+	Minor (reclaiming a frame) page faults: 6525728
+indexFree の直前	Rss_kB	14499748	AnonHugePages_kB	0
+P0	3.9906 P1	14.3742 P2	69.6754 P4_count	6.2458 P4_scatter	56.9303 P4	63.1761 loop174	26.4647 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#19 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r1_fnsi 2026-09-23T06:07:27+00:00 ===
+=== 開始 r1_const (const: gcc「追加なし -O2」パッチ「const」) 2026-09-23T06:07:29+00:00 ===
+=== 終了 r1_const 2026-09-23T06:10:23+00:00 (exit=0) ===
+後退解析の所要時間：173.61 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:53.64
+	Maximum resident set size (kbytes): 14499232
+	Minor (reclaiming a frame) page faults: 6525730
+indexFree の直前	Rss_kB	14499768	AnonHugePages_kB	0
+P0	3.9789 P1	14.1911 P2	63.2940 P4_count	6.2960 P4_scatter	57.6065 P4	63.9026 loop174	26.5965 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#19 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r1_const 2026-09-23T06:10:28+00:00 ===
+=== 開始 r1_native (native: gcc「-march=native -O2」パッチ「なし」) 2026-09-23T06:10:30+00:00 ===
+=== 終了 r1_native 2026-09-23T06:13:20+00:00 (exit=0) ===
+後退解析の所要時間：169.55 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:49.59
+	Maximum resident set size (kbytes): 14499228
+	Minor (reclaiming a frame) page faults: 6525723
+indexFree の直前	Rss_kB	14499748	AnonHugePages_kB	0
+P0	3.9916 P1	14.1345 P2	60.1388 P4_count	6.2580 P4_scatter	56.9587 P4	63.2167 loop174	26.4306 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#19 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r1_native 2026-09-23T06:13:25+00:00 ===
+=== 開始 r1_huge (huge: gcc「追加なし -O2」パッチ「huge」) 2026-09-23T06:13:27+00:00 ===
+=== 終了 r1_huge 2026-09-23T06:15:58+00:00 (exit=0) ===
+後退解析の所要時間：150.56 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:30.60
+	Maximum resident set size (kbytes): 14499108
+	Minor (reclaiming a frame) page faults: 4432671
+indexFree の直前	Rss_kB	14499748	AnonHugePages_kB	8388608
+P0	4.0070 P1	8.5085 P2	47.1153 P4_count	6.3389 P4_scatter	56.9461 P4	63.2850 loop174	26.3361 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#19 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r1_huge 2026-09-23T06:16:03+00:00 ===
+=== 開始 r1_pf (pf: gcc「追加なし -O2」パッチ「pf」) 2026-09-23T06:16:05+00:00 ===
+=== 終了 r1_pf 2026-09-23T06:18:09+00:00 (exit=0) ===
+後退解析の所要時間：124.55 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:04.60
+	Maximum resident set size (kbytes): 14499232
+	Minor (reclaiming a frame) page faults: 6525728
+indexFree の直前	Rss_kB	14499748	AnonHugePages_kB	0
+P0	4.0503 P1	12.1459 P2	61.6173 P4_count	6.1773 P4_scatter	12.8357 P4	19.0130 loop174	26.0868 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#19 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r1_pf 2026-09-23T06:18:15+00:00 ===
+=== 開始 r1_all (all: gcc「-fno-semantic-interposition -march=native -O2」パッチ「const huge pf」) 2026-09-23T06:18:16+00:00 ===
+=== 終了 r1_all 2026-09-23T06:19:57+00:00 (exit=0) ===
+後退解析の所要時間：100.31 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:40.35
+	Maximum resident set size (kbytes): 14498596
+	Minor (reclaiming a frame) page faults: 4432671
+indexFree の直前	Rss_kB	14499752	AnonHugePages_kB	8388608
+P0	4.1304 P1	7.2135 P2	41.7464 P4_count	6.2761 P4_scatter	13.0005 P4	19.2767 loop174	26.6197 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#19 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r1_all 2026-09-23T06:20:02+00:00 ===
+=== 開始 r2_fnsi (fnsi: gcc「-fno-semantic-interposition -O2」パッチ「なし」) 2026-09-23T06:20:04+00:00 ===
+=== 終了 r2_fnsi 2026-09-23T06:22:54+00:00 (exit=0) ===
+後退解析の所要時間：169.45 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:49.49
+	Maximum resident set size (kbytes): 14499232
+	Minor (reclaiming a frame) page faults: 6525730
+indexFree の直前	Rss_kB	14499768	AnonHugePages_kB	0
+P0	3.9492 P1	14.1045 P2	61.2373 P4_count	6.1561 P4_scatter	56.4938 P4	62.6499 loop174	25.8858 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#19 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r2_fnsi 2026-09-23T06:22:59+00:00 ===
+=== 開始 r2_const (const: gcc「追加なし -O2」パッチ「const」) 2026-09-23T06:23:01+00:00 ===
+=== 終了 r2_const 2026-09-23T06:25:53+00:00 (exit=0) ===
+後退解析の所要時間：172.37 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:52.41
+	Maximum resident set size (kbytes): 14499232
+	Minor (reclaiming a frame) page faults: 6525727
+indexFree の直前	Rss_kB	14499772	AnonHugePages_kB	0
+P0	3.9758 P1	14.0886 P2	62.8380 P4_count	6.2540 P4_scatter	57.0528 P4	63.3068 loop174	26.5179 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#19 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r2_const 2026-09-23T06:25:59+00:00 ===
+=== 開始 r2_native (native: gcc「-march=native -O2」パッチ「なし」) 2026-09-23T06:26:00+00:00 ===
+=== 終了 r2_native 2026-09-23T06:28:50+00:00 (exit=0) ===
+後退解析の所要時間：168.92 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:48.96
+	Maximum resident set size (kbytes): 14499228
+	Minor (reclaiming a frame) page faults: 6525721
+indexFree の直前	Rss_kB	14499748	AnonHugePages_kB	0
+P0	4.0581 P1	14.2173 P2	59.8315 P4_count	6.2135 P4_scatter	56.7231 P4	62.9367 loop174	26.2432 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#19 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r2_native 2026-09-23T06:28:55+00:00 ===
+=== 開始 r2_huge (huge: gcc「追加なし -O2」パッチ「huge」) 2026-09-23T06:28:57+00:00 ===
+=== 終了 r2_huge 2026-09-23T06:31:29+00:00 (exit=0) ===
+後退解析の所要時間：151.84 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:31.89
+	Maximum resident set size (kbytes): 14499048
+	Minor (reclaiming a frame) page faults: 4432670
+indexFree の直前	Rss_kB	14499724	AnonHugePages_kB	8388608
+P0	3.9812 P1	8.4673 P2	47.7417 P4_count	6.2888 P4_scatter	57.5620 P4	63.8509 loop174	26.5153 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#19 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r2_huge 2026-09-23T06:31:34+00:00 ===
+=== 開始 r2_pf (pf: gcc「追加なし -O2」パッチ「pf」) 2026-09-23T06:31:36+00:00 ===
+=== 終了 r2_pf 2026-09-23T06:33:42+00:00 (exit=0) ===
+後退解析の所要時間：126.40 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:06.45
+	Maximum resident set size (kbytes): 14498784
+	Minor (reclaiming a frame) page faults: 6525729
+indexFree の直前	Rss_kB	14499768	AnonHugePages_kB	0
+P0	3.9780 P1	12.1040 P2	62.6727 P4_count	6.2987 P4_scatter	13.0001 P4	19.2988 loop174	26.6944 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#19 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r2_pf 2026-09-23T06:33:48+00:00 ===
+=== 開始 r2_all (all: gcc「-fno-semantic-interposition -march=native -O2」パッチ「const huge pf」) 2026-09-23T06:33:49+00:00 ===
+=== 終了 r2_all 2026-09-23T06:35:29+00:00 (exit=0) ===
+後退解析の所要時間：99.79 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:39.83
+	Maximum resident set size (kbytes): 14499320
+	Minor (reclaiming a frame) page faults: 4432677
+indexFree の直前	Rss_kB	14499776	AnonHugePages_kB	8388608
+P0	4.0444 P1	7.1772 P2	41.8069 P4_count	6.2409 P4_scatter	12.9518 P4	19.1928 loop174	26.2638 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#19 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r2_all 2026-09-23T06:35:35+00:00 ===
+=== 開始 r2_base (base: gcc「追加なし -O2」パッチ「なし」) 2026-09-23T06:35:36+00:00 ===
+=== 終了 r2_base 2026-09-23T06:38:30+00:00 (exit=0) ===
+後退解析の所要時間：173.19 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:53.23
+	Maximum resident set size (kbytes): 14498784
+	Minor (reclaiming a frame) page faults: 6525732
+indexFree の直前	Rss_kB	14499800	AnonHugePages_kB	0
+P0	4.0365 P1	14.4317 P2	62.8603 P4_count	6.2739 P4_scatter	57.5858 P4	63.8597 loop174	26.3632 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#19 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r2_base 2026-09-23T06:38:35+00:00 ===
+=== 開始 r3_const (const: gcc「追加なし -O2」パッチ「const」) 2026-09-23T06:38:37+00:00 ===
+=== 終了 r3_const 2026-09-23T06:41:30+00:00 (exit=0) ===
+後退解析の所要時間：172.86 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:52.90
+	Maximum resident set size (kbytes): 14499232
+	Minor (reclaiming a frame) page faults: 6525728
+indexFree の直前	Rss_kB	14499768	AnonHugePages_kB	0
+P0	4.0306 P1	14.2583 P2	63.3160 P4_count	6.2369 P4_scatter	56.7777 P4	63.0146 loop174	26.6012 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#19 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r3_const 2026-09-23T06:41:35+00:00 ===
+=== 開始 r3_native (native: gcc「-march=native -O2」パッチ「なし」) 2026-09-23T06:41:37+00:00 ===
+=== 終了 r3_native 2026-09-23T06:44:27+00:00 (exit=0) ===
+後退解析の所要時間：169.44 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:49.48
+	Maximum resident set size (kbytes): 14499116
+	Minor (reclaiming a frame) page faults: 6525726
+indexFree の直前	Rss_kB	14499772	AnonHugePages_kB	0
+P0	3.9772 P1	14.1191 P2	59.9854 P4_count	6.2454 P4_scatter	57.3015 P4	63.5469 loop174	26.1652 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#19 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r3_native 2026-09-23T06:44:32+00:00 ===
+=== 開始 r3_huge (huge: gcc「追加なし -O2」パッチ「huge」) 2026-09-23T06:44:34+00:00 ===
+=== 終了 r3_huge 2026-09-23T06:47:04+00:00 (exit=0) ===
+後退解析の所要時間：150.32 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:30.36
+	Maximum resident set size (kbytes): 14499496
+	Minor (reclaiming a frame) page faults: 4432681
+indexFree の直前	Rss_kB	14499804	AnonHugePages_kB	8388608
+P0	3.9771 P1	8.4182 P2	47.3983 P4_count	6.1864 P4_scatter	56.8303 P4	63.0167 loop174	26.2189 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#19 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r3_huge 2026-09-23T06:47:10+00:00 ===
+=== 開始 r3_pf (pf: gcc「追加なし -O2」パッチ「pf」) 2026-09-23T06:47:11+00:00 ===
+=== 終了 r3_pf 2026-09-23T06:49:17+00:00 (exit=0) ===
+後退解析の所要時間：125.80 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:05.85
+	Maximum resident set size (kbytes): 14498896
+	Minor (reclaiming a frame) page faults: 6525732
+indexFree の直前	Rss_kB	14499768	AnonHugePages_kB	0
+P0	4.0162 P1	12.2625 P2	62.2711 P4_count	6.2509 P4_scatter	12.9186 P4	19.1695 loop174	26.4451 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#19 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r3_pf 2026-09-23T06:49:22+00:00 ===
+=== 開始 r3_all (all: gcc「-fno-semantic-interposition -march=native -O2」パッチ「const huge pf」) 2026-09-23T06:49:24+00:00 ===
+=== 終了 r3_all 2026-09-23T06:51:05+00:00 (exit=0) ===
+後退解析の所要時間：100.32 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:40.36
+	Maximum resident set size (kbytes): 14499496
+	Minor (reclaiming a frame) page faults: 4432676
+indexFree の直前	Rss_kB	14499756	AnonHugePages_kB	8388608
+P0	4.0034 P1	7.2451 P2	41.6561 P4_count	6.2945 P4_scatter	13.0005 P4	19.2950 loop174	26.8180 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#19 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r3_all 2026-09-23T06:51:10+00:00 ===
+=== 開始 r3_base (base: gcc「追加なし -O2」パッチ「なし」) 2026-09-23T06:51:12+00:00 ===
+=== 終了 r3_base 2026-09-23T06:54:06+00:00 (exit=0) ===
+後退解析の所要時間：174.47 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:54.51
+	Maximum resident set size (kbytes): 14499232
+	Minor (reclaiming a frame) page faults: 6525722
+indexFree の直前	Rss_kB	14499744	AnonHugePages_kB	0
+P0	3.9667 P1	14.4533 P2	64.3258 P4_count	6.3286 P4_scatter	57.2300 P4	63.5586 loop174	26.5031 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#19 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r3_base 2026-09-23T06:54:12+00:00 ===
+=== 開始 r3_fnsi (fnsi: gcc「-fno-semantic-interposition -O2」パッチ「なし」) 2026-09-23T06:54:14+00:00 ===
+=== 終了 r3_fnsi 2026-09-23T06:57:07+00:00 (exit=0) ===
+後退解析の所要時間：173.13 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:53.17
+	Maximum resident set size (kbytes): 14498988
+	Minor (reclaiming a frame) page faults: 6525734
+indexFree の直前	Rss_kB	14499800	AnonHugePages_kB	0
+P0	4.0401 P1	14.4109 P2	62.4966 P4_count	6.3007 P4_scatter	57.5008 P4	63.8016 loop174	26.7301 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#19 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r3_fnsi 2026-09-23T06:57:12+00:00 ===
+=== 後退解析 全21本 完了 2026-09-23T06:57:12+00:00 ===

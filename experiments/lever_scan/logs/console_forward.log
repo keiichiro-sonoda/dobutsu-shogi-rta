@@ -1,0 +1,255 @@
+=== 開始 b1_base (base: gcc「追加なし -O2」パッチ「なし」) 2026-09-23T05:17:19+00:00 ===
+=== 終了 b1_base 2026-09-23T05:19:25+00:00 (exit=0) ===
+全探索の所要時間：125.37 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:05.42
+	Maximum resident set size (kbytes): 7027472
+	Minor (reclaiming a frame) page faults: 7597719
+seenFree の直前	Rss_kB	4289596	AnonHugePages_kB	0
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較: 51 ファイル / 1974425336 バイト / 基準 ---
+dat/ は残した: runs/exp_lsf_b1_base/dat
+=== 完了 b1_base 2026-09-23T05:19:29+00:00 ===
+後退解析の入力を作った: runs/g19_fixture_bin/dat (51 ファイル)
+=== 開始 b1_fnsi (fnsi: gcc「-fno-semantic-interposition -O2」パッチ「なし」) 2026-09-23T05:19:30+00:00 ===
+=== 終了 b1_fnsi 2026-09-23T05:21:32+00:00 (exit=0) ===
+全探索の所要時間：121.98 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:02.01
+	Maximum resident set size (kbytes): 7027256
+	Minor (reclaiming a frame) page faults: 7597718
+seenFree の直前	Rss_kB	4289596	AnonHugePages_kB	0
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較: 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b1_fnsi 2026-09-23T05:21:36+00:00 ===
+=== 開始 b1_const (const: gcc「追加なし -O2」パッチ「const」) 2026-09-23T05:21:37+00:00 ===
+=== 終了 b1_const 2026-09-23T05:23:43+00:00 (exit=0) ===
+全探索の所要時間：126.07 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:06.11
+	Maximum resident set size (kbytes): 7027216
+	Minor (reclaiming a frame) page faults: 7597718
+seenFree の直前	Rss_kB	4289632	AnonHugePages_kB	0
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較: 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b1_const 2026-09-23T05:23:48+00:00 ===
+=== 開始 b1_native (native: gcc「-march=native -O2」パッチ「なし」) 2026-09-23T05:23:48+00:00 ===
+=== 終了 b1_native 2026-09-23T05:25:52+00:00 (exit=0) ===
+全探索の所要時間：123.94 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:03.98
+	Maximum resident set size (kbytes): 7028096
+	Minor (reclaiming a frame) page faults: 7597718
+seenFree の直前	Rss_kB	4289592	AnonHugePages_kB	0
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較: 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b1_native 2026-09-23T05:25:57+00:00 ===
+=== 開始 b1_huge (huge: gcc「追加なし -O2」パッチ「huge」) 2026-09-23T05:25:57+00:00 ===
+=== 終了 b1_huge 2026-09-23T05:27:55+00:00 (exit=0) ===
+全探索の所要時間：117.25 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:57.29
+	Maximum resident set size (kbytes): 7027732
+	Minor (reclaiming a frame) page faults: 5506713
+seenFree の直前	Rss_kB	4289564	AnonHugePages_kB	4194304
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較: 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b1_huge 2026-09-23T05:27:59+00:00 ===
+=== 開始 b1_pf (pf: gcc「追加なし -O2」パッチ「pf」) 2026-09-23T05:28:00+00:00 ===
+=== 終了 b1_pf 2026-09-23T05:29:59+00:00 (exit=0) ===
+全探索の所要時間：118.92 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:58.96
+	Maximum resident set size (kbytes): 7027124
+	Minor (reclaiming a frame) page faults: 7597718
+seenFree の直前	Rss_kB	4289584	AnonHugePages_kB	0
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較: 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b1_pf 2026-09-23T05:30:03+00:00 ===
+=== 開始 b1_all (all: gcc「-fno-semantic-interposition -march=native -O2」パッチ「const huge pf」) 2026-09-23T05:30:04+00:00 ===
+=== 終了 b1_all 2026-09-23T05:31:43+00:00 (exit=0) ===
+全探索の所要時間：99.27 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:39.30
+	Maximum resident set size (kbytes): 7028140
+	Minor (reclaiming a frame) page faults: 5506717
+seenFree の直前	Rss_kB	4289600	AnonHugePages_kB	4194304
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較: 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b1_all 2026-09-23T05:31:48+00:00 ===
+=== 開始 b2_fnsi (fnsi: gcc「-fno-semantic-interposition -O2」パッチ「なし」) 2026-09-23T05:31:48+00:00 ===
+=== 終了 b2_fnsi 2026-09-23T05:34:01+00:00 (exit=0) ===
+全探索の所要時間：132.32 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:12.37
+	Maximum resident set size (kbytes): 7027508
+	Minor (reclaiming a frame) page faults: 7597715
+seenFree の直前	Rss_kB	4289580	AnonHugePages_kB	0
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較: 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b2_fnsi 2026-09-23T05:34:06+00:00 ===
+=== 開始 b2_const (const: gcc「追加なし -O2」パッチ「const」) 2026-09-23T05:34:06+00:00 ===
+=== 終了 b2_const 2026-09-23T05:36:13+00:00 (exit=0) ===
+全探索の所要時間：127.32 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:07.36
+	Maximum resident set size (kbytes): 7027508
+	Minor (reclaiming a frame) page faults: 7597723
+seenFree の直前	Rss_kB	4289700	AnonHugePages_kB	0
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較: 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b2_const 2026-09-23T05:36:18+00:00 ===
+=== 開始 b2_native (native: gcc「-march=native -O2」パッチ「なし」) 2026-09-23T05:36:18+00:00 ===
+=== 終了 b2_native 2026-09-23T05:38:27+00:00 (exit=0) ===
+全探索の所要時間：128.83 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:08.87
+	Maximum resident set size (kbytes): 7027696
+	Minor (reclaiming a frame) page faults: 7597718
+seenFree の直前	Rss_kB	4289596	AnonHugePages_kB	0
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較: 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b2_native 2026-09-23T05:38:32+00:00 ===
+=== 開始 b2_huge (huge: gcc「追加なし -O2」パッチ「huge」) 2026-09-23T05:38:33+00:00 ===
+=== 終了 b2_huge 2026-09-23T05:40:33+00:00 (exit=0) ===
+全探索の所要時間：120.76 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:00.81
+	Maximum resident set size (kbytes): 7027648
+	Minor (reclaiming a frame) page faults: 5506717
+seenFree の直前	Rss_kB	4289628	AnonHugePages_kB	4194304
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較: 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b2_huge 2026-09-23T05:40:38+00:00 ===
+=== 開始 b2_pf (pf: gcc「追加なし -O2」パッチ「pf」) 2026-09-23T05:40:39+00:00 ===
+=== 終了 b2_pf 2026-09-23T05:42:31+00:00 (exit=0) ===
+全探索の所要時間：111.89 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:51.94
+	Maximum resident set size (kbytes): 7027788
+	Minor (reclaiming a frame) page faults: 7597722
+seenFree の直前	Rss_kB	4289572	AnonHugePages_kB	0
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較: 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b2_pf 2026-09-23T05:42:35+00:00 ===
+=== 開始 b2_all (all: gcc「-fno-semantic-interposition -march=native -O2」パッチ「const huge pf」) 2026-09-23T05:42:36+00:00 ===
+=== 終了 b2_all 2026-09-23T05:44:18+00:00 (exit=0) ===
+全探索の所要時間：101.79 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:41.83
+	Maximum resident set size (kbytes): 7027660
+	Minor (reclaiming a frame) page faults: 5506719
+seenFree の直前	Rss_kB	4289700	AnonHugePages_kB	4194304
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較: 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b2_all 2026-09-23T05:44:22+00:00 ===
+=== 開始 b2_base (base: gcc「追加なし -O2」パッチ「なし」) 2026-09-23T05:44:23+00:00 ===
+=== 終了 b2_base 2026-09-23T05:46:33+00:00 (exit=0) ===
+全探索の所要時間：130.33 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:10.36
+	Maximum resident set size (kbytes): 7027692
+	Minor (reclaiming a frame) page faults: 7597720
+seenFree の直前	Rss_kB	4289620	AnonHugePages_kB	0
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較: 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b2_base 2026-09-23T05:46:38+00:00 ===
+=== 開始 b3_const (const: gcc「追加なし -O2」パッチ「const」) 2026-09-23T05:46:38+00:00 ===
+=== 終了 b3_const 2026-09-23T05:48:46+00:00 (exit=0) ===
+全探索の所要時間：127.45 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:07.49
+	Maximum resident set size (kbytes): 7027696
+	Minor (reclaiming a frame) page faults: 7597720
+seenFree の直前	Rss_kB	4289576	AnonHugePages_kB	0
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較: 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b3_const 2026-09-23T05:48:51+00:00 ===
+=== 開始 b3_native (native: gcc「-march=native -O2」パッチ「なし」) 2026-09-23T05:48:51+00:00 ===
+=== 終了 b3_native 2026-09-23T05:50:58+00:00 (exit=0) ===
+全探索の所要時間：126.96 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:07.00
+	Maximum resident set size (kbytes): 7027388
+	Minor (reclaiming a frame) page faults: 7597719
+seenFree の直前	Rss_kB	4289576	AnonHugePages_kB	0
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較: 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b3_native 2026-09-23T05:51:03+00:00 ===
+=== 開始 b3_huge (huge: gcc「追加なし -O2」パッチ「huge」) 2026-09-23T05:51:03+00:00 ===
+=== 終了 b3_huge 2026-09-23T05:53:01+00:00 (exit=0) ===
+全探索の所要時間：117.87 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:57.91
+	Maximum resident set size (kbytes): 7027836
+	Minor (reclaiming a frame) page faults: 5506716
+seenFree の直前	Rss_kB	4289632	AnonHugePages_kB	4194304
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較: 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b3_huge 2026-09-23T05:53:06+00:00 ===
+=== 開始 b3_pf (pf: gcc「追加なし -O2」パッチ「pf」) 2026-09-23T05:53:06+00:00 ===
+=== 終了 b3_pf 2026-09-23T05:55:02+00:00 (exit=0) ===
+全探索の所要時間：115.55 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:55.59
+	Maximum resident set size (kbytes): 7027596
+	Minor (reclaiming a frame) page faults: 7597718
+seenFree の直前	Rss_kB	4289588	AnonHugePages_kB	0
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較: 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b3_pf 2026-09-23T05:55:06+00:00 ===
+=== 開始 b3_all (all: gcc「-fno-semantic-interposition -march=native -O2」パッチ「const huge pf」) 2026-09-23T05:55:07+00:00 ===
+=== 終了 b3_all 2026-09-23T05:56:48+00:00 (exit=0) ===
+全探索の所要時間：100.98 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:41.03
+	Maximum resident set size (kbytes): 7027736
+	Minor (reclaiming a frame) page faults: 5506717
+seenFree の直前	Rss_kB	4289604	AnonHugePages_kB	4194304
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較: 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b3_all 2026-09-23T05:56:52+00:00 ===
+=== 開始 b3_base (base: gcc「追加なし -O2」パッチ「なし」) 2026-09-23T05:56:53+00:00 ===
+=== 終了 b3_base 2026-09-23T05:59:04+00:00 (exit=0) ===
+全探索の所要時間：131.06 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:11.10
+	Maximum resident set size (kbytes): 7027968
+	Minor (reclaiming a frame) page faults: 7597720
+seenFree の直前	Rss_kB	4289624	AnonHugePages_kB	0
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較: 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b3_base 2026-09-23T05:59:09+00:00 ===
+=== 開始 b3_fnsi (fnsi: gcc「-fno-semantic-interposition -O2」パッチ「なし」) 2026-09-23T05:59:09+00:00 ===
+=== 終了 b3_fnsi 2026-09-23T06:01:15+00:00 (exit=0) ===
+全探索の所要時間：126.38 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:06.41
+	Maximum resident set size (kbytes): 7027508
+	Minor (reclaiming a frame) page faults: 7597718
+seenFree の直前	Rss_kB	4289596	AnonHugePages_kB	0
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較: 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b3_fnsi 2026-09-23T06:01:20+00:00 ===
+=== 全探索 全21本 完了 2026-09-23T06:01:20+00:00 ===

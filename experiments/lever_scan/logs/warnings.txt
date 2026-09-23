@@ -1,0 +1,24 @@
+# 7腕を -Wall -Wextra でビルドしたときの警告 (門番のビルドは -Wall だけ)
+# gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+#
+base (gcc -O2 -Wall -Wextra): 警告 0 件
+fnsi (gcc -fno-semantic-interposition -O2 -Wall -Wextra): 警告 0 件
+const (gcc -O2 -Wall -Wextra): 警告 0 件
+native (gcc -march=native -O2 -Wall -Wextra): 警告 0 件
+huge (gcc -O2 -Wall -Wextra): 警告 0 件
+pf (gcc -O2 -Wall -Wextra): 警告 0 件
+all (gcc -fno-semantic-interposition -march=native -O2 -Wall -Wextra): 警告 0 件
+
+# 効いたことの確認 (objdump)
+#   normalBoard@plt への call  … objdump -d で数える (fnsi で 0 になるはず)
+#   移動表の GOT 再配置        … objdump -R の R_X86_64_GLOB_DAT *_MOVE (const で 0 になるはず)
+#   AVX・BMI 系の命令          … objdump -d で vmov/vpbroadcast/shlx/shrx/sarx/tzcnt/lzcnt/popcnt (native で増えるはず)
+#   先読み命令                  … objdump -d で prefetch (pf で増えるはず)
+#   madvise の呼び出し          … objdump -d で call madvise@plt (huge で増えるはず)
+base    normalBoard@plt 3 / GOT(移動表) 4 / AVX・BMI  0 / prefetch 0 / madvise 0
+fnsi    normalBoard@plt 0 / GOT(移動表) 4 / AVX・BMI  0 / prefetch 0 / madvise 0
+const   normalBoard@plt 3 / GOT(移動表) 0 / AVX・BMI  0 / prefetch 0 / madvise 0
+native  normalBoard@plt 3 / GOT(移動表) 4 / AVX・BMI 48 / prefetch 0 / madvise 0
+huge    normalBoard@plt 3 / GOT(移動表) 4 / AVX・BMI  0 / prefetch 0 / madvise 3
+pf      normalBoard@plt 3 / GOT(移動表) 4 / AVX・BMI  0 / prefetch 5 / madvise 0
+all     normalBoard@plt 0 / GOT(移動表) 0 / AVX・BMI 51 / prefetch 5 / madvise 3

@@ -1,0 +1,90 @@
+基準: runs/g19_fixture_bin/dat の md5 一覧の sha256 ada002f3e33c16f04ebaf5db2ee05969763f3e219f76b86a484040637b74f804
+=== 開始 f1a_old (old: impl/19_c_gather (Makefile のまま)) 2026-09-23T11:07:27+00:00 ===
+=== 終了 f1a_old 2026-09-23T11:09:31+00:00 (exit=0) ===
+全探索の所要時間：124.57 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:04.61
+	Maximum resident set size (kbytes): 7027388
+	Minor (reclaiming a frame) page faults: 7597710
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較 (入力と): 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 f1a_old 2026-09-23T11:09:36+00:00 ===
+=== 開始 f1b_new (new: impl/20_prefetch (Makefile のまま)) 2026-09-23T11:09:36+00:00 ===
+=== 終了 f1b_new 2026-09-23T11:11:26+00:00 (exit=0) ===
+全探索の所要時間：109.33 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:49.37
+	Maximum resident set size (kbytes): 7027308
+	Minor (reclaiming a frame) page faults: 7597711
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較 (入力と): 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 f1b_new 2026-09-23T11:11:31+00:00 ===
+=== 開始 f1c_new (new: impl/20_prefetch (Makefile のまま)) 2026-09-23T11:11:31+00:00 ===
+=== 終了 f1c_new 2026-09-23T11:13:22+00:00 (exit=0) ===
+全探索の所要時間：110.90 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:50.94
+	Maximum resident set size (kbytes): 7027512
+	Minor (reclaiming a frame) page faults: 7597709
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較 (入力と): 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 f1c_new 2026-09-23T11:13:27+00:00 ===
+=== 開始 f1d_old (old: impl/19_c_gather (Makefile のまま)) 2026-09-23T11:13:27+00:00 ===
+=== 終了 f1d_old 2026-09-23T11:15:36+00:00 (exit=0) ===
+全探索の所要時間：128.24 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:08.29
+	Maximum resident set size (kbytes): 7027468
+	Minor (reclaiming a frame) page faults: 7597710
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較 (入力と): 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 f1d_old 2026-09-23T11:15:40+00:00 ===
+=== 開始 f2a_old (old: impl/19_c_gather (Makefile のまま)) 2026-09-23T11:15:41+00:00 ===
+=== 終了 f2a_old 2026-09-23T11:17:47+00:00 (exit=0) ===
+全探索の所要時間：125.72 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:05.76
+	Maximum resident set size (kbytes): 7027568
+	Minor (reclaiming a frame) page faults: 7597716
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較 (入力と): 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 f2a_old 2026-09-23T11:17:51+00:00 ===
+=== 開始 f2b_new (new: impl/20_prefetch (Makefile のまま)) 2026-09-23T11:17:52+00:00 ===
+=== 終了 f2b_new 2026-09-23T11:19:47+00:00 (exit=0) ===
+全探索の所要時間：115.02 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:55.06
+	Maximum resident set size (kbytes): 7027652
+	Minor (reclaiming a frame) page faults: 7597709
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較 (入力と): 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 f2b_new 2026-09-23T11:19:52+00:00 ===
+=== 開始 f2c_new (new: impl/20_prefetch (Makefile のまま)) 2026-09-23T11:19:52+00:00 ===
+=== 終了 f2c_new 2026-09-23T11:21:50+00:00 (exit=0) ===
+全探索の所要時間：118.26 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:58.30
+	Maximum resident set size (kbytes): 7027736
+	Minor (reclaiming a frame) page faults: 7597707
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較 (入力と): 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 f2c_new 2026-09-23T11:21:55+00:00 ===
+=== 開始 f2d_old (old: impl/19_c_gather (Makefile のまま)) 2026-09-23T11:21:55+00:00 ===
+=== 終了 f2d_old 2026-09-23T11:24:07+00:00 (exit=0) ===
+全探索の所要時間：131.58 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:11.62
+	Maximum resident set size (kbytes): 7027736
+	Minor (reclaiming a frame) page faults: 7597711
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較 (入力と): 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 f2d_old 2026-09-23T11:24:12+00:00 ===
+=== 全探索 全8本 完了 2026-09-23T11:24:12+00:00 ===

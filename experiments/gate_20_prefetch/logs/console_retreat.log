@@ -1,0 +1,97 @@
+=== 開始 r1a_old (old: impl/19_c_gather (Makefile のまま)) 2026-09-23T11:24:14+00:00 ===
+=== 終了 r1a_old 2026-09-23T11:27:08+00:00 (exit=0) ===
+後退解析の所要時間：174.75 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:54.79
+	Maximum resident set size (kbytes): 14498912
+	Minor (reclaiming a frame) page faults: 6525736
+P0	3.9275 P1	14.3809 P2	63.7870 P4_count	6.3178 P4_scatter	57.6890 P4	64.0068 loop174	27.0597 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#19 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r1a_old 2026-09-23T11:27:14+00:00 ===
+=== 開始 r1b_new (new: impl/20_prefetch (Makefile のまま)) 2026-09-23T11:27:15+00:00 ===
+=== 終了 r1b_new 2026-09-23T11:29:23+00:00 (exit=0) ===
+後退解析の所要時間：127.17 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:07.21
+	Maximum resident set size (kbytes): 14499188
+	Minor (reclaiming a frame) page faults: 6525720
+P0	4.0096 P1	12.2507 P2	62.9471 P4_count	6.3468 P4_scatter	13.0652 P4	19.4120 loop174	26.9794 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#19 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r1b_new 2026-09-23T11:29:28+00:00 ===
+=== 開始 r1c_new (new: impl/20_prefetch (Makefile のまま)) 2026-09-23T11:29:30+00:00 ===
+=== 終了 r1c_new 2026-09-23T11:31:37+00:00 (exit=0) ===
+後退解析の所要時間：126.56 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:06.60
+	Maximum resident set size (kbytes): 14499188
+	Minor (reclaiming a frame) page faults: 6525718
+P0	3.9471 P1	12.1494 P2	63.0505 P4_count	6.2889 P4_scatter	13.0190 P4	19.3079 loop174	26.5536 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#19 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r1c_new 2026-09-23T11:31:42+00:00 ===
+=== 開始 r1d_old (old: impl/19_c_gather (Makefile のまま)) 2026-09-23T11:31:44+00:00 ===
+=== 終了 r1d_old 2026-09-23T11:34:37+00:00 (exit=0) ===
+後退解析の所要時間：173.10 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:53.14
+	Maximum resident set size (kbytes): 14498952
+	Minor (reclaiming a frame) page faults: 6525724
+P0	4.0006 P1	14.2686 P2	62.7904 P4_count	6.2403 P4_scatter	57.7611 P4	64.0014 loop174	26.4886 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#19 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r1d_old 2026-09-23T11:34:42+00:00 ===
+=== 開始 r2a_old (old: impl/19_c_gather (Makefile のまま)) 2026-09-23T11:34:44+00:00 ===
+=== 終了 r2a_old 2026-09-23T11:37:39+00:00 (exit=0) ===
+後退解析の所要時間：174.88 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:54.93
+	Maximum resident set size (kbytes): 14498740
+	Minor (reclaiming a frame) page faults: 6525723
+P0	4.0011 P1	14.3343 P2	64.4561 P4_count	6.2950 P4_scatter	57.5656 P4	63.8606 loop174	26.6820 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#19 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r2a_old 2026-09-23T11:37:44+00:00 ===
+=== 開始 r2b_new (new: impl/20_prefetch (Makefile のまま)) 2026-09-23T11:37:46+00:00 ===
+=== 終了 r2b_new 2026-09-23T11:39:53+00:00 (exit=0) ===
+後退解析の所要時間：126.74 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:06.78
+	Maximum resident set size (kbytes): 14499192
+	Minor (reclaiming a frame) page faults: 6525722
+P0	3.9761 P1	12.1903 P2	63.0435 P4_count	6.3100 P4_scatter	13.0074 P4	19.3175 loop174	26.6593 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#19 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r2b_new 2026-09-23T11:39:58+00:00 ===
+=== 開始 r2c_new (new: impl/20_prefetch (Makefile のまま)) 2026-09-23T11:40:00+00:00 ===
+=== 終了 r2c_new 2026-09-23T11:42:06+00:00 (exit=0) ===
+後退解析の所要時間：126.13 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:06.17
+	Maximum resident set size (kbytes): 14498916
+	Minor (reclaiming a frame) page faults: 6525723
+P0	3.9702 P1	12.2172 P2	62.3690 P4_count	6.2965 P4_scatter	12.9947 P4	19.2913 loop174	26.7361 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#19 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r2c_new 2026-09-23T11:42:12+00:00 ===
+=== 開始 r2d_old (old: impl/19_c_gather (Makefile のまま)) 2026-09-23T11:42:13+00:00 ===
+=== 終了 r2d_old 2026-09-23T11:45:07+00:00 (exit=0) ===
+後退解析の所要時間：173.17 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:53.21
+	Maximum resident set size (kbytes): 14499184
+	Minor (reclaiming a frame) page faults: 6525716
+P0	3.9948 P1	14.2658 P2	63.1066 P4_count	6.2576 P4_scatter	57.4513 P4	63.7089 loop174	26.5353 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#19 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r2d_old 2026-09-23T11:45:12+00:00 ===
+=== 後退解析 全8本 完了 2026-09-23T11:45:12+00:00 ===

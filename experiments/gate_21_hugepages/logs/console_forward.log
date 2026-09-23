@@ -1,0 +1,90 @@
+基準: runs/g19_fixture_bin/dat の md5 一覧の sha256 ada002f3e33c16f04ebaf5db2ee05969763f3e219f76b86a484040637b74f804
+=== 開始 f1a_old (old: C impl/20_prefetch / Python impl/21_hugepages (Makefile のまま)) 2026-09-23T13:14:30+00:00 ===
+=== 終了 f1a_old 2026-09-23T13:16:21+00:00 (exit=0) ===
+全探索の所要時間：111.10 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:51.14
+	Maximum resident set size (kbytes): 7027692
+	Minor (reclaiming a frame) page faults: 7597685
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較 (入力と): 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 f1a_old 2026-09-23T13:16:26+00:00 ===
+=== 開始 f1b_new (new: C impl/21_hugepages / Python impl/21_hugepages (Makefile のまま)) 2026-09-23T13:16:26+00:00 ===
+=== 終了 f1b_new 2026-09-23T13:18:13+00:00 (exit=0) ===
+全探索の所要時間：106.34 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:46.38
+	Maximum resident set size (kbytes): 7027120
+	Minor (reclaiming a frame) page faults: 5506683
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較 (入力と): 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 f1b_new 2026-09-23T13:18:17+00:00 ===
+=== 開始 f1c_new (new: C impl/21_hugepages / Python impl/21_hugepages (Makefile のまま)) 2026-09-23T13:18:18+00:00 ===
+=== 終了 f1c_new 2026-09-23T13:20:05+00:00 (exit=0) ===
+全探索の所要時間：107.00 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:47.04
+	Maximum resident set size (kbytes): 7027696
+	Minor (reclaiming a frame) page faults: 5506682
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較 (入力と): 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 f1c_new 2026-09-23T13:20:10+00:00 ===
+=== 開始 f1d_old (old: C impl/20_prefetch / Python impl/21_hugepages (Makefile のまま)) 2026-09-23T13:20:10+00:00 ===
+=== 終了 f1d_old 2026-09-23T13:22:07+00:00 (exit=0) ===
+全探索の所要時間：116.22 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:56.26
+	Maximum resident set size (kbytes): 7027832
+	Minor (reclaiming a frame) page faults: 7597684
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較 (入力と): 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 f1d_old 2026-09-23T13:22:11+00:00 ===
+=== 開始 f2a_old (old: C impl/20_prefetch / Python impl/21_hugepages (Makefile のまま)) 2026-09-23T13:22:12+00:00 ===
+=== 終了 f2a_old 2026-09-23T13:24:09+00:00 (exit=0) ===
+全探索の所要時間：116.73 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:56.77
+	Maximum resident set size (kbytes): 7027668
+	Minor (reclaiming a frame) page faults: 7597684
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較 (入力と): 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 f2a_old 2026-09-23T13:24:13+00:00 ===
+=== 開始 f2b_new (new: C impl/21_hugepages / Python impl/21_hugepages (Makefile のまま)) 2026-09-23T13:24:14+00:00 ===
+=== 終了 f2b_new 2026-09-23T13:26:02+00:00 (exit=0) ===
+全探索の所要時間：108.50 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:48.54
+	Maximum resident set size (kbytes): 7028068
+	Minor (reclaiming a frame) page faults: 5506682
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較 (入力と): 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 f2b_new 2026-09-23T13:26:07+00:00 ===
+=== 開始 f2c_new (new: C impl/21_hugepages / Python impl/21_hugepages (Makefile のまま)) 2026-09-23T13:26:07+00:00 ===
+=== 終了 f2c_new 2026-09-23T13:27:55+00:00 (exit=0) ===
+全探索の所要時間：107.32 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:47.36
+	Maximum resident set size (kbytes): 7027748
+	Minor (reclaiming a frame) page faults: 5506682
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較 (入力と): 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 f2c_new 2026-09-23T13:28:00+00:00 ===
+=== 開始 f2d_old (old: C impl/20_prefetch / Python impl/21_hugepages (Makefile のまま)) 2026-09-23T13:28:00+00:00 ===
+=== 終了 f2d_old 2026-09-23T13:29:56+00:00 (exit=0) ===
+全探索の所要時間：116.08 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:56.12
+	Maximum resident set size (kbytes): 7027584
+	Minor (reclaiming a frame) page faults: 7597687
+--- オラクル 到達可能な全局面数 ---
+  合計 246803167 / oracle/totals.tsv の reachable_total 246803167
+PASS: 到達可能な全局面数が一致
+--- dat/ のバイト比較 (入力と): 51 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 f2d_old 2026-09-23T13:30:01+00:00 ===
+=== 全探索 全8本 完了 2026-09-23T13:30:01+00:00 ===

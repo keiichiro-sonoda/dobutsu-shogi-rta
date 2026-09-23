@@ -1,0 +1,97 @@
+=== 開始 r1a_old (old: C impl/20_prefetch / Python impl/21_hugepages (Makefile のまま)) 2026-09-23T13:30:02+00:00 ===
+=== 終了 r1a_old 2026-09-23T13:32:10+00:00 (exit=0) ===
+後退解析の所要時間：127.89 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:07.93
+	Maximum resident set size (kbytes): 14499412
+	Minor (reclaiming a frame) page faults: 6525753
+P0	3.9780 P1	12.2330 P2	64.1529 P4_count	6.2706 P4_scatter	12.9821 P4	19.2527 loop174	26.5499 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#20 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r1a_old 2026-09-23T13:32:16+00:00 ===
+=== 開始 r1b_new (new: C impl/21_hugepages / Python impl/21_hugepages (Makefile のまま)) 2026-09-23T13:32:18+00:00 ===
+=== 終了 r1b_new 2026-09-23T13:34:02+00:00 (exit=0) ===
+後退解析の所要時間：104.24 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:44.29
+	Maximum resident set size (kbytes): 14499676
+	Minor (reclaiming a frame) page faults: 4432675
+P0	4.0404 P1	7.2996 P2	46.0876 P4_count	6.2255 P4_scatter	12.9244 P4	19.1499 loop174	26.3406 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#20 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r1b_new 2026-09-23T13:34:08+00:00 ===
+=== 開始 r1c_new (new: C impl/21_hugepages / Python impl/21_hugepages (Makefile のまま)) 2026-09-23T13:34:09+00:00 ===
+=== 終了 r1c_new 2026-09-23T13:35:54+00:00 (exit=0) ===
+後退解析の所要時間：104.59 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:44.63
+	Maximum resident set size (kbytes): 14499680
+	Minor (reclaiming a frame) page faults: 4432681
+P0	4.0341 P1	7.2950 P2	46.1995 P4_count	6.2688 P4_scatter	12.9447 P4	19.2135 loop174	26.5217 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#20 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r1c_new 2026-09-23T13:36:00+00:00 ===
+=== 開始 r1d_old (old: C impl/20_prefetch / Python impl/21_hugepages (Makefile のまま)) 2026-09-23T13:36:01+00:00 ===
+=== 終了 r1d_old 2026-09-23T13:38:08+00:00 (exit=0) ===
+後退解析の所要時間：126.82 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:06.86
+	Maximum resident set size (kbytes): 14499864
+	Minor (reclaiming a frame) page faults: 6525736
+P0	4.0127 P1	12.1708 P2	63.2041 P4_count	6.2845 P4_scatter	12.9334 P4	19.2179 loop174	26.5278 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#20 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r1d_old 2026-09-23T13:38:14+00:00 ===
+=== 開始 r2a_old (old: C impl/20_prefetch / Python impl/21_hugepages (Makefile のまま)) 2026-09-23T13:38:16+00:00 ===
+=== 終了 r2a_old 2026-09-23T13:40:22+00:00 (exit=0) ===
+後退解析の所要時間：126.51 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:06.55
+	Maximum resident set size (kbytes): 14499860
+	Minor (reclaiming a frame) page faults: 6525732
+P0	4.0213 P1	12.4731 P2	62.6168 P4_count	6.2481 P4_scatter	12.9487 P4	19.1968 loop174	26.5070 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#20 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r2a_old 2026-09-23T13:40:28+00:00 ===
+=== 開始 r2b_new (new: C impl/21_hugepages / Python impl/21_hugepages (Makefile のまま)) 2026-09-23T13:40:29+00:00 ===
+=== 終了 r2b_new 2026-09-23T13:42:14+00:00 (exit=0) ===
+後退解析の所要時間：104.29 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:44.33
+	Maximum resident set size (kbytes): 14499232
+	Minor (reclaiming a frame) page faults: 4432679
+P0	4.0434 P1	7.2979 P2	46.0961 P4_count	6.2433 P4_scatter	12.8922 P4	19.1356 loop174	26.3943 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#20 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r2b_new 2026-09-23T13:42:19+00:00 ===
+=== 開始 r2c_new (new: C impl/21_hugepages / Python impl/21_hugepages (Makefile のまま)) 2026-09-23T13:42:21+00:00 ===
+=== 終了 r2c_new 2026-09-23T13:44:05+00:00 (exit=0) ===
+後退解析の所要時間：104.21 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:44.24
+	Maximum resident set size (kbytes): 14499680
+	Minor (reclaiming a frame) page faults: 4432677
+P0	4.0117 P1	7.2854 P2	46.0977 P4_count	6.2608 P4_scatter	12.9088 P4	19.1695 loop174	26.3267 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#20 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r2c_new 2026-09-23T13:44:11+00:00 ===
+=== 開始 r2d_old (old: C impl/20_prefetch / Python impl/21_hugepages (Makefile のまま)) 2026-09-23T13:44:13+00:00 ===
+=== 終了 r2d_old 2026-09-23T13:46:19+00:00 (exit=0) ===
+後退解析の所要時間：126.78 秒
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:06.82
+	Maximum resident set size (kbytes): 14499864
+	Minor (reclaiming a frame) page faults: 6525736
+P0	4.0331 P1	12.2438 P2	62.8553 P4_count	6.2989 P4_scatter	12.9539 P4	19.2528 loop174	26.7074 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#20 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 r2d_old 2026-09-23T13:46:25+00:00 ===
+=== 後退解析 全8本 完了 2026-09-23T13:46:25+00:00 ===

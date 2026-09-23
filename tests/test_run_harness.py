@@ -22,6 +22,11 @@ REQUIRED_ENV_FIELDS = (
     "gcc",
     "python",
     "git_commit",
+    # 記録 #21 から。巨大ページの効き目は THP の設定に依存し、ユーザー時間と
+    # カーネル時間の配分はタイマー割り込みの周期 (CONFIG_HZ) で決まる
+    "thp_enabled",
+    "thp_defrag",
+    "config_hz",
 )
 
 
@@ -79,6 +84,22 @@ def test_run_sh_samples_the_hardware_alongside_the_measurement() -> None:
     # 途中で落ちてもサンプラを残さない
     assert "trap stop_sampler EXIT" in script
     assert 'kill "$SAMPLER_PID" 2>/dev/null || true' in script
+
+
+def test_run_sh_records_vmstat_around_the_measurement() -> None:
+    """計測の直前と直後に /proc/vmstat を1行ずつ残す (記録 #21 から)。
+
+    巨大ページが付いたか (`thp_fault_fallback`)、そのためのコンパクション、NUMA の自動移動を
+    本走でも読めるようにする。門番は `numactl` で固定するが、本走は固定しないので、
+    門番に無い振れが出うる。
+    """
+    script = run_sh()
+    for key in ("thp_fault_alloc", "thp_fault_fallback", "compact_stall", "pgmigrate_fail"):
+        assert key in script, f"vmstat の {key} を取っていない"
+    measure = script.index('/usr/bin/time -v bash -c "$RUN_CMD"')
+    assert script.index("vmstat_row before") < measure < script.index("vmstat_row after"), (
+        "vmstat を計測の前後で取っていない"
+    )
 
 
 def test_implementation_is_selectable_and_defaults_to_baseline() -> None:

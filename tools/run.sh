@@ -110,6 +110,25 @@ sample_hw_loop() {
     done
 }
 
+# /proc/vmstat のカウンタを計測の直前と直後に1行ずつ (記録 #21 から).
+# 巨大ページが付いたか (thp_fault_fallback は「頼んだが付かなかった」), そのための
+# コンパクション, NUMA の自動移動. 差分は読む側で引く.
+# ⚠️ マシン全体の累積値. 計測中に他の計算を回していなければ, 差分はほぼこの走行のもの
+VMSTAT_KEYS=(
+    thp_fault_alloc thp_fault_fallback thp_collapse_alloc
+    compact_stall compact_success compact_fail
+    numa_hint_faults numa_hint_faults_local numa_pages_migrated
+    pgmigrate_success pgmigrate_fail
+)
+vmstat_row() {
+    printf '%s' "$1"
+    for k in "${VMSTAT_KEYS[@]}"; do
+        printf '\t%s' \
+            "$(awk -v k="$k" '$1==k {v=$2} END {print (v == "" ? "-" : v)}' /proc/vmstat 2>/dev/null)"
+    done
+    printf '\n'
+}
+
 SAMPLER_PID=""
 stop_sampler() {
     if [ -n "$SAMPLER_PID" ]; then
@@ -139,6 +158,11 @@ IMPL_SHA="$(cd "$IMPL_DIR" && find . -type f ! -name impl.env -print0 \
     echo "gcc:         $(gcc --version | head -1)"
     echo "python:      $(python3 --version)"
     echo "git_commit:  $(git -C "$ROOT" rev-parse --short HEAD 2>/dev/null || echo n/a)"
+    # 記録 #21 から. 巨大ページの効き目は OS の設定に依存し, ユーザー時間とカーネル時間の
+    # 配分はタイマー割り込みの周期で決まる. どちらも計測機の条件として残す
+    echo "thp_enabled: $(cat /sys/kernel/mm/transparent_hugepage/enabled 2>/dev/null || echo n/a)"
+    echo "thp_defrag:  $(cat /sys/kernel/mm/transparent_hugepage/defrag 2>/dev/null || echo n/a)"
+    echo "config_hz:   $(sed -n 's/^CONFIG_HZ=//p' "/boot/config-$(uname -r)" 2>/dev/null | grep . || echo n/a)"
 } | tee "$WORK/env.txt"
 
 cd "$WORK"
@@ -150,10 +174,12 @@ echo "=== 計測開始 $(date --iso-8601=seconds) ==="
 { sample_hw_header; sample_hw_row; } > freq.log 2>/dev/null
 sample_hw_loop >> freq.log 2>/dev/null &
 SAMPLER_PID=$!
+{ printf 'when'; printf '\t%s' "${VMSTAT_KEYS[@]}"; printf '\n'; vmstat_row before; } > vmstat.tsv
 set +e
 /usr/bin/time -v bash -c "$RUN_CMD" > stdout.txt 2> time.txt
 RC=$?
 set -e
+vmstat_row after >> vmstat.tsv
 stop_sampler
 echo "=== 計測終了 $(date --iso-8601=seconds) (exit=$RC) ==="
 

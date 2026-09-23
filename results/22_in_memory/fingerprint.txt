@@ -1,0 +1,10 @@
+# 記録 #22 (impl/22_in_memory) の成果物の照合
+# python3 tools/fingerprint_dat.py <#22 の dat/> --against oracle/fingerprint.tsv
+#
+# ⚠️ #22 は dat/ が #21 とバイト一致するので、本来は bytecompare.txt のほうが強い。
+#    これは「形式をまたいでも通る照合」を #16 以降そろえて残しておくためのもの。
+#
+# 指紋は深さごとの (件数, 総和 mod 2^64, XOR)。異なる集合でも同じ指紋になりうるので、
+# PASS は集合の完全一致を証明しない。手数別174行の照合は verify.txt が別に持っている。
+PASS: 176 項目の指紋が一致 (oracle/fingerprint.tsv と照合) (集合の完全一致を証明するものではない)
+  照合した局面数の合計: 246,803,167

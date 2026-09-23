@@ -1,0 +1,22 @@
+# 記録 #21 (impl/21_hugepages) の成果物との照合 (バイト単位)
+# diff -rq <#21 の dat/> <#22 の dat/>  と  md5sum 一覧 (LC_ALL=C sort) の sha256
+#   cd <dat>; find . -type f -print0 | LC_ALL=C sort -z | xargs -0 md5sum | sha256sum
+#
+# #22 は全探索が同じプロセスの中で読み戻していたファイル (unexplored / unknown) をやめ、
+# 全探索から後退解析までをメモリで受け渡した。待ち行列は先に入れたものから取り出すので
+# 展開の順は変わらず、P0 は #21 と同じ並び (未知を 500万ちょうどで区切って末尾の塊から、
+# 続けて 1手勝ち・0手負け) で詰める。成果物の区切り (BOARD_NUM_MAX ずつのファイル) も
+# F6 の書き出しも変えていない。値も順序も動かないはずなので、指紋ではなくバイト比較で見る。
+#
+# 指紋 (件数・総和・XOR) より強い検査で、一致しなければ「どこかで順序が動いた」証拠になる。
+# ⚠️ #18 で戻った鎖がここでも続く。門番でも3腕 18本の出力がすべて #21 本走とバイト一致している
+#    (experiments/gate_22_in_memory/logs/bytecompare.tsv)。
+#
+files:        #21 213 / #22 213
+bytes:        #21 1974425336 / #22 1974425336
+md5_list_sha256: #21 f18f3075ba25f13987c520fe98cba074a5916c08ead02eb4719af2a87141b488
+                 #22 f18f3075ba25f13987c520fe98cba074a5916c08ead02eb4719af2a87141b488
+diff -rq:     exit=0
+md5 list:     一致
+指紋:         176 項目すべて一致 (tools/fingerprint_dat.py --against oracle/fingerprint.tsv)
+PASS: 213 ファイル 1974425336 バイトがすべて一致

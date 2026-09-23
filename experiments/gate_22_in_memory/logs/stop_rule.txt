@@ -1,0 +1,36 @@
+### 1. 答え（オラクル174行と、#21 本走の dat/ とのバイト一致）
+
+18 本 すべて、オラクル PASS・バイト一致
+
+### 2. chunk のラウンドの分け方（件数の列を #21 本走と照合）
+
+b1b_chunk_forward.tsv: 74 ラウンド（#21 は 74）/ 件数の列 一致
+  （情報）n_seen: 一致
+  （情報）n_rehash: 一致
+  （情報）n_new_pre: 一致
+b2a_chunk_forward.tsv: 74 ラウンド（#21 は 74）/ 件数の列 一致
+  （情報）n_seen: 一致
+  （情報）n_rehash: 一致
+  （情報）n_new_pre: 一致
+b3c_chunk_forward.tsv: 74 ラウンド（#21 は 74）/ 件数の列 一致
+  （情報）n_seen: 一致
+  （情報）n_rehash: 一致
+  （情報）n_new_pre: 一致
+b4c_chunk_forward.tsv: 74 ラウンド（#21 は 74）/ 件数の列 一致
+  （情報）n_seen: 一致
+  （情報）n_rehash: 一致
+  （情報）n_new_pre: 一致
+b5b_chunk_forward.tsv: 74 ラウンド（#21 は 74）/ 件数の列 一致
+  （情報）n_seen: 一致
+  （情報）n_rehash: 一致
+  （情報）n_new_pre: 一致
+b6a_chunk_forward.tsv: 74 ラウンド（#21 は 74）/ 件数の列 一致
+  （情報）n_seen: 一致
+  （情報）n_rehash: 一致
+  （情報）n_new_pre: 一致
+
+### 3. 採った腕（chunk）と old の J ＝ forward_total ＋ P0
+
+chunk − old: -25.67 秒（区間 -27.57 … -23.76、p 2.091e-07）
+
+=> 止める条件に掛からない: 本走に進む

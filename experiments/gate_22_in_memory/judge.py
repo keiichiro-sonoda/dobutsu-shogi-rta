@@ -38,6 +38,7 @@ PAIRS = (("chunk − old", "old", "chunk"), ("whole − old", "old", "whole"),
 J = "J ＝ forward_total ＋ P0"
 ELAPSED = re.compile(r"Elapsed \(wall clock\) time \(h:mm:ss or m:ss\): (\S+)")
 MAXRSS = re.compile(r"Maximum resident set size \(kbytes\): (\d+)")
+MINFLT = re.compile(r"Minor \(reclaiming a frame\) page faults: (\d+)")
 
 
 def tsv(path: pathlib.Path) -> dict[str, str]:
@@ -69,9 +70,14 @@ def quantities(label: str) -> dict[str, float]:
         cpu = sum(float(r[f"{kind}_{b}"]) - float(r[f"{kind}_{a}"]) for kind in ("utime", "stime"))
         return wall - cpu
 
+    def cpu(kind: str, a: str, b: str) -> float:
+        """後退解析の境界 a → b の、ユーザー時間 (utime) かカーネル時間 (stime)。"""
+        return float(r[f"{kind}_{b}"]) - float(r[f"{kind}_{a}"])
+
     maxrss = MAXRSS.search(time_txt)
-    if not maxrss:
-        raise SystemExit(f"{label}_time.txt に Maximum resident の行が無い")
+    minflt = MINFLT.search(time_txt)
+    if not maxrss or not minflt:
+        raise SystemExit(f"{label}_time.txt に Maximum resident か Minor の行が無い")
     return {
         J: fw("forward_total") + float(r["P0"]),
         "forward_total": fw("forward_total"),
@@ -79,6 +85,12 @@ def quantities(label: str) -> dict[str, float]:
         "F0 ＋ F2 ＋ F5": fw("F0") + fw("F2") + fw("F5"),
         "F1": fw("F1"),
         "F6": fw("F6"),
+        # 以下の4行と minor fault の行は、門番の途中で whole の F1 と F6 が伸びたのを見てから足した
+        # (記述のため。判定には使わない)
+        "F1 のユーザー時間": fw("utime_F1"),
+        "F1 のカーネル時間": fw("stime_F1"),
+        "F6 のカーネル時間": fw("stime_F6"),
+        "P0 のカーネル時間": cpu("stime", "R_start", "P0"),
         "全探索のカーネル時間": fw("stime_forward_total"),
         "全探索の CPU の外": fw("forward_total")
         - fw("utime_forward_total")
@@ -90,6 +102,7 @@ def quantities(label: str) -> dict[str, float]:
         "retreat_total": float(r["retreat_total"]),
         "全探索のピーク RSS (GiB)": int(f["hwm_release_seen"]) / 2**30,
         "全体のピーク RSS (GiB)": int(maxrss.group(1)) * 1024 / 2**30,
+        "minor fault (万)": int(minflt.group(1)) / 1e4,
         "ラウンド数": fw("rounds"),
         "完走 (秒)": elapsed(time_txt),
     }
@@ -101,6 +114,13 @@ def collect() -> tuple[dict[str, str], dict[str, dict[str, float]]]:
     per_label = {lb: quantities(lb) for lb in by_label}
     names = list(next(iter(per_label.values())))
     return by_label, {n: {lb: per_label[lb][n] for lb in by_label} for n in names}
+
+
+def vmstat_delta(label: str) -> dict[str, int]:
+    """/proc/vmstat の前後差 (マシン全体の値。run_one.sh が解析の直前と直後に取った2行)。"""
+    rows = [ln.split("\t") for ln in (LOGS / f"{label}_vmstat.tsv").read_text().splitlines()]
+    head, before, after = rows[0], rows[1], rows[2]
+    return {k: int(after[i]) - int(before[i]) for i, k in enumerate(head) if i and before[i] != "-"}
 
 
 def decide(
@@ -139,6 +159,20 @@ def main() -> int:
             )
             cells.append(f"{d:+.2f}（{lo:+.2f} … {hi:+.2f}、p {p_text(p)}）")
         print(f"| {name} | " + " | ".join(cells) + " |")
+    print()
+    # 門番の途中で whole の F1 と F6 のカーネル時間が伸びたのを見てから足した (記述のため)
+    print("### /proc/vmstat の前後差（腕ごとの平均。マシン全体の値）")
+    print()
+    deltas = {lb: vmstat_delta(lb) for lb in by_label}
+    keys = list(next(iter(deltas.values())))
+    print("| 項目 | " + " | ".join(f"`{a}`" for a in ARMS) + " |")
+    print("|---|" + "---|" * len(ARMS))
+    for k in keys:
+        cells = []
+        for a in ARMS:
+            xs = [deltas[lb][k] for lb, arm in by_label.items() if arm == a]
+            cells.append(f"{sum(xs) / len(xs):,.0f}")
+        print(f"| {k} | " + " | ".join(cells) + " |")
     print()
     adopted, (d, t, df, p, lo, hi) = decide(by_label, table[J])
     print(f"### 判定: {J} の whole − chunk")

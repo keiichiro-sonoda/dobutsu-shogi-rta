@@ -1,0 +1,248 @@
+=== 門番 #22 開始 2026-09-23T15:35:12+00:00 ===
+=== 開始 b1a_old (old: impl/21_hugepages) 2026-09-23T15:35:13+00:00 ===
+=== 終了 b1a_old 2026-09-23T15:38:41+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 3:28.27
+	Maximum resident set size (kbytes): 14513812
+	Minor (reclaiming a frame) page faults: 9880126
+全探索の所要時間：103.6424 秒
+rounds	74 F0	1.0184 F1	75.0424 F2	11.5242 F5	12.8824 F6	1.8790 P0	3.9419 P1	7.2601 P2	46.2121 loop174	26.4733 retreat_total	104.2028 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#21 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b1a_old 2026-09-23T15:38:46+00:00 ===
+=== 開始 b1b_chunk (chunk: impl/22_in_memory + patches/chunk.patch) 2026-09-23T15:38:47+00:00 ===
+=== 終了 b1b_chunk 2026-09-23T15:41:51+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 3:04.28
+	Maximum resident set size (kbytes): 14529720
+	Minor (reclaiming a frame) page faults: 6413912
+全探索の所要時間：82.0002 秒
+rounds	74 F0	0.0052 F1	76.2454 F2	0.5668 F5	1.6225 F6	2.4780 P0	1.4314 P1	7.3472 P2	46.3731 loop174	26.4463 retreat_total	101.8884 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#21 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+--- chunk の件数の列を #21 本走と照合 ---
+b1b_chunk_forward.tsv: 74 ラウンド（#21 は 74）/ 件数の列 一致
+  （情報）n_seen: 一致
+  （情報）n_rehash: 一致
+  （情報）n_new_pre: 一致
+=== 完了 b1b_chunk 2026-09-23T15:41:57+00:00 ===
+=== 開始 b1c_whole (whole: impl/22_in_memory) 2026-09-23T15:41:57+00:00 ===
+=== 終了 b1c_whole 2026-09-23T15:45:04+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 3:06.92
+	Maximum resident set size (kbytes): 14530452
+	Minor (reclaiming a frame) page faults: 7552212
+全探索の所要時間：84.9433 秒
+rounds	40 F0	0.0029 F1	80.1191 F2	0.5529 F5	0.0053 F6	3.2076 P0	1.4281 P1	7.4653 P2	46.0938 loop174	26.4388 retreat_total	101.5965 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#21 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b1c_whole 2026-09-23T15:45:09+00:00 ===
+=== 開始 b2a_chunk (chunk: impl/22_in_memory + patches/chunk.patch) 2026-09-23T15:45:10+00:00 ===
+=== 終了 b2a_chunk 2026-09-23T15:48:14+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 3:03.57
+	Maximum resident set size (kbytes): 14529804
+	Minor (reclaiming a frame) page faults: 6413912
+全探索の所要時間：81.7500 秒
+rounds	74 F0	0.0050 F1	76.0427 F2	0.5557 F5	1.6074 F6	2.4733 P0	1.4180 P1	7.3880 P2	46.0850 loop174	26.4838 retreat_total	101.4535 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#21 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+--- chunk の件数の列を #21 本走と照合 ---
+b2a_chunk_forward.tsv: 74 ラウンド（#21 は 74）/ 件数の列 一致
+  （情報）n_seen: 一致
+  （情報）n_rehash: 一致
+  （情報）n_new_pre: 一致
+=== 完了 b2a_chunk 2026-09-23T15:48:19+00:00 ===
+=== 開始 b2b_whole (whole: impl/22_in_memory) 2026-09-23T15:48:19+00:00 ===
+=== 終了 b2b_whole 2026-09-23T15:51:26+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 3:06.71
+	Maximum resident set size (kbytes): 14530152
+	Minor (reclaiming a frame) page faults: 7552212
+全探索の所要時間：84.6937 秒
+rounds	40 F0	0.0029 F1	79.9274 F2	0.5608 F5	0.0056 F6	3.1436 P0	1.4095 P1	7.3700 P2	46.4199 loop174	26.2613 retreat_total	101.6354 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#21 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b2b_whole 2026-09-23T15:51:32+00:00 ===
+=== 開始 b2c_old (old: impl/21_hugepages) 2026-09-23T15:51:32+00:00 ===
+=== 終了 b2c_old 2026-09-23T15:55:05+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 3:32.56
+	Maximum resident set size (kbytes): 14514408
+	Minor (reclaiming a frame) page faults: 9880133
+全探索の所要時間：107.7721 秒
+rounds	74 F0	1.0531 F1	75.3998 F2	12.9968 F5	15.0918 F6	1.9332 P0	3.9684 P1	7.3346 P2	46.3270 loop174	26.5468 retreat_total	104.3942 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#21 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b2c_old 2026-09-23T15:55:10+00:00 ===
+=== 開始 b3a_whole (whole: impl/22_in_memory) 2026-09-23T15:55:11+00:00 ===
+=== 終了 b3a_whole 2026-09-23T15:58:17+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 3:06.66
+	Maximum resident set size (kbytes): 14530236
+	Minor (reclaiming a frame) page faults: 7552212
+全探索の所要時間：84.4270 秒
+rounds	40 F0	0.0028 F1	79.6781 F2	0.5590 F5	0.0053 F6	3.1338 P0	1.4115 P1	7.3776 P2	46.2832 loop174	26.5135 retreat_total	101.8494 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#21 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b3a_whole 2026-09-23T15:58:23+00:00 ===
+=== 開始 b3b_old (old: impl/21_hugepages) 2026-09-23T15:58:23+00:00 ===
+=== 終了 b3b_old 2026-09-23T16:01:52+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 3:29.30
+	Maximum resident set size (kbytes): 14514476
+	Minor (reclaiming a frame) page faults: 9880134
+全探索の所要時間：104.0592 秒
+rounds	74 F0	1.0235 F1	75.8420 F2	10.9113 F5	13.0484 F6	1.9239 P0	4.0061 P1	7.4081 P2	46.5270 loop174	26.6069 retreat_total	104.8408 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#21 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b3b_old 2026-09-23T16:01:58+00:00 ===
+=== 開始 b3c_chunk (chunk: impl/22_in_memory + patches/chunk.patch) 2026-09-23T16:01:58+00:00 ===
+=== 終了 b3c_chunk 2026-09-23T16:05:03+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 3:05.02
+	Maximum resident set size (kbytes): 14530132
+	Minor (reclaiming a frame) page faults: 6413914
+全探索の所要時間：82.0054 秒
+rounds	74 F0	0.0051 F1	76.2861 F2	0.5577 F5	1.6134 F6	2.4820 P0	1.4082 P1	7.4276 P2	46.7459 loop174	26.6165 retreat_total	102.6410 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#21 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+--- chunk の件数の列を #21 本走と照合 ---
+b3c_chunk_forward.tsv: 74 ラウンド（#21 は 74）/ 件数の列 一致
+  （情報）n_seen: 一致
+  （情報）n_rehash: 一致
+  （情報）n_new_pre: 一致
+=== 完了 b3c_chunk 2026-09-23T16:05:09+00:00 ===
+=== 開始 b4a_old (old: impl/21_hugepages) 2026-09-23T16:05:09+00:00 ===
+=== 終了 b4a_old 2026-09-23T16:08:38+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 3:28.66
+	Maximum resident set size (kbytes): 14514560
+	Minor (reclaiming a frame) page faults: 9880124
+全探索の所要時間：103.4860 秒
+rounds	74 F0	1.0107 F1	75.1321 F2	11.0135 F5	13.1153 F6	1.9255 P0	4.0055 P1	7.3819 P2	46.4456 loop174	26.6614 retreat_total	104.7820 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#21 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b4a_old 2026-09-23T16:08:43+00:00 ===
+=== 開始 b4b_whole (whole: impl/22_in_memory) 2026-09-23T16:08:44+00:00 ===
+=== 終了 b4b_whole 2026-09-23T16:11:49+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 3:05.42
+	Maximum resident set size (kbytes): 14530376
+	Minor (reclaiming a frame) page faults: 7552211
+全探索の所要時間：84.1002 秒
+rounds	40 F0	0.0029 F1	79.3753 F2	0.5527 F5	0.0051 F6	3.1243 P0	1.4037 P1	7.3378 P2	45.9704 loop174	26.1946 retreat_total	100.9389 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#21 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b4b_whole 2026-09-23T16:11:55+00:00 ===
+=== 開始 b4c_chunk (chunk: impl/22_in_memory + patches/chunk.patch) 2026-09-23T16:11:55+00:00 ===
+=== 終了 b4c_chunk 2026-09-23T16:14:59+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 3:03.91
+	Maximum resident set size (kbytes): 14530120
+	Minor (reclaiming a frame) page faults: 6413906
+全探索の所要時間：81.9531 秒
+rounds	74 F0	0.0053 F1	76.2750 F2	0.5558 F5	1.6102 F6	2.4518 P0	1.3963 P1	7.2972 P2	46.3704 loop174	26.3666 retreat_total	101.5913 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#21 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+--- chunk の件数の列を #21 本走と照合 ---
+b4c_chunk_forward.tsv: 74 ラウンド（#21 は 74）/ 件数の列 一致
+  （情報）n_seen: 一致
+  （情報）n_rehash: 一致
+  （情報）n_new_pre: 一致
+=== 完了 b4c_chunk 2026-09-23T16:15:04+00:00 ===
+=== 開始 b5a_whole (whole: impl/22_in_memory) 2026-09-23T16:15:05+00:00 ===
+=== 終了 b5a_whole 2026-09-23T16:18:11+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 3:05.95
+	Maximum resident set size (kbytes): 14530148
+	Minor (reclaiming a frame) page faults: 7552211
+全探索の所要時間：84.0627 秒
+rounds	40 F0	0.0031 F1	79.3287 F2	0.5521 F5	0.0057 F6	3.1292 P0	1.4064 P1	7.3335 P2	46.2589 loop174	26.2914 retreat_total	101.5070 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#21 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b5a_whole 2026-09-23T16:18:16+00:00 ===
+=== 開始 b5b_chunk (chunk: impl/22_in_memory + patches/chunk.patch) 2026-09-23T16:18:17+00:00 ===
+=== 終了 b5b_chunk 2026-09-23T16:21:22+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 3:05.51
+	Maximum resident set size (kbytes): 14529900
+	Minor (reclaiming a frame) page faults: 6413913
+全探索の所要時間：82.5086 秒
+rounds	74 F0	0.0052 F1	76.7598 F2	0.5551 F5	1.6215 F6	2.5000 P0	1.4099 P1	7.4316 P2	46.5979 loop174	26.8800 retreat_total	102.6250 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#21 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+--- chunk の件数の列を #21 本走と照合 ---
+b5b_chunk_forward.tsv: 74 ラウンド（#21 は 74）/ 件数の列 一致
+  （情報）n_seen: 一致
+  （情報）n_rehash: 一致
+  （情報）n_new_pre: 一致
+=== 完了 b5b_chunk 2026-09-23T16:21:28+00:00 ===
+=== 開始 b5c_old (old: impl/21_hugepages) 2026-09-23T16:21:28+00:00 ===
+=== 終了 b5c_old 2026-09-23T16:24:58+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 3:29.34
+	Maximum resident set size (kbytes): 14513964
+	Minor (reclaiming a frame) page faults: 9880131
+全探索の所要時間：104.5278 秒
+rounds	74 F0	1.0156 F1	75.4393 F2	11.2894 F5	13.5732 F6	1.9113 P0	3.9596 P1	7.2993 P2	46.3261 loop174	26.5247 retreat_total	104.3752 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#21 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b5c_old 2026-09-23T16:25:03+00:00 ===
+=== 開始 b6a_chunk (chunk: impl/22_in_memory + patches/chunk.patch) 2026-09-23T16:25:03+00:00 ===
+=== 終了 b6a_chunk 2026-09-23T16:28:07+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 3:03.11
+	Maximum resident set size (kbytes): 14530124
+	Minor (reclaiming a frame) page faults: 6413906
+全探索の所要時間：81.6051 秒
+rounds	74 F0	0.0052 F1	75.9311 F2	0.5540 F5	1.5953 F6	2.4572 P0	1.3893 P1	7.2896 P2	46.0149 loop174	26.3809 retreat_total	101.1396 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#21 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+--- chunk の件数の列を #21 本走と照合 ---
+b6a_chunk_forward.tsv: 74 ラウンド（#21 は 74）/ 件数の列 一致
+  （情報）n_seen: 一致
+  （情報）n_rehash: 一致
+  （情報）n_new_pre: 一致
+=== 完了 b6a_chunk 2026-09-23T16:28:12+00:00 ===
+=== 開始 b6b_old (old: impl/21_hugepages) 2026-09-23T16:28:13+00:00 ===
+=== 終了 b6b_old 2026-09-23T16:31:45+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 3:32.40
+	Maximum resident set size (kbytes): 14514964
+	Minor (reclaiming a frame) page faults: 9880130
+全探索の所要時間：106.9228 秒
+rounds	74 F0	1.0311 F1	75.6295 F2	12.5825 F5	14.4370 F6	1.9332 P0	3.9896 P1	7.4101 P2	46.6798 loop174	26.7389 retreat_total	105.0764 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#21 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b6b_old 2026-09-23T16:31:50+00:00 ===
+=== 開始 b6c_whole (whole: impl/22_in_memory) 2026-09-23T16:31:51+00:00 ===
+=== 終了 b6c_whole 2026-09-23T16:34:58+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 3:07.26
+	Maximum resident set size (kbytes): 14530152
+	Minor (reclaiming a frame) page faults: 7552211
+全探索の所要時間：84.4688 秒
+rounds	40 F0	0.0029 F1	79.7147 F2	0.5502 F5	0.0055 F6	3.1527 P0	1.4094 P1	7.4019 P2	46.4446 loop174	26.8686 retreat_total	102.4111 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#21 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+=== 完了 b6c_whole 2026-09-23T16:35:04+00:00 ===
+=== 全18本 完了 2026-09-23T16:35:04+00:00 ===

@@ -21,7 +21,15 @@ from array import array
 
 import fingerprint_dat
 import pytest
-from conftest import chdir, dat_suffix, load_boards, load_impl, run_forward, run_retreat
+from conftest import (
+    chdir,
+    dat_suffix,
+    load_boards,
+    load_impl,
+    run_forward,
+    run_retreat,
+    seed_memory,
+)
 
 FORWARD_ROUNDS = 7
 
@@ -50,11 +58,15 @@ IMPLS = (
     "19_c_gather",
     "20_prefetch",
     "21_hugepages",
+    # ⚠️ #22 から後退解析はファイルを読まない (全探索がメモリに残したものを P0 が詰める)。
+    #    打ち切った dat/ は seed_memory() で渡す (門番の driver と同じ手順)
+    "22_in_memory",
 )
 PAIRS = list(itertools.pairwise(IMPLS))
 
-# 未知盤面を常駐させている実装 (loadAllUnknownBoards を持つ)
-RESIDENT_UNKNOWN = IMPLS[1:]
+# 未知盤面をファイルから読んで常駐させている実装 (loadAllUnknownBoards を持つ)。
+# #22 は読まないので外す
+RESIDENT_UNKNOWN = IMPLS[1 : IMPLS.index("22_in_memory")]
 
 
 def seed_dat(src: pathlib.Path, dst: pathlib.Path, suffix: str) -> None:
@@ -101,6 +113,9 @@ def retreat_runs(
         seed_dat(src / "dat", work / "dat", pathlib.PurePath(module.UK_PATH_FORMAT).suffix)
         # run_forward を通さないので、上限は自分で入れる (writeUnknownChunks が読む)
         vars(module)["BOARD_NUM_MAX"] = SMALL_BOARD_NUM_MAX
+        # ファイルから読まない実装 (#22 から) には、メモリに積んで渡す
+        if "uk_all" in vars(module):
+            seed_memory(module, work / "dat")
         run_retreat(module, work)
         out[impl] = work
     return out

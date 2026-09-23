@@ -129,7 +129,9 @@ def unload_previous() -> None:
             _ctypes.dlclose(lib._handle)
 
 
-def load_impl(impl: str, work: pathlib.Path, so: pathlib.Path) -> types.ModuleType:
+def load_impl(
+    impl: str, work: pathlib.Path, so: pathlib.Path, source: pathlib.Path | None = None
+) -> types.ModuleType:
     """作業ディレクトリを作って実装を import する。
 
     実装は `./dat/` と `./kaiseki_log/` をカレント相対で使い、
@@ -137,6 +139,9 @@ def load_impl(impl: str, work: pathlib.Path, so: pathlib.Path) -> types.ModuleTy
 
     `so` は baseline からビルドした共有ライブラリ。実装が自前の C を持つなら
     (#8 以降) そちらをビルドして使う。
+
+    `source` を渡すと、`animal_shogi.py` だけをそれに差し替える (C は `impl` のまま)。
+    門番の腕のように、実装にパッチを当てたものを走らせるときに使う。
     """
     (work / "dat").mkdir(parents=True)
     (work / "kaiseki_log").mkdir(parents=True)
@@ -147,7 +152,7 @@ def load_impl(impl: str, work: pathlib.Path, so: pathlib.Path) -> types.ModuleTy
     ):
         so = impl_library(impl)
     shutil.copy(so, work / "animal_shogi.so")
-    shutil.copy(ROOT / "impl" / impl / "animal_shogi.py", work / "animal_shogi.py")
+    shutil.copy(source or ROOT / "impl" / impl / "animal_shogi.py", work / "animal_shogi.py")
 
     spec = importlib.util.spec_from_file_location(
         f"impl_{impl}_{work.name}", work / "animal_shogi.py"
@@ -204,6 +209,32 @@ def run_retreat(module: types.ModuleType, work: pathlib.Path) -> None:
     """後退解析を最後まで回す。"""
     with chdir(work):
         module.retreatAnalysis()
+
+
+def seed_memory(module: types.ModuleType, dat: pathlib.Path) -> None:
+    """ファイルから読まない実装 (記録 #22 から) の後退解析に、全探索の成果を渡す。
+
+    #22 の P0 は全探索がメモリに残した3本 (`uk_all` / `catch_wins` / `try_loses`) から詰めるので、
+    打ち切った `dat/` を配るだけでは後退解析に届かない。門番の driver と同じ手順で渡す:
+    `unknown*` を番号順に連結して `uk_all` に、`win001te_*` / `lose000te_*` を番号順に連結して
+    終端の2本に置き、`unknown*` は消す (#21 までの P0 が読んで消していたのと同じ)。
+    `win001te_*` / `lose000te_*` は残す (後退解析が 1手勝ちの副番号の続きから書くため)。
+
+    ⚠️ 読み込みは実装ではなくこちらに置く。実装に「ファイルから再開する経路」を戻さない。
+    """
+    suffix = dat_suffix(dat)
+
+    def cat(pattern: str) -> array[int]:
+        out = array("Q")
+        for path in sorted(dat.glob(pattern + suffix)):
+            out.frombytes(path.read_bytes())
+        return out
+
+    vars(module)["uk_all"] = cat("unknown*")
+    vars(module)["catch_wins"] = cat("win001te_*")
+    vars(module)["try_loses"] = cat("lose000te_*")
+    for path in dat.glob("unknown*" + suffix):
+        path.unlink()
 
 
 # dat/ の系統。⚠️ unexplored は全探索の作業ファイルなので

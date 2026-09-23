@@ -189,7 +189,10 @@ def test_the_translation_left_python() -> None:
 
 
 def test_the_draw_buffer_does_not_grow() -> None:
-    """★伸びるバッファも再開の仕組みも持ち込まないこと (指示書 §3-2)。
+    """★伸びるバッファも再開の仕組みも持ち込まないこと。
+
+    理由は記録 #19 のノートの「`gatherDraws` は2周する」の節
+    ([`docs/records/19-c-gather.md`](../docs/records/19-c-gather.md))。
 
     ②は長さが事前に分からないが、2周すれば寸法が分かる。記録 #13・#15 の
     「容量不足で止まって呼び直す」形をここに持ち込むと、順序の検査が増える。

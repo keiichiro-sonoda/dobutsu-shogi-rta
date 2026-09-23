@@ -29,5 +29,6 @@ frontmatter の2か所にある。読み物としては記録表、機械可読�
 | [#17](17-no-set.md) | [`impl/17_no_set/`](../../impl/17_no_set/) |
 | [#18](18-optimized.md) | [`impl/18_optimized/`](../../impl/18_optimized/) |
 | [#19](19-c-gather.md) | [`impl/19_c_gather/`](../../impl/19_c_gather/) |
+| [#20](20-prefetch.md) | [`impl/20_prefetch/`](../../impl/20_prefetch/) |
 
 試行をまたぐ話は [`../measurement-noise.md`](../measurement-noise.md) にある。

@@ -11,8 +11,9 @@
 | `nextBoardSeenNormal()` | F1 | 全後続のスロットを先読みしてから挿入 |
 | `predScatter()` | P4_scatter | 2段。32 本先で `pred_off`、16 本先で `pred` の書き込み先 |
 
-同乗させた `moves = NULL;` は CLAUDE.md「次の実装で必ず直すもの」の1件。#19 は全探索の経路に
-手を入れないと予測に登録していたので見送ったが、今回の先読みは F1 にも入るので見送る理由がない。
+同乗させた `moves = NULL;` は CLAUDE.md「次の実装で必ず直すもの」の1件。#19 は、C に足した行
+(`gatherPacked` / `gatherDraws`) が全探索では実行されないことを予測⑤の前提にしていたので見送った。
+#20 の先読みは C の F1 経路 (`nextBoardSeenNormal`) にも入るので、見送る理由がない。
 
 ⚠️ **先読みはヒントで、書く値は変わらない。** ここでは小さいフィクスチャで impl/19 と成果物が
 **バイト一致**することまで見る (本走の検査も `results/20_prefetch/bytecompare.txt` で同じ形)。

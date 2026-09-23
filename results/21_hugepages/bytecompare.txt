@@ -1,0 +1,21 @@
+# 記録 #20 (impl/20_prefetch) の成果物との照合 (バイト単位)
+# diff -rq <#20 の dat/> <#21 の dat/>  と  md5sum 一覧 (LC_ALL=C sort) の sha256
+#   cd <dat>; find . -type f -print0 | LC_ALL=C sort -z | xargs -0 md5sum | sha256sum
+#
+# #21 は索引と発見済み表を 2 MiB 境界で確保し、memset の前に MADV_HUGEPAGE を頼んだだけ。
+# 巨大ページはメモリの置き方を変えるだけで、書く値も順序も変えない。付かなくても
+# 4 KiB ページのまま同じ答えを出す。値も順序も1ビットも動かないはずなので、
+# 指紋ではなくバイト比較で見る。
+#
+# 指紋 (件数・総和・XOR) より強い検査で、一致しなければ「どこかで順序が動いた」証拠になる。
+# ⚠️ #18 で戻った鎖が #19・#20 に続いてここでも続く。門番でも old / new の出力が 16本とも
+#    基準とバイト一致している (experiments/gate_21_hugepages/logs/bytecompare_*.tsv)。
+#
+files:        #20 213 / #21 213
+bytes:        #20 1974425336 / #21 1974425336
+md5_list_sha256: #20 f18f3075ba25f13987c520fe98cba074a5916c08ead02eb4719af2a87141b488
+                 #21 f18f3075ba25f13987c520fe98cba074a5916c08ead02eb4719af2a87141b488
+diff -rq:     exit=0
+md5 list:     一致
+指紋:         176 項目すべて一致 (tools/fingerprint_dat.py --against oracle/fingerprint.tsv)
+PASS: 213 ファイル 1974425336 バイトがすべて一致

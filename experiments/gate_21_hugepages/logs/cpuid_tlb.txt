@@ -1,0 +1,12 @@
+# experiments/gate_21_hugepages/cpuid_tlb.c の出力 (計測機)
+# Intel(R) Xeon(R) CPU E5-2690 v4 @ 2.60GHz
+leaf 0x2 の記述子: 63 03 76 FF B5 F0 C3
+#
+# 記述子の意味 (Intel SDM Vol. 2A, CPUID leaf 02H の表から)
+#   03  データ TLB: 4 KByte ページ, 4-way, 64 件
+#   63  データ TLB: 2 MByte/4 MByte ページ, 4-way, 32 件 (ほかに 1 GByte ページ 4 件)
+#   76  命令 TLB: 2 MByte/4 MByte ページ, フルアソシアティブ, 8 件
+#   B5  命令 TLB: 4 KByte ページ, 8-way, 64 件
+#   C3  STLB: 4 KByte/2 MByte ページ, 6-way, 1536 件 (ほかに 1 GByte ページ 4-way 16 件)
+#   F0  64 バイトのプリフェッチ
+#   FF  キャッシュの記述は leaf 4 で読む

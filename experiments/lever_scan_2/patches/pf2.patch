@@ -1,0 +1,22 @@
+--- a/animal_shogi.c
++++ b/animal_shogi.c
+@@ -668,6 +668,19 @@
+     if (lo == hi) return 0;
+ 
+     for (i = lo; i < hi; i++) {
++        // 実験 lever_scan_2 の pf2 腕: 2段の先読み (距離 32 / 16 は記録 #20 の predScatter と同じ.
++        // 調整しない). 32 個先の q で pred_off[q] を, 16 個先の q で (もう届いているはずの)
++        // pred_off[q] から pred の読み出し先を取り寄せる. 先読みはヒントで, 答えは変わらない.
++        // ⚠️ frontier[i + k] と pred_off[q16] は本当に読むので, i + k < hi と q < n_all を先に確かめる.
++        //    範囲モード (frontier == NULL) は q = i + k
++        if (i + 32 < hi) {
++            uint32_t q32 = frontier ? frontier[i + 32] : i + 32;
++            if (q32 < n_all) __builtin_prefetch(&pred_off[q32], 0, 3);
++        }
++        if (pred && i + 16 < hi) {
++            uint32_t q16 = frontier ? frontier[i + 16] : i + 16;
++            if (q16 < n_all) __builtin_prefetch(&pred[pred_off[q16]], 0, 3);
++        }
+         q = frontier ? frontier[i] : i;
+         // pred_off は n_all + 1 要素. q はその外を指してはいけない
+         if (q >= n_all) return -3;

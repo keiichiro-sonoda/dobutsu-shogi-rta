@@ -1,0 +1,103 @@
+--- a/animal_shogi.py
++++ b/animal_shogi.py
+@@ -78,6 +78,14 @@
+ catch_wins = array("Q")
+ try_loses = array("Q")
+ 
++# 実験 lever_scan_2 の reuse 腕: 展開の受け皿 (勝ち・負け・未知) を使い回す.
++# 最初のラウンドで BOARD_NUM_MAX 件ずつ1回だけ確保し, 以後は上書きする.
++# #22 までは毎ラウンド n 件ぶん3本を新しく確保して 0 で埋めていた (40 MB 級は mmap で
++# 毎回まっさらなページが来るので, 触るたびにページフォルトとカーネルのゼロ埋めが起きる).
++# ⚠️ 0 で埋める必要は無い. expandRound() は counts の件数までしか書かず (win[n_win++] など),
++#    こちらも counts の件数までしか読まない
++_exp_bufs = None
++
+ # 各盤面の総数
+ # 以前は重複排除でファイルを読み直すついでに数えていた
+ # ループを消したのでカウンタとして持ち回る
+@@ -572,11 +580,11 @@
+ # (未探索ファイルを探す部分と「探索済み」で抜ける部分) は消した. 再開は
+ # CLAUDE.md で禁じていて (途中で落ちたら再走), 入口の forwardInit() が空でない dat/ を止める
+ def searchNext():
+-    global tbn_uk, tbn_win, tbn_lose, catch_wins, try_loses
++    global tbn_uk, tbn_win, tbn_lose, catch_wins, try_loses, _exp_bufs
+     _prof.clear()
+     _profMark("start")
+ 
+-    # 待ち行列の先頭を取り出す. 取り出したものは F1 で arr に写したあと手放す
++    # 待ち行列の先頭を取り出す. 取り出したものは F1 で C に渡したあと手放す
+     _profMark("F0_begin")
+     unexp_boards = queue.popleft()
+     _profMark("F0")
+@@ -593,32 +601,34 @@
+     _gen0 = seenProbes()
+     _rehash0 = seenRehashes()
+     _profMark("F1_begin")
+-    arr = array("Q", unexp_boards)
+-    # C を呼ぶ前に読み込んだ配列を手放す (写しは arr に取ってある)
+-    del unexp_boards
++    # 実験 lever_scan_2 の reuse 腕: 入力の写し (arr) をやめ, 待ち行列の塊のバッファをそのまま渡す.
++    # C は入力を読むだけで, 取り出した塊はもう待ち行列に入っていない
+     # ⚠️ array("Q") が8バイトである保証は処理系依存 (#12 が array("I") でやったのと同じ)
+-    if arr.itemsize != 8:
+-        raise RuntimeError("array('Q') が8バイトでない：%d" % arr.itemsize)
+-    # 勝ち・負け・未知は3本あわせてちょうど n 本. 上限ぶん確保して渡す
+-    win_boards = array("Q", bytes(8)) * n
+-    lose_boards = array("Q", bytes(8)) * n
+-    uk_boards = array("Q", bytes(8)) * n
++    if unexp_boards.itemsize != 8:
++        raise RuntimeError("array('Q') が8バイトでない：%d" % unexp_boards.itemsize)
++    # 受け皿は最初のラウンドで1回だけ確保する (その回だけ 0 で埋める)
++    if _exp_bufs is None:
++        _exp_bufs = tuple(array("Q", bytes(8)) * BOARD_NUM_MAX for _ in range(3))
++    # 勝ち・負け・未知は3本あわせてちょうど n 本. 待ち行列の塊は BOARD_NUM_MAX 件以下
++    if n > len(_exp_bufs[0]):
++        raise RuntimeError("受け皿に入らない：%d / %d" % (n, len(_exp_bufs[0])))
+     counts = array("Q", bytes(8)) * 5
+     rc = expandRound(
+-        cast(arr.buffer_info()[0], POINTER(c_uint64)), n,
+-        cast(win_boards.buffer_info()[0], POINTER(c_uint64)),
+-        cast(lose_boards.buffer_info()[0], POINTER(c_uint64)),
+-        cast(uk_boards.buffer_info()[0], POINTER(c_uint64)),
++        cast(unexp_boards.buffer_info()[0], POINTER(c_uint64)), n,
++        cast(_exp_bufs[0].buffer_info()[0], POINTER(c_uint64)),
++        cast(_exp_bufs[1].buffer_info()[0], POINTER(c_uint64)),
++        cast(_exp_bufs[2].buffer_info()[0], POINTER(c_uint64)),
+         cast(counts.buffer_info()[0], POINTER(c_uint64)),
+     )
+     # ⚠️ 握りつぶさない. -2 はバッファ, -3 は表を確保できなかった場合で,
+     #    どちらもそのラウンドはやり直せない (そこまでの後続はもう表に入っている)
+     if rc != 0:
+         raise RuntimeError("後続を作れない：%d" % rc)
+-    del arr
+-    win_boards = win_boards[:counts[0]]
+-    lose_boards = lose_boards[:counts[1]]
+-    uk_boards = uk_boards[:counts[2]]
++    del unexp_boards
++    # 写しを作らず, 受け皿の件数ぶんを memoryview で見る (このラウンドのうちに足し終える)
++    win_boards = memoryview(_exp_bufs[0])[:counts[0]]
++    lose_boards = memoryview(_exp_bufs[1])[:counts[1]]
++    uk_boards = memoryview(_exp_bufs[2])[:counts[2]]
+     # 初見の後続を C のバッファから1回のコピーで受け取る
+     # (要素ごとに読むと 2.5 億個の PyLong を作ることになる. 記録 #1 の罠)
+     new_unexp_boards = array("Q")
+@@ -641,14 +651,16 @@
+     ))
+ 
+     # 末端は貯めるだけ. 書き出しは searchAll() の最後に1回
+-    catch_wins += win_boards
+-    try_loses += lose_boards
++    # 実験 lever_scan_2 の reuse 腕: 受け皿の memoryview から足す
++    # (array の frombytes は "Q" の memoryview を受け取らないので, "B" に読み替える)
++    catch_wins.frombytes(win_boards.cast("B"))
++    try_loses.frombytes(lose_boards.cast("B"))
+     _prof["n_catch_total"] = len(catch_wins)
+     _prof["n_try_total"] = len(try_loses)
+     # 未知盤面を展開順のまま積み足す. #21 までの updateUKFile() は, 末尾の unknown###.bin を
+     # 読み直して継ぎ足し, BOARD_NUM_MAX を超えたら2つに割って書き戻していた
+     _profMark("F2_begin")
+-    uk_all.extend(uk_boards)
++    uk_all.frombytes(uk_boards.cast("B"))
+     _profMark("F2")
+ 
+     printLogSub("新状態数 (重複排除前)：{:d}".format(_prof["n_new_pre"]))

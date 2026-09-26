@@ -1,0 +1,12 @@
+# 6腕を小さく回して base と比べた (smoke.py の出力)
+# BOARD_NUM_MAX = 2000, searchAll() を 40 ラウンドで打ち切って
+# retreatAnalysis() まで回した
+#
+base   dat 44 ファイル 536b199ead5a24bf… / pred 2a1210ce1fbabf10… / pred_off 7bb7b1bd7a3f2991… / 40 ラウンド / 計装の行 あり → base と 一致
+pf2    dat 44 ファイル 536b199ead5a24bf… / pred 2a1210ce1fbabf10… / pred_off 7bb7b1bd7a3f2991… / 40 ラウンド / 計装の行 あり → base と 一致
+pf3    dat 44 ファイル 536b199ead5a24bf… / pred 2a1210ce1fbabf10… / pred_off 7bb7b1bd7a3f2991… / 40 ラウンド / 計装の行 あり → base と 一致
+hugeR  dat 44 ファイル 536b199ead5a24bf… / pred 2a1210ce1fbabf10… / pred_off 7bb7b1bd7a3f2991… / 40 ラウンド / 計装の行 あり → base と 一致
+reuse  dat 44 ファイル 536b199ead5a24bf… / pred 2a1210ce1fbabf10… / pred_off 7bb7b1bd7a3f2991… / 40 ラウンド / 計装の行 あり → base と 一致
+all    dat 44 ファイル 536b199ead5a24bf… / pred 2a1210ce1fbabf10… / pred_off 7bb7b1bd7a3f2991… / 40 ラウンド / 計装の行 あり → base と 一致
+
+=> 6腕とも base と一致

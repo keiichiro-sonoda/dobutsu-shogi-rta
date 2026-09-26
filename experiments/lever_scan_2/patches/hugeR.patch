@@ -1,0 +1,128 @@
+--- a/animal_shogi.c
++++ b/animal_shogi.c
+@@ -215,6 +215,18 @@
+     return p;
+ }
+ 
++// 実験 lever_scan_2 の hugeR 腕: 後退解析の配列 (pred / pred_off / cnt / dtm) を, 索引と同じ
++// hugeAlloc で確保して fill で埋める. #21 まで Python の array / bytearray で確保していて,
++// 4 KiB ページのままだった. madvise のあとに memset するので, 触った時点で巨大ページが付く.
++// 解放はしない (後退解析が終わるまで使い, そのままプロセスが終わる)
++void *hugeFill(size_t bytes, int fill) {
++    void *p;
++    if (bytes == 0) bytes = 1;
++    p = hugeAlloc(bytes);
++    if (p) memset(p, fill, bytes);
++    return p;
++}
++
+ void indexFree(void) {
+     free(g_index);
+     g_index = NULL;
+--- a/animal_shogi.py
++++ b/animal_shogi.py
+@@ -8,6 +8,7 @@
+ from collections import deque
+ from ctypes import (c_int32, c_int64, c_size_t, c_ubyte, c_uint32, c_uint64, c_void_p,
+                     cast, CDLL, POINTER)
++from ctypes import addressof, c_int, memset, sizeof
+ 
+ # 次の盤面を受け取るための配列型
+ c_uint64_array48 = c_uint64 * 48
+@@ -218,6 +219,22 @@
+     POINTER(c_int64),                          # out[4]
+ )
+ 
++# 実験 lever_scan_2 の hugeR 腕: 後退解析の配列を C の hugeAlloc で確保して fill で埋める
++hugeFill = lib.hugeFill
++hugeFill.restype = c_void_p
++hugeFill.argtypes = (c_size_t, c_int)
++
++def hugeArray(ctype, n: int, fill: int):
++    """C の hugeFill で確保した n 要素の ctypes の配列 (巨大ページを頼んだ領域)。
++
++    array / bytearray の代わりに使う. cast(arr, POINTER(...))・from_buffer・len・添字は
++    そのまま通る. 解放はしない (後退解析が終わるまで使い, そのままプロセスが終わる)
++    """
++    ptr = hugeFill(sizeof(ctype) * n, fill)
++    if not ptr:
++        raise RuntimeError("巨大ページの配列を確保できない：%d 要素" % n)
++    return (ctype * n).from_address(ptr)
++
+ # 連番 → パック値 の翻訳 (記録 #19). 後退解析は連番で動くが dat/ に書くのは
+ # パック値で, #18 まではその翻訳が Python のリスト内包に残っていた
+ # (①174段ループ 96,802,868 回 / ②引き分けの抽出 99,485,568 回の走査).
+@@ -990,7 +1007,8 @@
+     succ = array("I")
+     # 長さが先に分かるものは Python 側で確保して C に直接埋めさせる
+     succ_off = array("I", bytes(4)) * (n_uk + 1)
+-    cnt = bytearray(n_uk)
++    # 実験 lever_scan_2 の hugeR 腕: bytearray(n_uk) の代わりに巨大ページの領域 (0 で埋める)
++    cnt = hugeArray(c_ubyte, n_uk, 0)
+     # ⚠️ array("I") が4バイトである保証は処理系依存. C に渡す前に確かめる
+     if succ.itemsize != 4 or succ_off.itemsize != 4:
+         raise RuntimeError("array('I') が4バイトでない：%d / %d" % (succ.itemsize, succ_off.itemsize))
+@@ -1048,23 +1066,24 @@
+     n_edges = len(succ)
+     n_uk = len(succ_off) - 1
+     # 入次数を q+1 の位置に数えると, 累積和がそのままオフセットになる (C 側も同じ形)
+-    pred_off = array("I", bytes(4)) * (n_all + 1)
++    # 実験 lever_scan_2 の hugeR 腕: array("I") の代わりに巨大ページの領域 (0 で埋める)
++    pred_off = hugeArray(c_uint32, n_all + 1, 0)
+     rc = predCount(
+         cast(succ.buffer_info()[0], POINTER(c_uint32)), n_edges,
+-        n_all, cast(pred_off.buffer_info()[0], POINTER(c_uint32)),
++        n_all, cast(pred_off, POINTER(c_uint32)),
+     )
+     if rc != 0:
+         raise RuntimeError("入次数を数えられない：%d" % rc)
+     _profMark("P4_count")
+     printLogSub("P4 入次数まで {0:02d}時間{1:02d}分{2:02d}秒".format(*s2hms(time.time() - t1)))
+     # 散らす. ⚠️ カーソルの複製 (#11 までの cur = pred_off[:n_all], 987 MB) は作らない
+-    pred = array("I", bytes(4)) * n_edges
++    pred = hugeArray(c_uint32, n_edges, 0)
+     rc = predScatter(
+         cast(succ.buffer_info()[0], POINTER(c_uint32)), n_edges,
+         cast(succ_off.buffer_info()[0], POINTER(c_uint32)), n_uk,
+         n_all,
+-        cast(pred.buffer_info()[0], POINTER(c_uint32)),
+-        cast(pred_off.buffer_info()[0], POINTER(c_uint32)),
++        cast(pred, POINTER(c_uint32)),
++        cast(pred_off, POINTER(c_uint32)),
+     )
+     if rc != 0:
+         raise RuntimeError("前任リストを散らせない：%d" % rc)
+@@ -1104,15 +1123,17 @@
+ 
+     # 手数. 255 が未確定で, 最後まで 255 のものが引き分けになる
+     # 奇数が勝ち, 偶数が負け (パリティで判別できるので結果ビットは要らない)
+-    dtm = bytearray(b"\xff") * n_all
++    # 実験 lever_scan_2 の hugeR 腕: bytearray の代わりに巨大ページの領域 (255 で埋める).
++    # 区間の埋めは ctypes.memset (ctypes の配列へのスライス代入は要素ごとになって遅い)
++    dtm = hugeArray(c_ubyte, n_all, 0xFF)
+     catch_lo = n_uk
+     catch_hi = n_uk + n_win
+-    dtm[catch_lo:catch_hi] = b"\x01" * n_win
+-    dtm[catch_hi:] = bytes(n_lose)
++    memset(addressof(dtm) + catch_lo, 1, n_win)
++    memset(addressof(dtm) + catch_hi, 0, n_lose)
+ 
+     # ⚠️ array("I") が4バイト, bytearray が1要素1バイトであることは処理系依存
+-    if pred.itemsize != 4 or pred_off.itemsize != 4:
+-        raise RuntimeError("array('I') が4バイトでない：%d / %d" % (pred.itemsize, pred_off.itemsize))
++    if sizeof(pred._type_) != 4 or sizeof(pred_off._type_) != 4:
++        raise RuntimeError("c_uint32 が4バイトでない：%d" % sizeof(c_uint32))
+     if len(dtm) != n_all or len(cnt) != n_uk:
+         raise RuntimeError("dtm / cnt の長さが合わない：%d / %d" % (len(dtm), len(cnt)))
+     # ⚠️ gatherDraws には n_all を渡さず, packed[0..n_uk) を添字で舐めさせる.
+@@ -1132,8 +1153,8 @@
+     #    dtm / cnt に出ず, ループの後の引き分けの書き出しが1件も拾えなくなる
+     dtm_c = (c_ubyte * n_all).from_buffer(dtm)
+     cnt_c = (c_ubyte * n_uk).from_buffer(cnt)
+-    pred_ptr = cast(pred.buffer_info()[0], POINTER(c_uint32))
+-    pred_off_ptr = cast(pred_off.buffer_info()[0], POINTER(c_uint32))
++    pred_ptr = cast(pred, POINTER(c_uint32))
++    pred_off_ptr = cast(pred_off, POINTER(c_uint32))
+     step_out = array("I", bytes(4))
+     step_out_ptr = cast(step_out.buffer_info()[0], POINTER(c_uint32))
+     # ⚠️ ここから先で packed をリサイズしない (buildIndex と同じ制約).

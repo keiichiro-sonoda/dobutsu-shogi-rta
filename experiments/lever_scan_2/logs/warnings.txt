@@ -1,0 +1,25 @@
+# 6腕を gcc -O2 -Wall -Wextra でビルドしたときの警告と, 効いたことの確認 (check_arms.sh の出力)
+# gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+#
+base (gcc -O2 -Wall -Wextra): 警告 0 件
+pf2 (gcc -O2 -Wall -Wextra): 警告 0 件
+pf3 (gcc -O2 -Wall -Wextra): 警告 0 件
+hugeR (gcc -O2 -Wall -Wextra): 警告 0 件
+reuse (gcc -O2 -Wall -Wextra): 警告 0 件
+all (gcc -O2 -Wall -Wextra): 警告 0 件
+
+# 効いたことの確認
+base   先読み命令(retreatStep) 0 / madvise 3 / hugeFill 0 / 毎ラウンドの確保 4 行
+pf2    先読み命令(retreatStep) 4 / madvise 3 / hugeFill 0 / 毎ラウンドの確保 4 行
+pf3    先読み命令(retreatStep) 5 / madvise 3 / hugeFill 0 / 毎ラウンドの確保 4 行
+hugeR  先読み命令(retreatStep) 0 / madvise 4 / hugeFill 1 / 毎ラウンドの確保 4 行
+reuse  先読み命令(retreatStep) 0 / madvise 3 / hugeFill 0 / 毎ラウンドの確保 0 行
+all    先読み命令(retreatStep) 5 / madvise 4 / hugeFill 1 / 毎ラウンドの確保 0 行
+
+# パッチの sha256 (この出力を作ったときのもの)
+40ee664028c7139ad9597e0b9df45de55e8e3979a99594c1181b6cefbfcdea00  patches/hugeR.patch
+6db26ae219b4916028c5313b7af231ef50d46e27597a6e8ddbe1f053d851df39  patches/instr.patch
+2343422c02b46e64ec0070e395f8e44a52cdad7348b5ace9cfa468d0b362291e  patches/pf2.patch
+8de0683367d82c7b6182a1c544ca10b1a021cf242171c685729db6d9c3772acf  patches/pf3.patch
+f4f2ebc55e4ba9ccaf6cca3efc07fa26c0a9564a9d56180077a43cd66a20f33e  patches/reuse.patch
+# 出発点: impl/22_in_memory (64077fa)

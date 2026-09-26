@@ -1,0 +1,51 @@
+--- a/animal_shogi.c
++++ b/animal_shogi.c
+@@ -650,6 +650,10 @@
+ // ⚠️ static を1つも置かない。呼び出しをまたいで残る状態が無ければ、
+ //    記録 #13 の「空入力でリセットを飛ばす」型の不具合は起こりようがない。
+ 
++// 実験 lever_scan_2 の pf3 腕: 3段目で1つの q について先読みする前任の本数 (固定値. 調整しない).
++// 平均の入次数 (辺 938,671,869 ÷ 局面 246,803,167 ＝ 3.80) を覆う数にした
++#define PF3_PREDS 4
++
+ int retreatStep(const uint32_t *pred, const uint32_t *pred_off,
+                 uint8_t *dtm, uint8_t *cnt, uint32_t n_all, uint32_t n_uk,
+                 const uint32_t *frontier, uint32_t lo, uint32_t hi,
+@@ -668,6 +672,37 @@
+     if (lo == hi) return 0;
+ 
+     for (i = lo; i < hi; i++) {
++        // 実験 lever_scan_2 の pf2 腕: 2段の先読み (距離 32 / 16 は記録 #20 の predScatter と同じ.
++        // 調整しない). 32 個先の q で pred_off[q] を, 16 個先の q で (もう届いているはずの)
++        // pred_off[q] から pred の読み出し先を取り寄せる. 先読みはヒントで, 答えは変わらない.
++        // ⚠️ frontier[i + k] と pred_off[q16] は本当に読むので, i + k < hi と q < n_all を先に確かめる.
++        //    範囲モード (frontier == NULL) は q = i + k
++        if (i + 32 < hi) {
++            uint32_t q32 = frontier ? frontier[i + 32] : i + 32;
++            if (q32 < n_all) __builtin_prefetch(&pred_off[q32], 0, 3);
++        }
++        if (pred && i + 16 < hi) {
++            uint32_t q16 = frontier ? frontier[i + 16] : i + 16;
++            if (q16 < n_all) __builtin_prefetch(&pred[pred_off[q16]], 0, 3);
++        }
++        // 実験 lever_scan_2 の pf3 腕: 3段目. 8 個先の q の前任を先頭から最大 PF3_PREDS 本, 本当に読んで,
++        // その p の dtm[p] (書く意図) と, 奇数段だけ cnt[p] を取り寄せる. 偶数段は cnt を触らない.
++        // ⚠️ 本処理と同じ範囲検査 (q < n_all, e < e_end, p < n_uk) を通したものだけ先読みする.
++        //    本処理なら p >= n_uk は -3 で落ちるが, 先読みでは飛ばすだけ
++        if (pred && i + 8 < hi) {
++            uint32_t q8 = frontier ? frontier[i + 8] : i + 8;
++            if (q8 < n_all) {
++                size_t e8 = pred_off[q8];
++                size_t e8_end = pred_off[q8 + 1];
++                if (e8_end > e8 + PF3_PREDS) e8_end = e8 + PF3_PREDS;
++                for (; e8 < e8_end; e8++) {
++                    uint32_t p8 = pred[e8];
++                    if (p8 >= n_uk) continue;
++                    __builtin_prefetch(&dtm[p8], 1, 3);
++                    if (odd) __builtin_prefetch(&cnt[p8], 1, 3);
++                }
++            }
++        }
+         q = frontier ? frontier[i] : i;
+         // pred_off は n_all + 1 要素. q はその外を指してはいけない
+         if (q >= n_all) return -3;

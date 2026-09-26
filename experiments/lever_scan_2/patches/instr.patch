@@ -1,0 +1,62 @@
+--- a/animal_shogi.py
++++ b/animal_shogi.py
+@@ -544,6 +544,12 @@
+         f.write("rss_index_kB\t%d\n" % rss)
+         f.write("anonhuge_index_kB\t%d\n" % huge)
+         f.write("smaps_index_sec\t%.6f\n" % sec)
++        # 実験 lever_scan_2 (全腕に同じ計装): 174段ループの配列 (pred / pred_off / cnt / dtm) が
++        # まだ生きているうちの巨大ページ. 読んだのは R_uk のあとで, どの区間にも入らない
++        rss, huge, sec = _prof["smaps_loop"]
++        f.write("rss_loop_kB\t%d\n" % rss)
++        f.write("anonhuge_loop_kB\t%d\n" % huge)
++        f.write("smaps_loop_sec\t%.6f\n" % sec)
+ 
+ def _profWriteHeader() -> None:
+     """searchAll() の入口で呼ぶ. 前回の行が残っていても上書きして始める"""
+@@ -720,9 +726,11 @@
+     # 記録 #21: ユーザー時間とカーネル時間の起点. ⚠️ _prof には置かない
+     # (searchNext が毎ラウンド _prof.clear() するので消える)
+     _ru_start = resource.getrusage(resource.RUSAGE_SELF)
+-    _cpu_start = {"ut": _ru_start.ru_utime, "st": _ru_start.ru_stime}
++    # 実験 lever_scan_2 (全腕に同じ計装): minor fault の起点 ("min") も同じ辞書に持つ
++    _cpu_start = {"ut": _ru_start.ru_utime, "st": _ru_start.ru_stime, "min": _ru_start.ru_minflt}
+     # 段ごとのユーザー時間とカーネル時間をラウンドをまたいで足す (時間の区間と同じ組)
+-    _cpu = {(kind, k): 0.0 for kind in ("ut", "st") for k in ("F0", "F1", "F2", "F3", "F4", "F5")}
++    # 実験 lever_scan_2: minor fault ("min") も同じ組で足す
++    _cpu = {(kind, k): 0.0 for kind in ("ut", "st", "min") for k in ("F0", "F1", "F2", "F3", "F4", "F5")}
+     # 空の dat/ を確かめ, 発見済み表と待ち行列を初期局面1つから始める (記録 #22)
+     forwardInit()
+     _profWriteHeader()
+@@ -747,7 +755,7 @@
+             _row["hwm_" + m] = _prof["hwm_" + m]
+         for k in _sum:
+             _sum[k] += _row[k]
+-        for kind in ("ut", "st"):
++        for kind in ("ut", "st", "min"):
+             for k in ("F0", "F1", "F2", "F3", "F4", "F5"):
+                 _cpu[(kind, k)] += _prof[kind + "_" + k] - _prof[kind + "_" + k + "_begin"]
+         _profWriteRow(_row)
+@@ -812,6 +820,13 @@
+         f.write("rss_seen_kB\t%d\n" % _smaps_seen[0])
+         f.write("anonhuge_seen_kB\t%d\n" % _smaps_seen[1])
+         f.write("smaps_seen_sec\t%.6f\n" % _smaps_seen[2])
++        # 実験 lever_scan_2 (全腕に同じ計装): 段ごとの minor fault (回数). ラウンドをまたいで足した合計.
++        # 作業用配列を使い回す腕 (reuse) で, F1 の新しいページが減ったかを見るため
++        for k in ("F0", "F1", "F2", "F3", "F4", "F5"):
++            f.write("minflt_%s\t%d\n" % (k, _cpu[("min", k)]))
++        f.write("minflt_F6\t%d\n" % (_prof["min_F6"] - _prof["min_F6_begin"]))
++        f.write("minflt_release\t%d\n" % (_prof["min_release_seen"] - _prof["min_F6"]))
++        f.write("minflt_forward_total\t%d\n" % (_prof["min_release_seen"] - _cpu_start["min"]))
+ 
+ # 全盤面の数を出力 (全盤面計算後のテスト用)
+ def countTotalBoardNum():
+@@ -1217,6 +1232,9 @@
+     _profMark("R_draw")
+     writeUnknownChunks([draws])
+     _profMark("R_uk")
++    # 実験 lever_scan_2 (全腕に同じ計装): 174段ループの配列が生きているうちに巨大ページを読む.
++    # R_uk のあとなので, どの区間にも入らない
++    _prof["smaps_loop"] = _smapsHuge()
+     _retreatWriteSummary()
+ 
+ def main():

@@ -1,0 +1,19 @@
+=== 実験 lever_scan_2 開始 2026-09-26T13:28:27+00:00 ===
+--- 回す前の負荷 ---
+load average: 0.63, 0.51, 0.32
+（CPU 上位のプロセスの一覧 5行は、公開しないので消した。稼働日数とログイン人数も消し、load average だけを残した）
+=== 開始 b1a_base (base: impl/22_in_memory + パッチ「instr」) 2026-09-26T13:28:28+00:00 ===
+=== 終了 b1a_base 2026-09-26T13:31:41+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 3:12.98
+	Maximum resident set size (kbytes): 14530168
+	Minor (reclaiming a frame) page faults: 6878532
+全探索の所要時間：82.8547 秒
+F1	77.1814 stime_F1	5.455246 minflt_F1	1438381 P4	19.5779 loop174	26.8494 retreat_total	109.5638 anonhuge_loop_kB	0 
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#22 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+--- 件数の列を #22 本走と照合 ---
+b1a_base_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+=== 完了 b1a_base 2026-09-26T13:31:46+00:00 ===
+=== 開始 b1b_pf2 (pf2: impl/22_in_memory + パッチ「instr pf2」) 2026-09-26T13:31:47+00:00 ===

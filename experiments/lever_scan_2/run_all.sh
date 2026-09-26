@@ -42,6 +42,10 @@ echo "=== 実験 lever_scan_2 開始 $(date --iso-8601=seconds) ==="
 echo "--- 回す前の負荷 ---"
 uptime
 ps -eo pcpu,etime,comm --sort=-pcpu | head -6
+# 1回目の起動はノード0のメモリの断片化で巨大ページが付かなかった (README). 回す前の状態を残す
+echo "--- 回す前のノード0のメモリ (/proc/buddyinfo と meminfo) ---"
+grep "Node 0" /proc/buddyinfo
+grep -E "MemFree|FilePages" /sys/devices/system/node/node0/meminfo
 for b in 0 1 2 3 4 5; do
     for p in 0 1 2 3 4 5; do
         now=$(date +%s)

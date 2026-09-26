@@ -138,6 +138,36 @@ Python もそこまでしか読まないため。受け皿の中身は同じラ�
 2. どれかの本の `forward.tsv` の件数の列（`n_in`・`n_win`・`n_lose`・`n_uk`・`n_new_post`）が
    `results/22_in_memory/forward.tsv` と違う
 3. 途中で落ちた本がある（再開せず、その本の扱いを報告する）
+4. どれかの本で `/proc/vmstat` の `thp_fault_fallback` の前後差が 0 でない（巨大ページが頼んだぶん付かない）。
+   **下の「1回目の起動を止めた」のあとで足した条件**
+
+## 1回目の起動を止めた — ノード0のメモリが断片化していて、巨大ページが付かなかった
+
+準備のコミットのあと、2026-09-26 13:28（UTC）に一度起動した。1本目の `b1a_base` は答えの検査
+（オラクル・`dat/` のバイト一致・件数の列）をすべて通ったが、**巨大ページが頼んだぶん付かなかった**。
+
+| | #21・#22 の門番 | `b1a_base`（1回目の起動の1本目） |
+|---|---|---|
+| `thp_fault_fallback`（前後差） | 0 | **909** |
+| `compact_stall` / `compact_fail` | 0 / 0 | **4,369 / 2,980** |
+| 索引の `AnonHugePages`（8,388,608 kB が全部） | 全部 | **6,801,408 kB** |
+| 発見済み表の `AnonHugePages`（4,194,304 kB が全部） | 全部 | **3,919,872 kB** |
+| P1 / P2 | 7.35 / 46.4 秒（#22 の門番の chunk） | **10.86 / 49.68 秒** |
+
+2本目の途中で見たノード0は、32 GB のうちページキャッシュが 12 GB、空きが 12.9 GB で、
+2 MiB 以上のまとまった空きブロックは Normal と DMA32 の域を合わせて約 4.6 GiB だった（`/proc/buddyinfo`。
+2本目が使っているぶんを含む）。索引（8 GiB）を全部巨大ページにするには、コンパクションでまとめ直す必要があり、
+それが 2,980 回失敗した。この状態では、巨大ページを頼む腕（とくに 5 GB を足して頼む `hugeR` と `all`）の差が、
+レバーの効果ではなく断片化の進み方を測ることになる。答えの検査で決めた止める条件1〜3には掛かっていないが、
+結果を解釈する前に止めた（2本目の `b1b_pf2` の途中）。生ログは [`logs/aborted/`](logs/aborted/) にある。
+
+ページキャッシュを落としてメモリをまとめ直し（`sync; echo 3 > /proc/sys/vm/drop_caches; echo 1 > /proc/sys/vm/compact_memory`。
+一回きりの操作で、THP などの設定は変えていない）、**36本を最初から回し直す。** 腕・配置・予測・判定の量は変えない。
+落としたあとのノード0は、ページキャッシュが 0.37 GB、2 MiB 以上の空きブロックが約 17.6 GiB だった
+（回す直前の `buddyinfo` と `meminfo` は `logs/console.log` の冒頭に残る）。
+変えたのは次の2つだけ。
+- 止める条件4を足した
+- [`run_all.sh`](run_all.sh) が回す前のノード0の `buddyinfo` と `meminfo` を `logs/console.log` に残すようにした
 
 ## 集計
 
@@ -162,3 +192,4 @@ python3 experiments/gate_stats.py lever_scan_2 spans base pf3:pf2
 | [`run_one.sh`](run_one.sh) / [`run_all.sh`](run_all.sh) | 完走を1本測って検査する / 36本を上の順で回す（進行は `logs/console.log`） |
 | [`stop_rule.py`](stop_rule.py) / [`summary.py`](summary.py) / [`additivity.py`](additivity.py) | 止める条件 / README の表 / 足し算の確認 |
 | [`lib.sh`](lib.sh) | 周波数の標本・vmstat・md5 一覧（`gate_22_in_memory` の写し） |
+| [`logs/aborted/`](logs/aborted/) | 止めた1回目の起動の生ログ（1本と、進行ログ・バイト比較）。進行ログの「回す前の負荷」は load average だけを残し、プロセスの一覧・稼働日数・ログイン人数は公開しないので消した |

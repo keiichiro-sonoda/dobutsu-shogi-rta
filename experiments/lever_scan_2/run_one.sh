@@ -11,6 +11,8 @@
 #      results/22_in_memory/bytecompare.txt の #22 の値と一致すること
 #   ② forward.tsv の件数の列が results/22_in_memory/forward.tsv と一致すること (stop_rule.py rounds)
 #   ③ 解析が落ちないこと (終了コード 0). 落ちた本は再開しない
+#   ④ 巨大ページが頼んだぶん付くこと (/proc/vmstat の thp_fault_fallback の前後差が 0)。
+#      1回目の起動で, ノード0のメモリが断片化していて付かなかったので, 止めたあとに足した (README)
 set -euo pipefail
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
@@ -75,6 +77,14 @@ cp "$W/kaiseki_log/retreat_summary.tsv" "$HERE/logs/${LABEL}_retreat_summary.tsv
 cp "$W/time.txt" "$HERE/logs/${LABEL}_time.txt"
 cp "$W/freq.log" "$HERE/logs/${LABEL}_freq.log"
 cp "$W/vmstat.tsv" "$HERE/logs/${LABEL}_vmstat.tsv"
+
+FB=$(awk -F'\t' 'NR == 1 {for (i = 1; i <= NF; i++) if ($i == "thp_fault_fallback") c = i}
+                 NR == 2 {b = $c} NR == 3 {print $c - b}' "$W/vmstat.tsv")
+echo "--- thp_fault_fallback の前後差: $FB ---"
+if [ "$FB" != "0" ]; then
+    echo "!!! 巨大ページが頼んだぶん付かなかった. 止める条件④. 調査用に dat/ を残して止める" >&2
+    exit 1
+fi
 
 echo "--- オラクル 174行 ---"
 if ! python3 "$ROOT/tools/verify_log.py" "$W/kaiseki_log/kaizenkaiseki1.txt"; then

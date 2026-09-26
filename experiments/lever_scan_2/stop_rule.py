@@ -11,6 +11,9 @@
   2. どれかの本の forward.tsv の件数の列 (n_in・n_win・n_lose・n_uk・n_new_post) が
      results/22_in_memory/forward.tsv と違う
   3. 途中で落ちた本がある (再開しない)
+  4. どれかの本で /proc/vmstat の thp_fault_fallback の前後差が 0 でない
+     (巨大ページが頼んだぶん付かない)。
+     1回目の起動で, ノード0のメモリが断片化していて付かなかったので, 止めたあとに足した (README)
 
 run_one.sh が毎本その場で 1〜3 を見て, 掛かったら止まる (rounds はそのための口)。
 ここでは全36本がそろったあとに, もう一度まとめて見る。
@@ -94,6 +97,17 @@ def main(argv: list[str]) -> int:
     for label in started:
         if not rounds_match(LOGS / f"{label}_forward.tsv"):
             stop = True
+    print()
+    print("### 4. 巨大ページ（thp_fault_fallback の前後差）")
+    print()
+    fallback = {}
+    for label in started:
+        rows = [ln.split("\t") for ln in (LOGS / f"{label}_vmstat.tsv").read_text().splitlines()]
+        i = rows[0].index("thp_fault_fallback")
+        fallback[label] = int(rows[2][i]) - int(rows[1][i])
+    nonzero = {lb: v for lb, v in fallback.items() if v != 0}
+    print(f"{len(fallback)} 本のうち、0 でないもの {len(nonzero)} 本 {nonzero or ''}")
+    stop = stop or bool(nonzero)
     print()
     print("=> 止める: 結果の解釈に進まず報告する" if stop else "=> 止める条件に掛からない")
     return 1 if stop else 0

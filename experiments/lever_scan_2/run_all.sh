@@ -39,9 +39,13 @@ FIRST=(0 1 5 2 4 3)
 POS=(a b c d e f)
 START=$(date +%s)
 echo "=== 実験 lever_scan_2 開始 $(date --iso-8601=seconds) ==="
+# 回す前の負荷は load average と, 1秒間の CPU 使用率 (全 CPU の合計) だけを残す.
+# プロセスの名前・稼働日数・ログイン人数は公開しない (CLAUDE.md「記録に残さないもの」).
+# この実験を回したときは uptime と ps の上位6行を出していた. logs/console.log からはその部分を消してある
 echo "--- 回す前の負荷 ---"
-uptime
-ps -eo pcpu,etime,comm --sort=-pcpu | head -6
+awk '{print "load average:", $1 ",", $2 ",", $3}' /proc/loadavg
+vmstat 1 2 | awk 'NR == 2 {for (i = 1; i <= NF; i++) if ($i == "id") c = i}
+                  END {print "CPU 使用率 (全 CPU, 1秒):", 100 - $c "%"}'
 # 1回目の起動はノード0のメモリの断片化で巨大ページが付かなかった (README). 回す前の状態を残す
 echo "--- 回す前のノード0のメモリ (/proc/buddyinfo と meminfo) ---"
 grep "Node 0" /proc/buddyinfo

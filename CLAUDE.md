@@ -224,6 +224,8 @@
 - **ホスト名。** `tools/run.sh` からは削除済み。`results/` に置く `env.txt` にも入れない。
   計測機の同一性は `cpu` / `cores` / `mem_total` で足りる。
   `tests/test_run_harness.py` が守っている。
+- **計測機で動いているほかのプロセスの名前、稼働日数、ログイン人数**（`ps` や `uptime` の出力そのもの）。
+  負荷は load average と CPU 使用率の合計で残し、ほかのプロセスがあったことは「CPU 1つの約何%」と抽象化して書く。
 
 ## コミット
 

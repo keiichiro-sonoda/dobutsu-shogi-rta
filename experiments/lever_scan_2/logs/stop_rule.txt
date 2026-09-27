@@ -1,0 +1,52 @@
+### 3. 本数（途中で落ちた本が無いか）
+
+開始 36 本 / 完了 36 本 / 腕ごと {'base': 6, 'pf2': 6, 'pf3': 6, 'hugeR': 6, 'reuse': 6, 'all': 6}
+
+### 1. 答え（オラクル174行と、#22 本走の dat/ とのバイト一致）
+
+36 本のうち、オラクル PASS かつバイト一致でないもの 0 本
+
+### 2. 件数の列（#22 本走の forward.tsv と照合）
+
+b1a_base_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b1b_pf2_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b1c_all_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b1d_pf3_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b1e_reuse_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b1f_hugeR_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b2a_pf2_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b2b_pf3_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b2c_base_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b2d_hugeR_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b2e_all_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b2f_reuse_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b3a_pf3_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b3b_hugeR_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b3c_pf2_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b3d_reuse_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b3e_base_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b3f_all_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b4a_hugeR_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b4b_reuse_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b4c_pf3_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b4d_all_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b4e_pf2_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b4f_base_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b5a_reuse_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b5b_all_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b5c_hugeR_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b5d_base_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b5e_pf3_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b5f_pf2_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b6a_all_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b6b_base_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b6c_reuse_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b6d_pf2_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b6e_hugeR_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+b6f_pf3_forward.tsv: 74 ラウンド（#22 は 74）/ 件数の列 一致
+
+### 4. 巨大ページ（thp_fault_fallback の前後差）
+
+36 本のうち、0 でないもの 0 本 
+
+=> 止める条件に掛からない

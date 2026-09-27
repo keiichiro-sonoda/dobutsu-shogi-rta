@@ -1,0 +1,203 @@
+=== 門番 #24 開始 2026-09-27T12:33:11+00:00 ===
+--- 回す前の負荷 ---
+load average: 1.81, 1.66, 1.04
+CPU 使用率 (全 CPU, 1秒): 1%
+--- 回す前のノード0のメモリ (/proc/buddyinfo と meminfo) ---
+Node 0, zone      DMA      0      0      0      0      0      0      0      0      1      1      2 
+Node 0, zone    DMA32     60     43     66     53     47     42     41     35     22     20    764 
+Node 0, zone   Normal  34305  17426   8973   3216   2313   2217   1197    572    390    475   4041 
+Node 0 MemFree:        22722540 kB
+Node 0 FilePages:       6008324 kB
+--- r1a_old の前のノード0: 2 MiB 以上の空きブロック 19.75 GiB (しきい値 16) ---
+=== 開始 r1a_old (old: impl/23_loop_prefetch (so sha256 41a8a7f07f25)) 2026-09-27T12:33:12+00:00 ===
+=== 終了 r1a_old 2026-09-27T12:36:05+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:52.53
+	Maximum resident set size (kbytes): 14530124
+	Minor (reclaiming a frame) page faults: 6413904
+全探索の所要時間：81.4606 秒
+F1	75.9053 F2	0.5482 F6	2.4140 utime_F1	71.044516 stime_F1	4.862049 
+--- thp_fault_fallback の前後差: 0 ---
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#23 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+--- 件数の列を #23 本走と照合 ---
+r1a_old_forward.tsv: 74 ラウンド（#23 は 74）/ 件数の列 一致
+=== 完了 r1a_old 2026-09-27T12:36:10+00:00 ===
+--- r1b_new の前のノード0: 2 MiB 以上の空きブロック 19.57 GiB (しきい値 16) ---
+=== 開始 r1b_new (new: impl/24_reuse_buffers (so sha256 41a8a7f07f25)) 2026-09-27T12:36:11+00:00 ===
+=== 終了 r1b_new 2026-09-27T12:39:01+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:50.25
+	Maximum resident set size (kbytes): 14655772
+	Minor (reclaiming a frame) page faults: 5433931
+全探索の所要時間：78.8577 秒
+F1	73.2410 F2	0.5515 F6	2.3922 utime_F1	70.242566 stime_F1	2.994732 
+--- thp_fault_fallback の前後差: 0 ---
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#23 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+--- 件数の列を #23 本走と照合 ---
+r1b_new_forward.tsv: 74 ラウンド（#23 は 74）/ 件数の列 一致
+=== 完了 r1b_new 2026-09-27T12:39:07+00:00 ===
+--- r1c_new の前のノード0: 2 MiB 以上の空きブロック 19.44 GiB (しきい値 16) ---
+=== 開始 r1c_new (new: impl/24_reuse_buffers (so sha256 41a8a7f07f25)) 2026-09-27T12:39:07+00:00 ===
+=== 終了 r1c_new 2026-09-27T12:41:57+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:49.44
+	Maximum resident set size (kbytes): 14655772
+	Minor (reclaiming a frame) page faults: 5433930
+全探索の所要時間：78.2780 秒
+F1	72.6214 F2	0.5549 F6	2.4125 utime_F1	69.602350 stime_F1	3.018270 
+--- thp_fault_fallback の前後差: 0 ---
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#23 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+--- 件数の列を #23 本走と照合 ---
+r1c_new_forward.tsv: 74 ラウンド（#23 は 74）/ 件数の列 一致
+=== 完了 r1c_new 2026-09-27T12:42:02+00:00 ===
+--- r1d_old の前のノード0: 2 MiB 以上の空きブロック 19.35 GiB (しきい値 16) ---
+=== 開始 r1d_old (old: impl/23_loop_prefetch (so sha256 41a8a7f07f25)) 2026-09-27T12:42:02+00:00 ===
+=== 終了 r1d_old 2026-09-27T12:44:55+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:52.61
+	Maximum resident set size (kbytes): 14529688
+	Minor (reclaiming a frame) page faults: 6413901
+全探索の所要時間：81.2877 秒
+F1	75.7397 F2	0.5511 F6	2.3956 utime_F1	70.870341 stime_F1	4.867278 
+--- thp_fault_fallback の前後差: 0 ---
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#23 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+--- 件数の列を #23 本走と照合 ---
+r1d_old_forward.tsv: 74 ラウンド（#23 は 74）/ 件数の列 一致
+=== 完了 r1d_old 2026-09-27T12:45:00+00:00 ===
+--- r2a_old の前のノード0: 2 MiB 以上の空きブロック 19.21 GiB (しきい値 16) ---
+=== 開始 r2a_old (old: impl/23_loop_prefetch (so sha256 41a8a7f07f25)) 2026-09-27T12:45:01+00:00 ===
+=== 終了 r2a_old 2026-09-27T12:47:54+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:53.23
+	Maximum resident set size (kbytes): 14530128
+	Minor (reclaiming a frame) page faults: 6413909
+全探索の所要時間：81.5659 秒
+F1	76.0178 F2	0.5474 F6	2.3939 utime_F1	71.179109 stime_F1	4.837769 
+--- thp_fault_fallback の前後差: 0 ---
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#23 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+--- 件数の列を #23 本走と照合 ---
+r2a_old_forward.tsv: 74 ラウンド（#23 は 74）/ 件数の列 一致
+=== 完了 r2a_old 2026-09-27T12:48:00+00:00 ===
+--- r2b_new の前のノード0: 2 MiB 以上の空きブロック 19.16 GiB (しきい値 16) ---
+=== 開始 r2b_new (new: impl/24_reuse_buffers (so sha256 41a8a7f07f25)) 2026-09-27T12:48:00+00:00 ===
+=== 終了 r2b_new 2026-09-27T12:50:51+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:50.88
+	Maximum resident set size (kbytes): 14655768
+	Minor (reclaiming a frame) page faults: 5433931
+全探索の所要時間：79.1019 秒
+F1	73.4386 F2	0.5536 F6	2.4269 utime_F1	70.412453 stime_F1	3.021986 
+--- thp_fault_fallback の前後差: 0 ---
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#23 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+--- 件数の列を #23 本走と照合 ---
+r2b_new_forward.tsv: 74 ラウンド（#23 は 74）/ 件数の列 一致
+=== 完了 r2b_new 2026-09-27T12:50:57+00:00 ===
+--- r2c_new の前のノード0: 2 MiB 以上の空きブロック 19.06 GiB (しきい値 16) ---
+=== 開始 r2c_new (new: impl/24_reuse_buffers (so sha256 41a8a7f07f25)) 2026-09-27T12:50:57+00:00 ===
+=== 終了 r2c_new 2026-09-27T12:53:47+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:49.93
+	Maximum resident set size (kbytes): 14655768
+	Minor (reclaiming a frame) page faults: 5433931
+全探索の所要時間：78.3979 秒
+F1	72.7315 F2	0.5554 F6	2.4143 utime_F1	69.669824 stime_F1	3.053395 
+--- thp_fault_fallback の前後差: 0 ---
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#23 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+--- 件数の列を #23 本走と照合 ---
+r2c_new_forward.tsv: 74 ラウンド（#23 は 74）/ 件数の列 一致
+=== 完了 r2c_new 2026-09-27T12:53:52+00:00 ===
+--- r2d_old の前のノード0: 2 MiB 以上の空きブロック 18.96 GiB (しきい値 16) ---
+=== 開始 r2d_old (old: impl/23_loop_prefetch (so sha256 41a8a7f07f25)) 2026-09-27T12:53:53+00:00 ===
+=== 終了 r2d_old 2026-09-27T12:56:47+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:54.17
+	Maximum resident set size (kbytes): 14530124
+	Minor (reclaiming a frame) page faults: 6413912
+全探索の所要時間：82.1974 秒
+F1	76.5883 F2	0.5514 F6	2.4314 utime_F1	71.742523 stime_F1	4.844729 
+--- thp_fault_fallback の前後差: 0 ---
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#23 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+--- 件数の列を #23 本走と照合 ---
+r2d_old_forward.tsv: 74 ラウンド（#23 は 74）/ 件数の列 一致
+=== 完了 r2d_old 2026-09-27T12:56:53+00:00 ===
+--- r3a_old の前のノード0: 2 MiB 以上の空きブロック 18.93 GiB (しきい値 16) ---
+=== 開始 r3a_old (old: impl/23_loop_prefetch (so sha256 41a8a7f07f25)) 2026-09-27T12:56:53+00:00 ===
+=== 終了 r3a_old 2026-09-27T12:59:47+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:53.63
+	Maximum resident set size (kbytes): 14530236
+	Minor (reclaiming a frame) page faults: 6413903
+全探索の所要時間：81.8486 秒
+F1	76.3189 F2	0.5436 F6	2.3930 utime_F1	71.457879 stime_F1	4.859189 
+--- thp_fault_fallback の前後差: 0 ---
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#23 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+--- 件数の列を #23 本走と照合 ---
+r3a_old_forward.tsv: 74 ラウンド（#23 は 74）/ 件数の列 一致
+=== 完了 r3a_old 2026-09-27T12:59:52+00:00 ===
+--- r3b_new の前のノード0: 2 MiB 以上の空きブロック 18.86 GiB (しきい値 16) ---
+=== 開始 r3b_new (new: impl/24_reuse_buffers (so sha256 41a8a7f07f25)) 2026-09-27T12:59:53+00:00 ===
+=== 終了 r3b_new 2026-09-27T13:02:43+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:50.08
+	Maximum resident set size (kbytes): 14655768
+	Minor (reclaiming a frame) page faults: 5433920
+全探索の所要時間：79.4176 秒
+F1	73.8026 F2	0.5451 F6	2.3907 utime_F1	70.797281 stime_F1	3.003242 
+--- thp_fault_fallback の前後差: 0 ---
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#23 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+--- 件数の列を #23 本走と照合 ---
+r3b_new_forward.tsv: 74 ラウンド（#23 は 74）/ 件数の列 一致
+=== 完了 r3b_new 2026-09-27T13:02:48+00:00 ===
+--- r3c_new の前のノード0: 2 MiB 以上の空きブロック 18.80 GiB (しきい値 16) ---
+=== 開始 r3c_new (new: impl/24_reuse_buffers (so sha256 41a8a7f07f25)) 2026-09-27T13:02:49+00:00 ===
+=== 終了 r3c_new 2026-09-27T13:05:39+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:50.08
+	Maximum resident set size (kbytes): 14655852
+	Minor (reclaiming a frame) page faults: 5433929
+全探索の所要時間：78.7588 秒
+F1	73.0674 F2	0.5557 F6	2.4300 utime_F1	70.013402 stime_F1	3.047122 
+--- thp_fault_fallback の前後差: 0 ---
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#23 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+--- 件数の列を #23 本走と照合 ---
+r3c_new_forward.tsv: 74 ラウンド（#23 は 74）/ 件数の列 一致
+=== 完了 r3c_new 2026-09-27T13:05:44+00:00 ===
+--- r3d_old の前のノード0: 2 MiB 以上の空きブロック 18.70 GiB (しきい値 16) ---
+=== 開始 r3d_old (old: impl/23_loop_prefetch (so sha256 41a8a7f07f25)) 2026-09-27T13:05:45+00:00 ===
+=== 終了 r3d_old 2026-09-27T13:08:38+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:53.19
+	Maximum resident set size (kbytes): 14530120
+	Minor (reclaiming a frame) page faults: 6413902
+全探索の所要時間：81.6605 秒
+F1	76.0768 F2	0.5495 F6	2.4112 utime_F1	71.196636 stime_F1	4.881853 
+--- thp_fault_fallback の前後差: 0 ---
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- dat/ のバイト比較 (#23 本走と): 213 ファイル / 1974425336 バイト / 一致 ---
+--- 件数の列を #23 本走と照合 ---
+r3d_old_forward.tsv: 74 ラウンド（#23 は 74）/ 件数の列 一致
+=== 完了 r3d_old 2026-09-27T13:08:43+00:00 ===
+=== 全12本 完了 2026-09-27T13:08:43+00:00 ===

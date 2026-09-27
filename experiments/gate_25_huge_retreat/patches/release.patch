@@ -1,0 +1,21 @@
+--- a/animal_shogi.py
++++ b/animal_shogi.py
+@@ -740,7 +740,7 @@
+ 
+ # 全盤面が出るまで探索
+ def searchAll():
+-    global _prof_round
++    global _prof_round, _exp_bufs
+     t0 = time.time()
+     _t_all = _pc()
+     # 記録 #21: ユーザー時間とカーネル時間の起点. ⚠️ _prof には置かない
+@@ -796,6 +796,9 @@
+     seenFree()
+     # 展開バッファ (記録 #13) も同じところで手放す
+     expandFreeBuffer()
++    # 門番 gate_25_huge_retreat (両腕に同じ): 展開の受け皿 (記録 #24) もここで手放す.
++    # 全探索が終わると使わない (#24 は後退解析の間も 120 MB を持ち続け, 全体のピーク RSS が上がった)
++    _exp_bufs = None
+     _profMark("release_seen")
+     _release_seen = _prof["t_release_seen"] - _prof["t_release_wl"]
+     _total = _pc() - _t_all

@@ -66,6 +66,8 @@ IMPLS = (
     "23_loop_prefetch",
     # #24 は全探索の F1 (展開の受け皿) だけを変えた。後退解析のコードは #23 とバイト同一
     "24_reuse_buffers",
+    # #25 は後退解析の4配列を C の hugeAlloc で確保する。確保の仕方だけで、書く値は変わらない
+    "25_huge_retreat",
 )
 PAIRS = list(itertools.pairwise(IMPLS))
 

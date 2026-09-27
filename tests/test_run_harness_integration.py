@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import pathlib
 import shutil
 import subprocess
@@ -41,7 +42,7 @@ def test_harness_reports_analysis_and_verification_failures(
     (impl / "solver.py").write_text(script, encoding="utf-8")
 
     # 空き容量チェックだけを代替し、CI のディスク容量に依存させない。
-    # この実装は数KBのログしか作らない。
+    # この実装は数KBのログしか作らない。巨大ページのための空きの確認も、しきい値 0 で素通りさせる
     launcher = 'df() { printf "Avail\\n100G\\n"; }; export -f df; bash "$@"'
     result = subprocess.run(
         ["bash", "-c", launcher, "test", str(tools / "run.sh"), str(impl), "trial"],
@@ -50,6 +51,7 @@ def test_harness_reports_analysis_and_verification_failures(
         text=True,
         timeout=30,
         check=False,
+        env={**os.environ, "HUGEFREE_MIN_GIB": "0"},
     )
 
     assert result.returncode == expected_exit, result.stdout + result.stderr
@@ -78,3 +80,32 @@ def test_harness_reports_analysis_and_verification_failures(
         assert "FAIL:" in result.stdout
     else:
         assert "メインログが無い" in result.stderr
+
+
+def test_harness_stops_before_measuring_when_hugepage_memory_is_short(
+    tmp_path: pathlib.Path,
+) -> None:
+    """巨大ページのための空きが足りなければ、計測を始めずに (作業ディレクトリも作らずに) 止まる。
+
+    キャッシュを落とす操作は run.sh の中でやらず、何をすべきかを表示するだけ (記録 #23 から)。
+    """
+    tools = tmp_path / "tools"
+    tools.mkdir()
+    shutil.copyfile(ROOT / "tools" / "run.sh", tools / "run.sh")
+    impl = tmp_path / "impl"
+    impl.mkdir()
+    (impl / "impl.env").write_text('BUILD_CMD="true"\nRUN_CMD="true"\n', encoding="utf-8")
+    launcher = 'df() { printf "Avail\\n100G\\n"; }; export -f df; bash "$@"'
+    result = subprocess.run(
+        ["bash", "-c", launcher, "test", str(tools / "run.sh"), str(impl), "trial"],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+        env={**os.environ, "HUGEFREE_MIN_GIB": "1000000"},
+    )
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "巨大ページのための空きが足りない" in result.stderr
+    assert "drop_caches" in result.stderr and "CACHE_DROP" in result.stderr
+    assert not (tmp_path / "runs").exists(), "計測を始めていないのに作業ディレクトリを作った"

@@ -61,6 +61,9 @@ IMPLS = (
     # ⚠️ #22 から後退解析はファイルを読まない (全探索がメモリに残したものを P0 が詰める)。
     #    打ち切った dat/ は seed_memory() で渡す (門番の driver と同じ手順)
     "22_in_memory",
+    # #23 は retreatStep() に先読みを入れた。先読みはヒントで書く値を変えないので、
+    # 指紋も引き分けも一致する
+    "23_loop_prefetch",
 )
 PAIRS = list(itertools.pairwise(IMPLS))
 

@@ -27,6 +27,10 @@ REQUIRED_ENV_FIELDS = (
     "thp_enabled",
     "thp_defrag",
     "config_hz",
+    # 記録 #23 から。巨大ページのための空き (2 MiB 以上の空きブロック) と、計測の前に
+    # キャッシュを落としたか。#21 以降の利得は、走り始めるときに空きがあることを前提にしている
+    "hugefree",
+    "cache_drop",
 )
 
 
@@ -100,6 +104,27 @@ def test_run_sh_records_vmstat_around_the_measurement() -> None:
     assert script.index("vmstat_row before") < measure < script.index("vmstat_row after"), (
         "vmstat を計測の前後で取っていない"
     )
+
+
+def test_run_sh_checks_the_hugepage_free_memory_before_measuring() -> None:
+    """巨大ページのための空きを、計測を始める前 (作業ディレクトリを作る前) に確かめる。
+
+    記録 #23 から。判定は走る前だけ。走ってから遅かったのでキャッシュを落として走り直すのは、
+    遅い本を捨てて引き直すのと同じなので、run.sh の中には走ったあとの判定を置かない。
+    """
+    script = run_sh()
+    assert shell_default("HUGEFREE_MIN_GIB") == "${HUGEFREE_MIN_GIB:-16}"
+    assert "/proc/buddyinfo" in script
+    check = script.index("巨大ページのための空きが足りない")
+    assert check < script.index('mkdir -p "$WORK"'), "作業ディレクトリを作ってから確かめている"
+    assert check < script.index('/usr/bin/time -v bash -c "$RUN_CMD"')
+
+
+def test_run_sh_does_not_drop_caches_itself() -> None:
+    """キャッシュを落とす操作 (root が要る) は run.sh の中ではやらない。案内を表示するだけ。"""
+    for line in run_sh().splitlines():
+        if "/proc/sys/vm/" in line:
+            assert line.lstrip().startswith(('echo "', "#")), f"/proc/sys/vm に書いている: {line}"
 
 
 def test_implementation_is_selectable_and_defaults_to_baseline() -> None:

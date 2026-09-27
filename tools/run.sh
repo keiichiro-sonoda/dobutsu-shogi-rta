@@ -61,7 +61,56 @@ if [ "$AVAIL_GB" -lt "$NEED_GB" ]; then
     exit 1
 fi
 
+# 巨大ページのための空きメモリ (記録 #23 から).
+# #21 以降の巨大ページの利得は, 走り始めるときに 2 MiB 以上のまとまった空きが残っていることを
+# 前提にしている. 断片化していると頼んでも付かない (実験 lever_scan_2 の1回目は
+# thp_fault_fallback 909, P1 7.35 → 10.86 秒). /proc/buddyinfo の order 9 以上 (2 MiB 以上) の
+# 空きブロックを両ノードで足し, HUGEFREE_MIN_GIB (既定 16) に満たなければ計測を始めずに止める.
+# 16 GiB は, 同時に要る巨大ページの最大 (後退解析の索引 8 GiB. 全探索の発見済み表は
+# 作り直しの瞬間に 2 + 4 GiB) に余裕を見た値.
+# ⚠️ キャッシュを落とす操作 (root が要る) はここではやらない. 足りなければ何をすべきかを出して止める.
+#    落としたらその記録を CACHE_DROP に入れて起動し直す (計測を始める前なので, 引き直しにはならない).
+#    判定は走る前だけ. 走ってから遅かったので落として走り直す, はしない (遅い本を捨てて引き直すのと同じ).
+#    走り始めてから付かなかった本も, そのまま記録にする (vmstat.tsv の thp_fault_fallback に残る)
+
+# hugefree_gib <ノード番号|all>  2 MiB 以上の空きブロックの合計 (GiB, 小数2桁). 読めなければ "-"
+# awk の中の $1 はフィールド番号なので, シェルには展開させない
+# shellcheck disable=SC2016
+hugefree_gib() {
+    awk -v want="$1" '
+        $1 == "Node" {
+            node = $2; sub(",", "", node)
+            if (want != "all" && node != want) next
+            seen = 1
+            for (i = 5; i <= NF; i++) if (i - 5 >= 9) kib += $i * 4 * 2 ^ (i - 5)
+        }
+        END { if (seen) printf "%.2f", kib / 1048576; else printf "-" }' /proc/buddyinfo 2>/dev/null \
+        || printf -- "-"
+}
+HUGEFREE_MIN_GIB="${HUGEFREE_MIN_GIB:-16}"
+HUGEFREE_LINE=""
+while read -r node; do
+    HUGEFREE_LINE+="node${node} $(hugefree_gib "$node") / "
+done < <(awk '$1 == "Node" {sub(",", "", $2); print $2}' /proc/buddyinfo 2>/dev/null | sort -un)
+HUGEFREE_ALL="$(hugefree_gib all)"
+HUGEFREE_LINE+="合計 ${HUGEFREE_ALL} GiB (2 MiB 以上の空きブロック. しきい値 ${HUGEFREE_MIN_GIB} GiB)"
+if ! awk -v have="$HUGEFREE_ALL" -v need="$HUGEFREE_MIN_GIB" \
+        'BEGIN { exit !(need + 0 == 0 || (have != "-" && have + 0 >= need + 0)) }'; then
+    echo "ERROR: 巨大ページのための空きが足りない: $HUGEFREE_LINE" >&2
+    echo "  計測は始めていない. root で次を行い, 何をしたかを CACHE_DROP に入れて起動し直すこと:" >&2
+    echo "    sync; echo 3 > /proc/sys/vm/drop_caches; echo 1 > /proc/sys/vm/compact_memory" >&2
+    echo "    例: CACHE_DROP=\"<日時> drop_caches=3 と compact_memory=1\" tools/run.sh $IMPL_ARG" >&2
+    echo "  (THP などの設定は変えない. この出力も, 落とす前の値として記録に残す)" >&2
+    exit 1
+fi
+
 mkdir -p "$WORK"/{dat,kaiseki_log}
+{
+    echo "# 計測を始める前の /proc/buddyinfo (記録 #23 から). 2 MiB 以上の空きブロックの合計:"
+    echo "$HUGEFREE_LINE"
+    echo "cache_drop: ${CACHE_DROP:-なし}"
+    grep '^Node' /proc/buddyinfo 2>/dev/null || true
+} > "$WORK/hugefree.txt"
 cp -R "$IMPL_DIR"/. "$WORK/"
 rm -f "$WORK/impl.env"
 
@@ -163,6 +212,9 @@ IMPL_SHA="$(cd "$IMPL_DIR" && find . -type f ! -name impl.env -print0 \
     echo "thp_enabled: $(cat /sys/kernel/mm/transparent_hugepage/enabled 2>/dev/null || echo n/a)"
     echo "thp_defrag:  $(cat /sys/kernel/mm/transparent_hugepage/defrag 2>/dev/null || echo n/a)"
     echo "config_hz:   $(sed -n 's/^CONFIG_HZ=//p' "/boot/config-$(uname -r)" 2>/dev/null | grep . || echo n/a)"
+    # 記録 #23 から. 巨大ページのための空きと, 計測の前にキャッシュを落としたか (hugefree.txt にも)
+    echo "hugefree:    $HUGEFREE_LINE"
+    echo "cache_drop:  ${CACHE_DROP:-なし}"
 } | tee "$WORK/env.txt"
 
 cd "$WORK"

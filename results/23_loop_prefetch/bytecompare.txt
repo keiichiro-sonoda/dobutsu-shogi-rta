@@ -1,0 +1,19 @@
+# 記録 #22 (impl/22_in_memory) の成果物との照合 (バイト単位)
+# diff -rq <#22 の dat/> <#23 の dat/>  と  md5sum 一覧 (LC_ALL=C sort) の sha256
+#   cd <dat>; find . -type f -print0 | LC_ALL=C sort -z | xargs -0 md5sum | sha256sum
+#
+# #23 は174段ループ (C の retreatStep) に2段の先読み (__builtin_prefetch) を入れただけ。
+# 先読みはヒントで、書く値 (dtm / cnt / found) は本処理だけが書く。全探索のコードも、
+# 後退解析の採番順も、成果物の区切りも変えていない。値も順序も動かないはずなので、
+# 指紋ではなくバイト比較で見る。
+#
+# 指紋 (件数・総和・XOR) より強い検査で、一致しなければ「どこかで順序が動いた」証拠になる。
+# ⚠️ #18 で戻った鎖がここでも続く。門番でも2腕 12本の出力がすべて #22 本走とバイト一致している
+#    (experiments/gate_23_loop_prefetch/logs/bytecompare.tsv)。
+#
+files:        #22 213 / #23 213
+bytes:        #22 1974425336 / #23 1974425336
+md5_list_sha256: #22 f18f3075ba25f13987c520fe98cba074a5916c08ead02eb4719af2a87141b488
+                 #23 f18f3075ba25f13987c520fe98cba074a5916c08ead02eb4719af2a87141b488
+diff -rq:     exit=0
+md5 list:     一致

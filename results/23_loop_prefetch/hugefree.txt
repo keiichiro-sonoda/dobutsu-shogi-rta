@@ -1,0 +1,7 @@
+# 計測を始める前の /proc/buddyinfo (記録 #23 から). 2 MiB 以上の空きブロックの合計:
+node0 21.46 / node1 23.91 / 合計 45.37 GiB (2 MiB 以上の空きブロック. しきい値 16 GiB)
+cache_drop: 本走のためには落としていない。約40分前、門番の起動の直前に1回 (root で sync, drop_caches に 3, compact_memory に 1)
+Node 0, zone      DMA      0      0      0      0      0      0      0      0      1      1      2 
+Node 0, zone    DMA32     57     42     66     53     47     42     41     35     22     20    764 
+Node 0, zone   Normal  28726  16827  14895   7469   5983   4625   2867   2365   1940   1274   4080 
+Node 1, zone   Normal  13368   6916   5263   3371   2691   2236   2551   2549   2128   1692   5274 

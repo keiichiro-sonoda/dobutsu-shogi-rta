@@ -32,5 +32,6 @@ frontmatter の2か所にある。読み物としては記録表、機械可読�
 | [#20](20-prefetch.md) | [`impl/20_prefetch/`](../../impl/20_prefetch/) |
 | [#21](21-hugepages.md) | [`impl/21_hugepages/`](../../impl/21_hugepages/) |
 | [#22](22-in-memory.md) | [`impl/22_in_memory/`](../../impl/22_in_memory/) |
+| [#23](23-loop-prefetch.md) | [`impl/23_loop_prefetch/`](../../impl/23_loop_prefetch/) |
 
 試行をまたぐ話は [`../measurement-noise.md`](../measurement-noise.md) にある。

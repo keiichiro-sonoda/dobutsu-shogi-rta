@@ -1,0 +1,19 @@
+# 記録 #24 (impl/24_reuse_buffers) の成果物との照合 (バイト単位)
+# diff -rq <#24 の dat/> <#25 の dat/>  と  md5sum 一覧 (LC_ALL=C sort) の sha256
+#   cd <dat>; find . -type f -print0 | LC_ALL=C sort -z | xargs -0 md5sum | sha256sum
+#
+# #25 は後退解析の4配列 (pred / pred_off / cnt / dtm) の確保を C の hugeAlloc に替え、
+# 計装 (全探索の段ごとの minor fault と、後退解析の配列の巨大ページの読み) と、展開の受け皿を
+# 全探索の終わりで手放す片付けを入れた。どれも書く値と順序を変えないので、指紋ではなく
+# バイト比較で見る。
+#
+# 指紋 (件数・総和・XOR) より強い検査で、一致しなければ「どこかで順序が動いた」証拠になる。
+# ⚠️ #18 で戻った鎖がここでも続く。門番でも2腕 12本の出力がすべて #24 本走とバイト一致している
+#    (experiments/gate_25_huge_retreat/logs/bytecompare.tsv)。
+#
+files:        #24 213 / #25 213
+bytes:        #24 1974425336 / #25 1974425336
+md5_list_sha256: #24 f18f3075ba25f13987c520fe98cba074a5916c08ead02eb4719af2a87141b488
+                 #25 f18f3075ba25f13987c520fe98cba074a5916c08ead02eb4719af2a87141b488
+diff -rq:     exit=0
+md5 list:     一致

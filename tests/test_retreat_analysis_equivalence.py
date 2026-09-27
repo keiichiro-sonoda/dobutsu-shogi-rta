@@ -64,6 +64,8 @@ IMPLS = (
     # #23 は retreatStep() に先読みを入れた。先読みはヒントで書く値を変えないので、
     # 指紋も引き分けも一致する
     "23_loop_prefetch",
+    # #24 は全探索の F1 (展開の受け皿) だけを変えた。後退解析のコードは #23 とバイト同一
+    "24_reuse_buffers",
 )
 PAIRS = list(itertools.pairwise(IMPLS))
 

@@ -1,0 +1,65 @@
+--- a/animal_shogi.c
++++ c/animal_shogi.c	2026-09-28 11:23:25.560052993 +0000
+@@ -184,6 +184,62 @@
+     return nbs_p;
+ }
+ 
++// ---- 実験 gen_bench の A: キャッチの先行判定 -----------------------------------------
++//
++// nextBoardInvNormal が 0 を返すか (手番側が相手のライオンを取れるか) だけを, 反転する前の盤で
++// 先に決める. キャッチ局面では invBoard も後続の生成も要らなくなる.
++//
++// 反転 (マス i → 44 - i, 所有者ビットの反転) との対応:
++//   - 反転後の「2」の駒 (9〜13) = 反転前の「1」の駒 (1〜5) が手番側. 相手のライオンは反転前の LION2 (12)
++//   - 手の向きは符号が逆になる. きりん・ぞう・ライオンの向きの集合は符号を変えても同じで,
++//     にわとりは {-20,-16,-4,4,12,16} → {20,16,4,-4,-12,-16}, ひよこは -4 → +4
++//   - 盤の端で折り返さない条件 (src%16 == 0 → dst%16 == 12 と src%16 == 12 → dst%16 == 0 を捨てる)
++//     は, 反転しても同じ2組のまま (0 と 12 が入れ替わるだけ)
++//   - ひよこの「src % 16 == 0 なら動かない」は, 反転前では src % 16 == 12 で +4 すると dst % 16 == 0
++//     になる組で, 上の端の条件に含まれる
++// 相手のライオンのマス L の周り8方向から, その向きに L へ動ける手番側の駒があるかだけを見る.
++// ⚠️ キャッチはトライより優先 (生成器もトライの印を立てたまま 0 を返す). ここではトライを見ない
++static const int CATCH_DIR[8] = {-20, -16, -12, -4, 4, 12, 16, 20};
++// 反転前の駒 (1〜5) が動ける向き. ビット k が CATCH_DIR[k]
++static const unsigned char CATCH_MASK[6] = {
++    0,
++    1u << 4,                                                  // ひよこ: +4
++    (1u << 1) | (1u << 3) | (1u << 4) | (1u << 6),            // きりん: ±16, ±4
++    (1u << 0) | (1u << 2) | (1u << 5) | (1u << 7),            // ぞう: ±20, ±12
++    0xff,                                                     // ライオン: 8方向
++    (1u << 1) | (1u << 2) | (1u << 3) | (1u << 4) | (1u << 6) | (1u << 7),  // にわとり
++};
++
++static int catchFirst(u_long b) {
++    int lion = -1, k, src, lion_mod16, src_mod16;
++    u_long koma;
++    for (int i = 0; i < 48; i += 4) {
++        if (getKoma(b, i) == LION2) {
++            lion = i;
++            break;
++        }
++    }
++    if (lion < 0) return 0;
++    lion_mod16 = lion % 16;
++    for (k = 0; k < 8; k++) {
++        src = lion - CATCH_DIR[k];
++        if (src < 0 || 44 < src) continue;
++        src_mod16 = src % 16;
++        if (src_mod16 == 0 && lion_mod16 == 12) continue;
++        if (src_mod16 == 12 && lion_mod16 == 0) continue;
++        koma = getKoma(b, src);
++        if (!koma || (koma & 0b1000)) continue;
++        if (CATCH_MASK[koma] >> k & 1) return 1;
++    }
++    return 0;
++}
++
++// 先行判定 → 外れたらいまの生成器. 戻り値と後続の列は nextBoardInvNormal と同じ
++int nextBoardCatchFirst(u_long b, u_long *nbs) {
++    if (catchFirst(b)) return 0;
++    return nextBoardInvNormal(b, nbs);
++}
++
+ // パック値 -> 連番 の索引 (オープンアドレス法・線形探査)
+ static IndexEntry *g_index = NULL;
+ // Python 側の array('Q') をそのまま指す. indexFree までリサイズしてはいけない

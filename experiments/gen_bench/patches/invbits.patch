@@ -1,0 +1,29 @@
+--- a/animal_shogi.c
++++ b/animal_shogi.c
+@@ -65,13 +65,20 @@
+ }
+ 
+ // 先手後手入れ替え
++// 実験 gen_bench の B: ループを使わずに同じ値を作る.
++//   1. 盤の48ビット (4ビット x 12マス) のマスの並びを逆にする: 8バイトを逆順にして16ビット右へ
++//      (盤は下位6バイトなので, 逆順にすると上位6バイトに来る) → 各バイトの上下4ビットを入れ替える
++//   2. 駒のあるマスだけ所有者ビット (0b1000) を反転する: マスの4ビットの OR を最下位ビットに集め,
++//      3ビット左へずらして XOR する (空きマスは 0 のまま)
++//   3. 持ち駒の6ビット2組は元の式のまま入れ替える
+ u_long invBoard(u_long b) {
+-    u_long ib = 0;
+-    u_long koma, own1, own2;
+-    for (u_char i = 0; i < 48; i += 4) {
+-        if (!(koma = getKoma(b, i))) continue;
+-        ib = putKoma(ib, 44 - i, koma ^ 0b1000);
+-    }
++    const u_long nib_lo = 0x0f0f0f0f0f0fUL;
++    u_long ib, occ, own1, own2;
++    ib = __builtin_bswap64(b & 0xffffffffffffUL) >> 16;
++    ib = ((ib & nib_lo) << 4) | ((ib >> 4) & nib_lo);
++    occ = ib | (ib >> 1);
++    occ |= occ >> 2;
++    ib ^= (occ & 0x111111111111UL) << 3;
+     own1 = (b >> 48) & 0b111111;
+     own2 = b >> 54;
+     ib |= (own1 << 54) | (own2 << 48);

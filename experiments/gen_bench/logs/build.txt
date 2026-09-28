@@ -1,0 +1,4 @@
+base: impl/25_huge_retreat + [] (so sha256 ed5df6fa4b89)
+B: impl/25_huge_retreat + [invbits] (so sha256 dd411cfbf38b)
+A: impl/25_huge_retreat + [catchfirst] (so sha256 e9a559a629e2)
+AB: impl/25_huge_retreat + [invbits catchfirst] (so sha256 d6dc3c098b4e)

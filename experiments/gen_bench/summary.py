@@ -97,6 +97,15 @@ def main() -> int:
         pv = P2_AS[v]
         p2 = sum(diff[(pv, k)] * n for k, n in P2_COUNT.items()) / 1e9 if pv != "base" else 0.0
         print(f"| `{v}` | {f1:+.2f} | {p2:+.2f} | {f1 + p2:+.2f} |")
+    if ("gen", "AB", "catch") in t and ("gen", "B", "catch") in t:
+        print("\n### A を B の上に重ねたとき（`AB` − `B`。ns/局面と F1 の秒）\n")
+        cells, f1 = [], 0.0
+        for k in KINDS:
+            d = paired(t[("gen", "AB", k)], t[("gen", "B", k)])
+            cells.append(f"{KIND_JA[k]} {span(d)}")
+            f1 += statistics.median(d) * F1_COUNT.get(k, 0)
+        print("- " + " / ".join(cells))
+        print(f"- F1 の換算: {f1 / 1e9:+.2f} 秒（P2 には入れない想定なので 0）")
     return 0
 
 

@@ -8,9 +8,17 @@
 
 | ID | 内容 | 既定値 |
 |----|------|--------|
-| D1 | ファイルの行数上限 | `README.md` 400 / その他 300 |
+| D1 | ファイルの行数上限 | `README.md` 400 / `CLAUDE.md` 200 / その他 300 |
 | D2 | `⚠️` は1見出し節につき1個まで | 1 |
 | D3 | `🔑` は使わない | 0 |
+| D4 | 1行の表示幅の上限 (毎回読み込まれる文書だけ) | 100 桁 |
+
+D1 の `CLAUDE.md` を 200 行にしたのは、Claude Code の公式の目安 (1ファイル200行未満) に
+合わせたため。
+CLAUDE.md は毎回の文脈に入るので、長いと大事な規則が雑音に埋もれる。
+D4 は、行数だけを締めると1行に詰め込んで逃げられる (実際に 300 行に収めるため畳んだ) ので、
+行数と対にして置く。表示幅は全角を2桁で数える。対象は `CLAUDE.md` と `.claude/rules/*.md`
+(Claude Code が自動で読み込む文書) だけで、記録表の長い行を持つ README などは見ない。
 
 D2 を総数ではなく節ごとにするのは、総数だと長いファイルほど薄まって
 通ってしまうため。節ごとなら「この節で一番効く警告はどれか」を毎回1つ選ぶ。
@@ -32,9 +40,11 @@ baseline がある状態で後から締められる。
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import pathlib
 import re
 import sys
+import unicodedata
 from collections.abc import Iterable, Iterator
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -44,11 +54,22 @@ BASELINE = ROOT / "tools" / "doc_lint_baseline.txt"
 # ⚠️ 根直下の *.md をまるごと見る。README と CLAUDE だけ名指しにしていたころは、
 # NOTES.md や ARCHITECTURE.md を根に置かれると素通りしていた。
 ALWAYS = ("README.md", "CLAUDE.md")
-GLOBS = ("*.md", "docs/**/*.md", "experiments/**/*.md")
+# .claude/ の下は、パス限定のルールと、共有しているスキルの本文だけ
+# (どちらも Claude Code が読み込む)
+GLOBS = (
+    "*.md",
+    "docs/**/*.md",
+    "experiments/**/*.md",
+    ".claude/rules/*.md",
+    ".claude/skills/*/SKILL.md",
+)
 
-LINE_LIMITS = {"README.md": 400}
+LINE_LIMITS = {"README.md": 400, "CLAUDE.md": 200}
 DEFAULT_LINE_LIMIT = 300
 WARN_PER_SECTION = 1
+# D4: 1行の表示幅の上限と、それを見る文書 (毎回か、パスに応じて自動で読み込まれるもの)
+WIDTH_LIMIT = 100
+WIDTH_CHECKED = ("CLAUDE.md", ".claude/rules/*.md")
 
 # ⚠️ は U+26A0 (+ 異体字セレクタ)、🔑 は U+1F511
 WARN = re.compile("⚠️?")
@@ -139,6 +160,22 @@ def sections(text: str) -> list[tuple[str, str]]:
     return unique
 
 
+def width(line: str) -> int:
+    """表示幅。全角 (East Asian Width が W か F) を2桁、ほかを1桁で数える。"""
+    return sum(2 if unicodedata.east_asian_width(c) in "WF" else 1 for c in line)
+
+
+def wide_lines(text: str) -> Iterator[tuple[str, int]]:
+    """WIDTH_LIMIT を超える行を、(節, 行番号) で返す。フェンスの中も数える (読み込まれるので)。"""
+    locator = PREAMBLE
+    for number, line in enumerate(text.splitlines(), 1):
+        m = HEADING.match(line)
+        if m:
+            locator = m.group(1).strip().replace("\t", " ")
+        if width(line) > WIDTH_LIMIT:
+            yield locator, number
+
+
 def inspect(path: pathlib.Path, root: pathlib.Path) -> Iterator[Violation]:
     """1つの文書を検査する。"""
     rel = path.relative_to(root).as_posix()
@@ -156,6 +193,13 @@ def inspect(path: pathlib.Path, root: pathlib.Path) -> Iterator[Violation]:
         n_key = len(KEY.findall(body))
         if n_key:
             yield ("D3", rel, locator, n_key)
+
+    if any(fnmatch.fnmatch(rel, pattern) for pattern in WIDTH_CHECKED):
+        per_section: dict[str, int] = {}
+        for locator, _number in wide_lines(text):
+            per_section[locator] = per_section.get(locator, 0) + 1
+        for locator, n_wide in per_section.items():
+            yield ("D4", rel, locator, n_wide)
 
 
 def collect(root: pathlib.Path) -> list[Violation]:
@@ -240,7 +284,8 @@ def main(argv: list[str]) -> int:
             print(f"  {line}")
         print(
             f"\ndoc_lint: 新規違反 {len(bad)} 件。"
-            "⚠️ は1節1個まで、🔑 は使わない、README は 400行まで。"
+            "⚠️ は1節1個まで、🔑 は使わない、README は 400行・CLAUDE.md は 200行まで、"
+            f"CLAUDE.md と .claude/rules/ は1行 {WIDTH_LIMIT} 桁まで。"
         )
         return 1
     print(f"doc_lint: 新規違反ゼロ（既知 {len(found)} 件は baseline に固定済み）")

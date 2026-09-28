@@ -171,15 +171,56 @@ def test_d3_forbids_the_key_symbol_outright(tmp_path: pathlib.Path) -> None:
         ("README.md", 401, True),
         ("docs/a.md", 300, False),
         ("docs/a.md", 301, True),
+        ("CLAUDE.md", 200, False),
+        ("CLAUDE.md", 201, True),
     ],
 )
 def test_d1_line_limits(tmp_path: pathlib.Path, rel: str, n_lines: int, flagged: bool) -> None:
-    """README だけ上限が緩い (入口なので情報が集まる)。"""
+    """README は緩く (入口なので情報が集まる)、CLAUDE.md は締める (毎回の文脈に入る)。"""
     write(tmp_path, rel, "あ\n" * n_lines)
     got = [v for v in doc_lint.inspect(tmp_path / rel, tmp_path) if v[0] == "D1"]
     assert bool(got) is flagged
     if flagged:
         assert got[0][3] == n_lines
+
+
+def test_width_counts_full_width_characters_as_two() -> None:
+    assert doc_lint.width("abc") == 3
+    assert doc_lint.width("あいう") == 6
+    assert doc_lint.width("（全角）") == 8
+
+
+@pytest.mark.parametrize(
+    ("rel", "checked"),
+    [
+        ("CLAUDE.md", True),
+        (".claude/rules/experiments.md", True),
+        ("README.md", False),
+        ("docs/a.md", False),
+        (".claude/skills/measure/SKILL.md", False),
+    ],
+)
+def test_d4_limits_the_width_only_where_it_is_loaded_every_time(
+    tmp_path: pathlib.Path, rel: str, checked: bool
+) -> None:
+    """行数だけを締めると1行に詰め込んで逃げられるので、幅と対にする。
+
+    見るのは Claude Code が自動で読み込む文書だけ。README の記録表の行は長くてよい。
+    """
+    ok = "あ" * (doc_lint.WIDTH_LIMIT // 2)
+    wide = "あ" * (doc_lint.WIDTH_LIMIT // 2) + "a"
+    write(tmp_path, rel, f"{ok}\n## 節\n{wide}\n{wide}\n")
+    got = [v for v in doc_lint.inspect(tmp_path / rel, tmp_path) if v[0] == "D4"]
+    assert got == ([("D4", rel, "節", 2)] if checked else [])
+
+
+def test_d4_counts_lines_inside_fences_too(tmp_path: pathlib.Path) -> None:
+    """フェンスの中も文脈に入るので、記号の数え方 (D2・D3) と違って除かない。"""
+    wide = "a" * (doc_lint.WIDTH_LIMIT + 1)
+    write(tmp_path, "CLAUDE.md", f"```\n{wide}\n```\n")
+    assert [v for v in doc_lint.inspect(tmp_path / "CLAUDE.md", tmp_path) if v[0] == "D4"] == [
+        ("D4", "CLAUDE.md", doc_lint.PREAMBLE, 1)
+    ]
 
 
 def test_documents_covers_the_right_places_and_skips_the_frozen_ones(
@@ -190,13 +231,23 @@ def test_documents_covers_the_right_places_and_skips_the_frozen_ones(
         "CLAUDE.md",
         "docs/records/01-a.md",
         "experiments/e/README.md",
+        ".claude/rules/experiments.md",
+        ".claude/skills/measure/SKILL.md",
+        ".claude/skills/measure/notes.md",
         "results/00/README.md",
         "impl/01/README.md",
         "baseline/README.md",
     ):
         write(tmp_path, rel, "あ\n")
     got = [p.relative_to(tmp_path).as_posix() for p in doc_lint.documents(tmp_path)]
-    assert got == ["README.md", "CLAUDE.md", "docs/records/01-a.md", "experiments/e/README.md"]
+    assert got == [
+        "README.md",
+        "CLAUDE.md",
+        "docs/records/01-a.md",
+        "experiments/e/README.md",
+        ".claude/rules/experiments.md",
+        ".claude/skills/measure/SKILL.md",
+    ]
 
 
 def test_a_new_markdown_file_at_the_root_is_inspected(tmp_path: pathlib.Path) -> None:

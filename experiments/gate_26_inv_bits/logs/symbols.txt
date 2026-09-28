@@ -1,0 +1,33 @@
+- `old`: so sha256 ed5df6fa4b89
+- `new`: so sha256 dd411cfbf38b
+
+| 関数 | `old` 番地 | `new` 番地 | ずれ（バイト） | 大きさ | mod 64 |
+|---|---|---|---|---|---|
+| `main` | 0x12e0 | 0x12e0 | +0 | 165 | 32 |
+| `showBoard` | 0x1450 | 0x1450 | +0 | 495 | 16 |
+| `invBoard` | 0x1640 | 0x1640 | +0 | 87 → 137 | 0 |
+| `normalBoard` | 0x16a0 | 0x16d0 | +48 | 49 | 32 → 16 |
+| `nextBoardInvNormal` | 0x16e0 | 0x1710 | +48 | 1150 | 32 → 16 |
+| `hugeFill` | 0x1b60 | 0x1b90 | +48 | 114 | 32 → 16 |
+| `indexFree` | 0x1be0 | 0x1c10 | +48 | 78 | 32 → 16 |
+| `indexBuild` | 0x1c30 | 0x1c60 | +48 | 530 | 48 → 32 |
+| `nextBoardIndexNormal` | 0x1e50 | 0x1e80 | +48 | 380 | 16 → 0 |
+| `seenFree` | 0x1fd0 | 0x2000 | +48 | 101 | 16 → 0 |
+| `seenInit` | 0x2040 | 0x2070 | +48 | 128 | 0 → 48 |
+| `seenInsert` | 0x20c0 | 0x20f0 | +48 | 529 | 0 → 48 |
+| `seenInsertMany` | 0x22e0 | 0x2310 | +48 | 118 | 32 → 16 |
+| `seenCount` | 0x2360 | 0x2390 | +48 | 12 | 32 → 16 |
+| `seenContains` | 0x2370 | 0x23a0 | +48 | 102 | 48 → 32 |
+| `seenProbes` | 0x23e0 | 0x2410 | +48 | 12 | 32 → 16 |
+| `seenRehashes` | 0x23f0 | 0x2420 | +48 | 12 | 48 → 32 |
+| `nextBoardSeenNormal` | 0x2400 | 0x2430 | +48 | 294 | 0 → 48 |
+| `predCount` | 0x2530 | 0x2560 | +48 | 207 | 48 → 32 |
+| `predScatter` | 0x2600 | 0x2630 | +48 | 277 | 0 → 48 |
+| `expandNewPtr` | 0x2720 | 0x2750 | +48 | 12 | 32 → 16 |
+| `expandNewCount` | 0x2730 | 0x2760 | +48 | 12 | 48 → 32 |
+| `expandFreeBuffer` | 0x2740 | 0x2770 | +48 | 58 | 0 → 48 |
+| `expandRound` | 0x2780 | 0x27b0 | +48 | 629 | 0 → 48 |
+| `retreatStep` | 0x2a00 | 0x2a30 | +48 | 650 | 0 → 48 |
+| `buildSuccRange` | 0x2c90 | 0x2cc0 | +48 | 716 | 16 → 0 |
+| `gatherPacked` | 0x2f60 | 0x2f90 | +48 | 73 | 32 → 16 |
+| `gatherDraws` | 0x2fb0 | 0x2fe0 | +48 | 130 | 48 → 32 |

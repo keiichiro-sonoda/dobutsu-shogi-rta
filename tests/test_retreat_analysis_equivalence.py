@@ -68,6 +68,8 @@ IMPLS = (
     "24_reuse_buffers",
     # #25 は後退解析の4配列を C の hugeAlloc で確保する。確保の仕方だけで、書く値は変わらない
     "25_huge_retreat",
+    # #26 は invBoard() をループ無しにした。出力は同じなので、P2 の後続も順番まで変わらない
+    "26_inv_bits",
 )
 PAIRS = list(itertools.pairwise(IMPLS))
 

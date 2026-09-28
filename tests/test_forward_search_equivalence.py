@@ -73,6 +73,8 @@ PAIRS = [
     #    ゴミを詰めた形も含む) は tests/test_impl_24_reuse_buffers.py が持っている
     #    #25 が全探索で変えたのは計装 (段ごとの minor fault) と受け皿の片付けだけ。#24 との
     #    突き合わせは tests/test_impl_25_huge_retreat.py が持っている
+    #    #26 は invBoard() をループ無しにした (F1 の生成器の冒頭)。#25 との突き合わせ (成果物の
+    #    バイトと、invBoard() そのものの新旧) は tests/test_impl_26_inv_bits.py が持っている
 ]
 
 # ⚠️ #13 は展開ループを C へ移したので、集合の一致とサブログだけでは足りない

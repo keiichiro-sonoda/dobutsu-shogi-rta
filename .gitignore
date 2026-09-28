@@ -27,7 +27,7 @@ htmlcov/
 # ⚠️ `**/` を付ける。中間にスラッシュがあるパターンはルートに固定されるので、
 #    `.claude/.cc-writes/` だけだと impl/<番号>_<名前>/.claude/.cc-writes/ に効かない。
 #    そこは tools/run.sh の impl_sha256 が find . -type f で見ている場所
-#    (CLAUDE.md の「計測したディレクトリへ cd しない」)。
+#    (CLAUDE.md の「計測した `dat/` や `impl/` の中へ `cd` しない」)。
 **/.claude/.cc-writes/
 **/.claude/settings.local.json
 

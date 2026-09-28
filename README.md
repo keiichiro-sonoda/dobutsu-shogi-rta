@@ -130,7 +130,7 @@ python3 tools/fingerprint_dat.py <dat> --against oracle/fingerprint.tsv  # 固�
 | 25 | `impl/25_huge_retreat/` | 1スレッド | **0:02:43** | **196.39×** | 2026-09-28 | [ログ](results/25_huge_retreat/) [ノート](docs/records/25-huge-retreat.md) 後退解析の4配列（`pred`・`pred_off`・`cnt`・`dtm`、計 4.7 GiB）を索引と同じ `hugeAlloc()` で確保した。**P4 19.3 → 15.7 秒 / 174段ループ 16.1 → 14.5 秒**。全探索 0:01:18 / 残り 0:01:25（後退解析）。[門番](experiments/gate_25_huge_retreat/)で **P4 −3.42 s（区間 −3.54〜−3.29）**、174段ループ **−1.61 s**（先読み無しの単独 −7.91 s の約2割。先読みと待ちを取り合う）。同じ回に全探索の段ごとの minor fault の計装を入れ、#24 の受け皿を全探索の終わりで手放した（両腕に入れ、変数に数えない）。**`dat/` は #24 と全213ファイルがバイト一致**（[出力](results/25_huge_retreat/bytecompare.txt)） |
 
 各試行の分析は [`docs/records/`](docs/records/) に1本ずつ置いてある（[索引](docs/records/README.md)）。
-計測機のばらつきは試行をまたぐので [`docs/measurement-noise.md`](docs/measurement-noise.md) にまとめた。
+計測機のばらつきは試行をまたぐので [`docs/measurement-noise.md`](docs/measurement-noise.md) にまとめた。運用の取り決めを決めた経緯と数字は [`docs/lessons.md`](docs/lessons.md) にある。
 
 > 参考: 当時の記録は **8時間20分08秒**。ただしこれは同級生に借りたサーバでの計測で、
 > このリポジトリの計測機とは別物なので、記録表には入れない。
@@ -203,7 +203,7 @@ CSR をランダムに舐める段は、#20・#23 の先読みと #25 の巨大�
 | **`-fno-semantic-interposition`** — **#18 で新しく見えたレバー** | 両方 | `-fPIC -shared` だと同じ `.so` の中の呼び出しもインライン展開されない。`normalBoard` への `call` が `-O2` で3箇所 → 0箇所になる（`nextBoardInvNormal` → `normalBoard` は深さ2で約12〜13億回）。[門番](experiments/gate_18_opt/)で **F1 −3.75 s（区間 −4.91〜−2.58）**。全探索合計では F2/F5 の雑音に埋もれて 0 をまたぐ。[lever_scan](experiments/lever_scan/) でも **F1 −3.92 s（区間 −5.24〜−2.59）**で2回目の再現（多重比較未補正） |
 | **移動表4本を `static const` にする** — **#18 で新しく見えたレバー** | 両方 | `GIRAFFE_MOVE` / `ELEPHANT_MOVE` / `LION_MOVE` / `CHICKEN2_MOVE` が外部リンケージの非 `const` グローバルなので、`-fPIC` では GOT 経由になり `-O3` でも定数畳み込みされない。`dst = src + moves[i]`（深さ2）が毎回実メモリロード。[lever_scan](experiments/lever_scan/) では F1 −0.57 s・P2 −0.39 s で、どちらも区間が 0 をまたいだ（確定できず） |
 | `-march=native` | 両方 | いまは x86-64 のベースライン（SSE2 相当）向けに出している。計測機は固定なので正当なレバー。[lever_scan](experiments/lever_scan/) で後退解析合計 **−4.35 s（区間 −5.82〜−2.88）**、F1 −2.40 s（多重比較未補正。向きは測る前に登録していなかった）。`-O` と混ぜると帰属が取れないので #18 では外した |
-| `numactl` で片ノードに固定 | 両方 | [`numa_bind`](experiments/numa_bind/) で、固定すると後退解析合計が全8本で **24.7 s 速い**（区間 11.1〜38.3 s）が、固定なしの高群が固定ありの直後に偏っていて、持ち越しを除くと **12.7 s**（区間 −10.5〜+35.9 s）で 0 をまたぐ（CLAUDE.md の再解析）。P2 の変動係数は 12.43% → 0.68%。**門番は固定し、本走は固定しない**と CLAUDE.md で決めた |
+| `numactl` で片ノードに固定 | 両方 | [`numa_bind`](experiments/numa_bind/) で、固定すると後退解析合計が全8本で **24.7 s 速い**（区間 11.1〜38.3 s）が、固定なしの高群が固定ありの直後に偏っていて、持ち越しを除くと **12.7 s**（区間 −10.5〜+35.9 s）で 0 をまたぐ（経緯は [`docs/lessons.md`](docs/lessons.md)）。P2 の変動係数は 12.43% → 0.68%。**門番は固定し、本走は固定しない**と CLAUDE.md で決めた |
 | 発見済み表を後退解析の索引に使い回す | 両方 | ⚠️ 未検討。P1（#21 で 7.3 s）とピークに効く可能性 |
 | **F1 のカーネル時間** — **#25 の計装で見えた候補** | 全探索 | #24 のあとも本走で 3.0 s 残る。#25 から出る段ごとの minor fault では 324,022 回で、フォルト1回あたり 9.2 µs と F2・F5（1.8 µs）の約5倍あり、4 KiB ページのフォルトだけでは説明できない。候補は発見済み表の作り直し（2 MiB ページのフォルトは1回で 2 MiB を 0 で埋める）と展開バッファの確保・解放。**未測定** |
 | 待ち行列の塊の大きさ | 全探索 | 区切らないと 500万ずつより **+2.48 s** 遅かった（[#22 の門番](experiments/gate_22_in_memory/)）。500万より小さい塊は測っていない。塊の大きさは展開の順を変えないので、判定の量（`forward_total` ＋ P0）で比べられる。**未測定** |

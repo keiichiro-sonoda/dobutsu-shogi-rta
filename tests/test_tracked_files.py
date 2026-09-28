@@ -33,9 +33,9 @@ ALLOWED = frozenset(
     }
 )
 
-# 追跡してよい接頭辞。⚠️ `.claude/` 全体ではなく `.claude/skills/` だけ。
+# 追跡してよい接頭辞。⚠️ `.claude/` 全体ではなく、スキルとパス限定のルールだけ。
 # `.claude/settings.json` などは共有し得るが、入れるときは意識して足す
-ALLOWED_PREFIXES = (".github/", ".claude/skills/")
+ALLOWED_PREFIXES = (".github/", ".claude/skills/", ".claude/rules/")
 
 
 def tracked_dotfiles() -> list[str]:

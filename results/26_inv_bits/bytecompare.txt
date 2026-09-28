@@ -1,0 +1,19 @@
+# 記録 #25 (impl/25_huge_retreat) の成果物との照合 (バイト単位)
+# diff -rq <#25 の dat/> <#26 の dat/>  と  md5sum 一覧 (LC_ALL=C sort) の sha256
+#   cd <dat>; find . -type f -print0 | LC_ALL=C sort -z | xargs -0 md5sum | sha256sum
+#
+# #26 は C の invBoard() (盤面の反転) の中身をループと分岐の無い形に替えただけで、出力は
+# 全局面で旧版と1ビットも違わない (experiments/gen_bench). 生成器の後続の列も順番まで
+# 変わらないので、指紋ではなくバイト比較で見る。
+#
+# 指紋 (件数・総和・XOR) より強い検査で、一致しなければ「どこかで順序が動いた」証拠になる。
+# ⚠️ #18 で戻った鎖がここでも続く。門番でも2腕 12本の出力がすべて #25 本走とバイト一致している
+#    (experiments/gate_26_inv_bits/logs/bytecompare.tsv)。
+#
+#
+files:        #25 213 / #26 213
+bytes:        #25 1974425336 / #26 1974425336
+md5_list_sha256: #25 f18f3075ba25f13987c520fe98cba074a5916c08ead02eb4719af2a87141b488
+                 #26 f18f3075ba25f13987c520fe98cba074a5916c08ead02eb4719af2a87141b488
+diff -rq:     exit=0
+md5 list:     一致

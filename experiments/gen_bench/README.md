@@ -191,6 +191,9 @@ C を変えるので、#23・#25 と同じく後ろの関数の番地もずれ�
 
 どちらも記録にするときは、記録にする版そのものを門番で測り直す。
 
+## 集計
+
+```bash
 experiments/gen_bench/run_verify.sh          # 一致の検査と抜き出し (logs/verify.txt, logs/sample.txt)
 experiments/gen_bench/run_time.sh            # 計時 (logs/timing.tsv, logs/console.log, logs/freq.log)
 python3 experiments/gen_bench/summary.py     # 表と本走への換算

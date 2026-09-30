@@ -1,0 +1,24 @@
+#!/bin/bash
+# 腕のソースを写して, その実装の Makefile でビルドする (門番 #27。記録試行ではない)
+#
+#   build_arm.sh <old|new> <出力先ディレクトリ>
+#
+#   old  impl/26_inv_bits
+#   new  impl/27_no_interposition (impl/26 の gcc 行に -fno-semantic-interposition を足したもの)
+#
+# 2腕の差が Makefile のこのフラグ1つだけであること (C も .h も .py もバイト同一) は
+# tests/test_impl_27_no_interposition.py が固定している. レバーはビルドにあるので,
+# 必ずその実装の Makefile でビルドする (自前の gcc 行を書かない)
+set -euo pipefail
+ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+ARM="${1:?腕を指定すること (old|new)}"
+DST="${2:?出力先を指定すること}"
+case "$ARM" in
+    old) SRC="$ROOT/impl/26_inv_bits" ;;
+    new) SRC="$ROOT/impl/27_no_interposition" ;;
+    *)   echo "腕は old か new: $ARM" >&2; exit 2 ;;
+esac
+mkdir -p "$DST"
+cp "$SRC/animal_shogi.c" "$SRC/animal_shogi.h" "$SRC/animal_shogi.py" "$SRC/Makefile" "$DST/"
+(cd "$DST" && make --quiet animal_shogi.so)
+echo "$ARM: ${SRC#"$ROOT"/} (so sha256 $(sha256sum "$DST/animal_shogi.so" | cut -c1-12))"

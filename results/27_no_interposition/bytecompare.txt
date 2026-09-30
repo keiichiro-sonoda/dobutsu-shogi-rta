@@ -1,0 +1,22 @@
+# 記録 #26 (impl/26_inv_bits) の成果物との照合 (バイト単位)
+# diff -rq <比べる dat/> <#27 の dat/>  と  md5sum 一覧 (LC_ALL=C sort) の sha256
+#   cd <dat>; find . -type f -print0 | LC_ALL=C sort -z | xargs -0 md5sum | sha256sum
+#
+# #27 は Makefile の gcc 行に -fno-semantic-interposition を足しただけで、C も Python も #26 と
+# バイト同一。値を変えない変更なので、指紋ではなくバイト比較で見る。
+#
+# ⚠️ #26 本走の dat/ は片付けで消してあったので、diff -rq は #25 本走の dat/ と取った。
+#    #25 と #26 の dat/ はバイト一致している (results/26_inv_bits/bytecompare.txt。diff -rq が
+#    exit=0 で、md5 一覧の sha256 も同じ)。#26 との照合は、下の md5 一覧の sha256 を
+#    results/26_inv_bits/bytecompare.txt の #26 の値と突き合わせたもの。
+#
+# 指紋 (件数・総和・XOR) より強い検査で、一致しなければ「どこかで順序が動いた」証拠になる。
+# ⚠️ #18 で戻った鎖がここでも続く。門番でも2腕 12本の出力がすべて #26 本走とバイト一致している
+#    (experiments/gate_27_no_interposition/logs/bytecompare.tsv)。
+#
+files:        #26 213 / #27 213
+bytes:        #26 1974425336 / #27 1974425336
+md5_list_sha256: #26 f18f3075ba25f13987c520fe98cba074a5916c08ead02eb4719af2a87141b488
+                 #27 f18f3075ba25f13987c520fe98cba074a5916c08ead02eb4719af2a87141b488
+diff -rq:     exit=0 (#25 本走の dat/ と)
+md5 list:     一致

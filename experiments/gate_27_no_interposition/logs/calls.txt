@@ -1,0 +1,38 @@
+- `old`: so sha256 dd411cfbf38b
+- `new`: so sha256 77e88ec9d704
+
+| 呼び出し元 | 行き先 | `old` | `new` |
+|---|---|---|---|
+| `buildSuccRange` | `nextBoardIndexNormal` | 0 | 1 |
+| `buildSuccRange` | `nextBoardIndexNormal@plt` | 1 | 0 |
+| `expandRound` | `nextBoardSeenNormal` | 0 | 1 |
+| `expandRound` | `nextBoardSeenNormal@plt` | 1 | 0 |
+| `indexBuild` | `free@plt` | 0 | 3 |
+| `indexBuild` | `indexFree@plt` | 3 | 0 |
+| `main` | `invBoard@plt` | 1 | 0 |
+| `main` | `nextBoardInvNormal` | 0 | 1 |
+| `main` | `nextBoardInvNormal@plt` | 1 | 0 |
+| `main` | `showBoard` | 0 | 2 |
+| `main` | `showBoard@plt` | 2 | 0 |
+| `nextBoardIndexNormal` | `nextBoardInvNormal` | 0 | 1 |
+| `nextBoardIndexNormal` | `nextBoardInvNormal@plt` | 1 | 0 |
+| `nextBoardInvNormal` | `invBoard` | 0 | 1 |
+| `nextBoardInvNormal` | `invBoard@plt` | 1 | 0 |
+| `nextBoardInvNormal` | `normalBoard@plt` | 3 | 0 |
+| `nextBoardSeenNormal` | `nextBoardInvNormal` | 0 | 1 |
+| `nextBoardSeenNormal` | `nextBoardInvNormal@plt` | 1 | 0 |
+| `nextBoardSeenNormal` | `seenInit` | 0 | 1 |
+| `nextBoardSeenNormal` | `seenInit@plt` | 1 | 0 |
+| `nextBoardSeenNormal` | `seenInsert` | 0 | 1 |
+| `nextBoardSeenNormal` | `seenInsert@plt` | 1 | 0 |
+| `seenInit` | `free@plt` | 0 | 1 |
+| `seenInit` | `seenFree@plt` | 1 | 0 |
+| `seenInsert` | `seenInit` | 0 | 1 |
+| `seenInsert` | `seenInit@plt` | 1 | 0 |
+| `seenInsertMany` | `seenInit` | 0 | 1 |
+| `seenInsertMany` | `seenInit@plt` | 1 | 0 |
+| `seenInsertMany` | `seenInsert` | 0 | 1 |
+| `seenInsertMany` | `seenInsert@plt` | 1 | 0 |
+
+- `old`: PLT 経由 60 / 直接 0 / normalBoard への call 3
+- `new`: PLT 経由 43 / 直接 13 / normalBoard への call 0

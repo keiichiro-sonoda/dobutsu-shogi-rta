@@ -70,6 +70,10 @@ IMPLS = (
     "25_huge_retreat",
     # #26 は invBoard() をループ無しにした。出力は同じなので、P2 の後続も順番まで変わらない
     "26_inv_bits",
+    # #27 は Makefile にフラグを1つ足しただけで、C も Python も #26 とバイト同一。ここは自前の
+    # gcc 行でビルドするので Makefile を通らない。Makefile で作った .so どうしの突き合わせは
+    # tests/test_impl_27_no_interposition.py が持っている
+    "27_no_interposition",
 )
 PAIRS = list(itertools.pairwise(IMPLS))
 

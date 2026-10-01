@@ -77,6 +77,8 @@ PAIRS = [
     #    バイトと、invBoard() そのものの新旧) は tests/test_impl_26_inv_bits.py が持っている
     #    #27 は Makefile のフラグだけ (C も Python も #26 とバイト同一)。Makefile で作った .so
     #    どうしの突き合わせは tests/test_impl_27_no_interposition.py が持っている
+    #    #28 も Makefile のフラグ (-march=native) だけ。突き合わせは
+    #    tests/test_impl_28_march_native.py が持っている
 ]
 
 # ⚠️ #13 は展開ループを C へ移したので、集合の一致とサブログだけでは足りない

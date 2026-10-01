@@ -74,6 +74,9 @@ IMPLS = (
     # gcc 行でビルドするので Makefile を通らない。Makefile で作った .so どうしの突き合わせは
     # tests/test_impl_27_no_interposition.py が持っている
     "27_no_interposition",
+    # #28 も Makefile のフラグ (-march=native) だけ。Makefile で作った .so どうしの突き合わせは
+    # tests/test_impl_28_march_native.py が持っている
+    "28_march_native",
 )
 PAIRS = list(itertools.pairwise(IMPLS))
 

@@ -1,0 +1,18 @@
+# 記録 #27 (impl/27_no_interposition) の成果物との照合 (バイト単位)
+# diff -rq <#27 の dat/> <#28 の dat/>  と  md5sum 一覧 (LC_ALL=C sort) の sha256
+#   cd <dat>; find . -type f -print0 | LC_ALL=C sort -z | xargs -0 md5sum | sha256sum
+#
+# #28 は Makefile の gcc 行に -march=native を足しただけで、C も Python も #27 と
+# バイト同一。命令を替えても計算の結果は同じはずなので、指紋ではなくバイト比較で見る。
+# 計測機では native は -march=broadwell / -mtune=broadwell に解決された (march.txt)。
+#
+# 指紋 (件数・総和・XOR) より強い検査で、一致しなければ「どこかで順序が動いた」証拠になる。
+# ⚠️ #18 で戻った鎖がここでも続く。門番でも2腕 12本の出力がすべて #27 本走とバイト一致している
+#    (experiments/gate_28_march_native/logs/bytecompare.tsv)。
+#
+files:        #27 213 / #28 213
+bytes:        #27 1974425336 / #28 1974425336
+md5_list_sha256: #27 f18f3075ba25f13987c520fe98cba074a5916c08ead02eb4719af2a87141b488
+                 #28 f18f3075ba25f13987c520fe98cba074a5916c08ead02eb4719af2a87141b488
+diff -rq:     exit=0
+md5 list:     一致

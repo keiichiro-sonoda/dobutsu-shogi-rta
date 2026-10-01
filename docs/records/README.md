@@ -37,5 +37,6 @@ frontmatter の2か所にある。読み物としては記録表、機械可読�
 | [#25](25-huge-retreat.md) | [`impl/25_huge_retreat/`](../../impl/25_huge_retreat/) |
 | [#26](26-inv-bits.md) | [`impl/26_inv_bits/`](../../impl/26_inv_bits/) |
 | [#27](27-no-interposition.md) | [`impl/27_no_interposition/`](../../impl/27_no_interposition/) |
+| [#28](28-march-native.md) | [`impl/28_march_native/`](../../impl/28_march_native/) |
 
 試行をまたぐ話は [`../measurement-noise.md`](../measurement-noise.md) にある。

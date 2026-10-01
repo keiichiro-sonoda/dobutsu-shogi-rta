@@ -1,0 +1,9 @@
+- `old`: so sha256 77e88ec9d704
+- `new`: so sha256 5128798ef4a5
+
+| 呼び出し元 | 行き先 | `old` | `new` |
+|---|---|---|---|
+| `buildSuccRange` | `memcpy@plt` | 0 | 1 |
+
+- `old`: PLT 経由 43 / 直接 13 / normalBoard への call 0
+- `new`: PLT 経由 44 / 直接 13 / normalBoard への call 0

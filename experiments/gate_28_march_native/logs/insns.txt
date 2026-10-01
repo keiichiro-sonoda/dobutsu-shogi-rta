@@ -1,0 +1,34 @@
+- `old`: so sha256 77e88ec9d704
+- `new`: so sha256 5128798ef4a5
+
+### ベースラインに無い命令（関数ごと）
+
+| 関数 | `old` | `new` | `new` の内訳 |
+|---|---|---|---|
+| `buildSuccRange` | 0 | 14 | `vzeroupper` 3, `vmovd` 2, `vmovdqu` 2, `vpinsrd` 2, `vpmovzxdq` 2, `vpxor` 2, `vpinsrq` 1 |
+| `expandRound` | 0 | 13 | `vzeroupper` 5, `vmovd` 2, `vmovdqu` 2, `vpinsrq` 2, `vinserti128` 1, `vpxor` 1 |
+| `indexBuild` | 0 | 4 | `shlx` 2, `shrx` 2 |
+| `nextBoardIndexNormal` | 0 | 5 | `shrx` 2, `vmovd` 1, `vmovq` 1, `vpinsrd` 1 |
+| `nextBoardInvNormal` | 0 | 24 | `shlx` 18, `shrx` 6 |
+| `nextBoardSeenNormal` | 0 | 1 | `shrx` 1 |
+| `seenContains` | 0 | 1 | `shrx` 1 |
+| `seenInsert` | 0 | 4 | `shlx` 2, `shrx` 2 |
+| `showBoard` | 0 | 3 | `sarx` 2, `shrx` 1 |
+| 合計 | 0 | 69 | |
+
+### 命令の総数（変わった関数だけ）
+
+| 関数 | `old` | `new` | 差 |
+|---|---|---|---|
+| `.plt` | 47 | 51 | +4 |
+| `buildSuccRange` | 190 | 177 | -13 |
+| `expandRound` | 153 | 168 | +15 |
+| `indexBuild` | 148 | 144 | -4 |
+| `memcpy@plt` | 0 | 3 | +3 |
+| `nextBoardIndexNormal` | 96 | 99 | +3 |
+| `nextBoardInvNormal` | 322 | 285 | -37 |
+| `predScatter` | 82 | 84 | +2 |
+| `retreatStep` | 192 | 194 | +2 |
+| `seenContains` | 29 | 28 | -1 |
+| `seenInsertMany` | 44 | 48 | +4 |
+| `showBoard` | 130 | 126 | -4 |

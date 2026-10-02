@@ -79,6 +79,8 @@ PAIRS = [
     #    どうしの突き合わせは tests/test_impl_27_no_interposition.py が持っている
     #    #28 も Makefile のフラグ (-march=native) だけ。突き合わせは
     #    tests/test_impl_28_march_native.py が持っている
+    #    #29 は移動表4本を static const にした。突き合わせは
+    #    tests/test_impl_29_static_const_moves.py が持っている
 ]
 
 # ⚠️ #13 は展開ループを C へ移したので、集合の一致とサブログだけでは足りない

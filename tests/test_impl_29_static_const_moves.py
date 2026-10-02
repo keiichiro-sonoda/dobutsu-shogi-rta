@@ -85,13 +85,19 @@ def test_the_c_differs_only_in_the_tables_and_the_pointer_type() -> None:
 
 
 def test_no_python_reads_the_tables_from_the_so() -> None:
-    """★`.so` の外から移動表を読んでいる所が無い (static にするとシンボルが外から見えなくなる)。"""
+    """★`.so` の外から移動表を読んでいる所が無い (static にするとシンボルが外から見えなくなる)。
+
+    ctypes で読むなら `lib.GIRAFFE_MOVE` のような属性か `in_dll(..., "GIRAFFE_MOVE")` になるので、
+    その形だけを探す (門番の tables.py のように、readelf / objdump の出力を読むために名前を文字列で
+    持つのは読んでいるうちに入らない)。
+    """
+    names = "|".join(TABLES)
+    pattern = re.compile(rf"\.\s*(?:{names})\b|in_dll\([^)]*(?:{names})")
     hits = [
         p
         for top in ("impl/29_static_const_moves", "tools", "tests", "experiments")
         for p in (ROOT / top).rglob("*.py")
-        if p != pathlib.Path(__file__).resolve()
-        and any(re.search(rf"\b{name}\b", text(p)) for name in TABLES)
+        if p != pathlib.Path(__file__).resolve() and pattern.search(text(p))
     ]
     assert hits == [], hits
 

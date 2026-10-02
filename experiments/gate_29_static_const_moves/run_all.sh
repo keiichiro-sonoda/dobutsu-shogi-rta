@@ -17,8 +17,8 @@ if [ -e "$HERE/logs/console.log" ]; then
     echo "logs/console.log が残っている. 前回と混ざるので, 退避してから起動すること" >&2
     exit 2
 fi
-if [ -n "$(find "$ROOT/impl/28_march_native" "$ROOT/impl/29_static_const_moves" -name __pycache__)" ]; then
-    echo "impl/28_march_native か impl/29_static_const_moves に __pycache__ がある. 消してから起動すること" >&2
+if [ -n "$(find "$ROOT/impl/28_march_native" -name __pycache__)" ]; then
+    echo "impl/28_march_native に __pycache__ がある. 消してから起動すること" >&2
     exit 2
 fi
 exec > >(tee "$HERE/logs/console.log") 2>&1

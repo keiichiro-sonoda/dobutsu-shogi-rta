@@ -1,0 +1,46 @@
+--- a/animal_shogi.c
++++ b/animal_shogi.c
+@@ -3,10 +3,14 @@
+ #include <sys/mman.h>
+ #include "animal_shogi.h"
+ 
+-int GIRAFFE_MOVE[4] = {-16, -4, 4, 16};
+-int ELEPHANT_MOVE[4] = {-20, -12, 12, 20};
+-int LION_MOVE[8] = {-20, -16, -12, -4, 4, 12, 16, 20};
+-int CHICKEN2_MOVE[6] = {-20, -16, -4, 4, 12, 16};
++// 門番 #29 の new 腕 (記録にしていない): 移動表4本を static const にした. 元は外部リンケージの非 const グローバルで,
++// -fPIC では表を選ぶたびに GOT から表の番地を読んでから表を読んでいた (-fno-semantic-interposition は
++// 関数の呼び出ししか変えない). static const なら .so の中の書き換えられない定数になり, 番地を
++// RIP 相対で直接作れる. .so の外 (Python 側) からこの表を読んでいる所は無い
++static const int GIRAFFE_MOVE[4] = {-16, -4, 4, 16};
++static const int ELEPHANT_MOVE[4] = {-20, -12, 12, 20};
++static const int LION_MOVE[8] = {-20, -16, -12, -4, 4, 12, 16, 20};
++static const int CHICKEN2_MOVE[6] = {-20, -16, -4, 4, 12, 16};
+ 
+ int main(void) {
+     int nbsn;
+@@ -109,7 +113,9 @@
+ // ただ値域解析が moves と moves_num の相関を追えない処理系では -Wmaybe-uninitialized の種になる
+ int nextBoardInvNormal(u_long b, u_long *nbs) {
+     u_long nb, koma, dst_koma;
+-    int i, j, dst, own_num, own_p, *moves = NULL, moves_num, src_mod16, dst_mod16;
++    int i, j, dst, own_num, own_p, moves_num, src_mod16, dst_mod16;
++    // 門番 #29 の new 腕: 移動表が static const になったので const int * にした (= NULL は上の理由で残す)
++    const int *moves = NULL;
+     int emp_adrs[10];
+     int emp_num = 0;
+     int nbs_p = 0;
+--- a/animal_shogi.h
++++ b/animal_shogi.h
+@@ -39,11 +39,6 @@
+ 
+ enum PEACES {EMPTY, CHICK1, GIRAFFE1, ELEPHANT1, LION1, CHICKEN1, CHICK2=9, GIRAFFE2, ELEPHANT2, LION2, CHICKEN2};
+ 
+-extern int GIRAFFE_MOVE[4];
+-extern int ELEPHANT_MOVE[4];
+-extern int LION_MOVE[8];
+-extern int CHICKEN2_MOVE[6];
+-
+ void showBoard(u_long b);
+ 
+ // 盤面反転

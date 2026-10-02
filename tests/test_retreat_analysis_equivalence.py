@@ -77,9 +77,6 @@ IMPLS = (
     # #28 も Makefile のフラグ (-march=native) だけ。Makefile で作った .so どうしの突き合わせは
     # tests/test_impl_28_march_native.py が持っている
     "28_march_native",
-    # #29 は移動表4本を static const にした (表の値と並びは同じ)。Makefile で作った .so どうしの
-    # 突き合わせは tests/test_impl_29_static_const_moves.py が持っている
-    "29_static_const_moves",
 )
 PAIRS = list(itertools.pairwise(IMPLS))
 

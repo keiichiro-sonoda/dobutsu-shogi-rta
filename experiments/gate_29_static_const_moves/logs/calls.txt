@@ -1,0 +1,8 @@
+- `old`: so sha256 5128798ef4a5
+- `new`: so sha256 02852e36584f
+
+| 呼び出し元 | 行き先 | `old` | `new` |
+|---|---|---|---|
+
+- `old`: PLT 経由 44 / 直接 13 / normalBoard への call 0
+- `new`: PLT 経由 44 / 直接 13 / normalBoard への call 0

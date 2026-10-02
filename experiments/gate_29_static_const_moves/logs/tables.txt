@@ -1,0 +1,22 @@
+### `old`（so sha256 5128798ef4a5）
+
+- 再配置: 4 本 `R_X86_64_GLOB_DAT` ELEPHANT_MOVE / `R_X86_64_GLOB_DAT` CHICKEN2_MOVE / `R_X86_64_GLOB_DAT` LION_MOVE / `R_X86_64_GLOB_DAT` GIRAFFE_MOVE
+- nm の種類: `GIRAFFE_MOVE` D / `ELEPHANT_MOVE` D / `LION_MOVE` D / `CHICKEN2_MOVE` D
+- 生成器の命令の数: 285
+- 生成器の中で移動表に触れる命令: 4 か所
+  - `mov    0x3930(%rip),%rdx        # 4fa0 <ELEPHANT_MOVE@@Base-0x120>`
+  - `mov    0x37a4(%rip),%rdx        # 4fb8 <CHICKEN2_MOVE@@Base-0xc8>`
+  - `mov    0x35f6(%rip),%rdx        # 4fd0 <GIRAFFE_MOVE@@Base-0x100>`
+  - `mov    0x35c6(%rip),%rdx        # 4fc0 <LION_MOVE@@Base-0xe0>`
+
+### `new`（so sha256 02852e36584f）
+
+- 再配置: 0 本 
+- nm の種類: `GIRAFFE_MOVE` r / `ELEPHANT_MOVE` r / `LION_MOVE` r / `CHICKEN2_MOVE` r
+- 生成器の命令の数: 282
+- 生成器の中で移動表に触れる命令: 4 か所
+  - `lea    0x1a2e(%rip),%rdx        # 30a0 <ELEPHANT_MOVE>`
+  - `lea    0x1705(%rip),%rdx        # 3060 <CHICKEN2_MOVE>`
+  - `lea    0x16c9(%rip),%rdx        # 30b0 <GIRAFFE_MOVE>`
+  - `lea    0x167d(%rip),%rdx        # 3080 <LION_MOVE>`
+

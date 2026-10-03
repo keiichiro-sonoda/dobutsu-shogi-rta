@@ -77,6 +77,8 @@ IMPLS = (
     # #28 も Makefile のフラグ (-march=native) だけ。Makefile で作った .so どうしの突き合わせは
     # tests/test_impl_28_march_native.py が持っている
     "28_march_native",
+    # #30 は全探索の発見済み表をランクのビット表に替えた (#29 は欠番)。後退解析のコードは同じ
+    "30_rank_seen",
 )
 PAIRS = list(itertools.pairwise(IMPLS))
 

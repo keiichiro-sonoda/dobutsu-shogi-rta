@@ -79,6 +79,8 @@ PAIRS = [
     #    どうしの突き合わせは tests/test_impl_27_no_interposition.py が持っている
     #    #28 も Makefile のフラグ (-march=native) だけ。突き合わせは
     #    tests/test_impl_28_march_native.py が持っている
+    #    #30 は発見済み表をランクのビット表に替えた (#29 は欠番)。n_rehash の意味が変わるので
+    #    ここには足さず、#28 との突き合わせは tests/test_impl_30_rank_seen.py が持っている
 ]
 
 # ⚠️ #13 は展開ループを C へ移したので、集合の一致とサブログだけでは足りない

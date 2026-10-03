@@ -1,0 +1,27 @@
+- `old`: so sha256 5128798ef4a5
+- `new`: so sha256 1948f6c159f2
+
+| 呼び出し元 | 行き先 | `old` | `new` |
+|---|---|---|---|
+| `nextBoardSeenNormal` | `rankOf` | 0 | 1 |
+| `nextBoardSeenNormal` | `seenInsert` | 1 | 0 |
+| `rankBoard` | `rankTablesBuild.part.0` | 0 | 1 |
+| `rankBoard` | `rankValid` | 0 | 1 |
+| `rankRange` | `rankTablesBuild.part.0` | 0 | 1 |
+| `rankTablesBuild.part.0` | `__stack_chk_fail@plt` | 0 | 1 |
+| `rankTablesBuild.part.0` | `memset@plt` | 0 | 4 |
+| `rankValid` | `__stack_chk_fail@plt` | 0 | 1 |
+| `seenContains` | `rankOf` | 0 | 1 |
+| `seenContains` | `rankValid` | 0 | 1 |
+| `seenInit` | `__memset_chk@plt` | 0 | 1 |
+| `seenInit` | `memset@plt` | 1 | 0 |
+| `seenInit` | `rankTablesBuild.part.0` | 0 | 1 |
+| `seenInsert` | `__memset_chk@plt` | 1 | 0 |
+| `seenInsert` | `aligned_alloc@plt` | 1 | 0 |
+| `seenInsert` | `free@plt` | 1 | 0 |
+| `seenInsert` | `madvise@plt` | 1 | 0 |
+| `seenInsert` | `rankOf` | 0 | 1 |
+| `seenInsert` | `rankValid` | 0 | 1 |
+
+- `old`: PLT 経由 44 / 直接 13 / normalBoard への call 0
+- `new`: PLT 経由 46 / 直接 21 / normalBoard への call 0

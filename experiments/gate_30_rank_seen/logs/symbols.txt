@@ -1,0 +1,38 @@
+- `old`: so sha256 5128798ef4a5
+- `new`: so sha256 1948f6c159f2
+
+| 関数 | `old` 番地 | `new` 番地 | ずれ（バイト） | 大きさ | mod 64 |
+|---|---|---|---|---|---|
+| `main` | 0x11c0 | 0x11c0 | +0 | 157 | 0 |
+| `showBoard` | 0x1320 | 0x1d70 | +2640 | 479 | 32 → 48 |
+| `rankValid` | 片方にしか無い | | | | |
+| `rankTablesBuild.part.0` | 片方にしか無い | | | | |
+| `invBoard` | 0x1500 | 0x1f50 | +2640 | 137 | 0 → 16 |
+| `normalBoard` | 0x1590 | 0x1fe0 | +2640 | 49 | 16 → 32 |
+| `nextBoardInvNormal` | 0x15d0 | 0x2020 | +2640 | 1102 | 16 → 32 |
+| `hugeFill` | 0x1a20 | 0x2470 | +2640 | 114 | 32 → 48 |
+| `indexFree` | 0x1aa0 | 0x24f0 | +2640 | 78 | 32 → 48 |
+| `indexBuild` | 0x1af0 | 0x2540 | +2640 | 627 | 48 → 0 |
+| `rankOf` | 片方にしか無い | | | | |
+| `nextBoardIndexNormal` | 0x1d70 | 0x27c0 | +2640 | 388 | 48 → 0 |
+| `seenFree` | 0x1f00 | 0x29d0 | +2768 | 101 → 58 | 0 → 16 |
+| `seenInit` | 0x1f70 | 0x2a10 | +2720 | 200 → 173 | 48 → 16 |
+| `seenInsert` | 0x2040 | 0x2ac0 | +2688 | 531 → 119 | 0 |
+| `seenInsertMany` | 0x2260 | 0x2b40 | +2272 | 126 | 32 → 0 |
+| `seenCount` | 0x22e0 | 0x2bc0 | +2272 | 12 | 32 → 0 |
+| `seenContains` | 0x22f0 | 0x2bd0 | +2272 | 102 → 81 | 48 → 16 |
+| `seenProbes` | 0x2360 | 0x2c30 | +2256 | 12 | 32 → 48 |
+| `seenRehashes` | 0x2370 | 0x2c40 | +2256 | 12 → 7 | 48 → 0 |
+| `nextBoardSeenNormal` | 0x2380 | 0x2c50 | +2256 | 294 → 353 | 0 → 16 |
+| `predCount` | 0x24b0 | 0x2dc0 | +2320 | 190 | 48 → 0 |
+| `predScatter` | 0x2570 | 0x2e80 | +2320 | 277 | 48 → 0 |
+| `expandNewPtr` | 0x2690 | 0x2fa0 | +2320 | 12 | 16 → 32 |
+| `expandNewCount` | 0x26a0 | 0x2fb0 | +2320 | 12 | 32 → 48 |
+| `expandFreeBuffer` | 0x26b0 | 0x2fc0 | +2320 | 58 | 48 → 0 |
+| `expandRound` | 0x26f0 | 0x3000 | +2320 | 690 | 48 → 0 |
+| `rankBoard` | 片方にしか無い | | | | |
+| `rankRange` | 片方にしか無い | | | | |
+| `retreatStep` | 0x29b0 | 0x32c0 | +2320 | 650 | 48 → 0 |
+| `buildSuccRange` | 0x2c40 | 0x3550 | +2320 | 692 | 0 → 16 |
+| `gatherPacked` | 0x2f00 | 0x3810 | +2320 | 73 | 0 → 16 |
+| `gatherDraws` | 0x2f50 | 0x3860 | +2320 | 122 | 16 → 32 |

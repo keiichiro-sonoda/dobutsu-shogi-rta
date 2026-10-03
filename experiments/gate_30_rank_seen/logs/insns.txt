@@ -1,0 +1,35 @@
+- `old`: so sha256 5128798ef4a5
+- `new`: so sha256 1948f6c159f2
+
+### ベースラインに無い命令（関数ごと）
+
+| 関数 | `old` | `new` | `new` の内訳 |
+|---|---|---|---|
+| `buildSuccRange` | 14 | 14 | `vzeroupper` 3, `vmovd` 2, `vmovdqu` 2, `vpinsrd` 2, `vpmovzxdq` 2, `vpxor` 2, `vpinsrq` 1 |
+| `expandRound` | 13 | 13 | `vzeroupper` 5, `vmovd` 2, `vmovdqu` 2, `vpinsrq` 2, `vinserti128` 1, `vpxor` 1 |
+| `indexBuild` | 4 | 4 | `shlx` 2, `shrx` 2 |
+| `nextBoardIndexNormal` | 5 | 5 | `shrx` 2, `vmovd` 1, `vmovq` 1, `vpinsrd` 1 |
+| `nextBoardInvNormal` | 24 | 24 | `shlx` 18, `shrx` 6 |
+| `nextBoardSeenNormal` | 1 | 1 | `shlx` 1 |
+| `rankOf` | 0 | 6 | `andn` 2, `shlx` 2, `tzcnt` 2 |
+| `rankTablesBuild.part.0` | 0 | 17 | `vmovdqu` 8, `vmovdqa` 3, `vpcmpeqd` 2, `vpxor` 2, `vzeroupper` 2 |
+| `rankValid` | 0 | 3 | `shrx` 1, `vmovdqa` 1, `vpxor` 1 |
+| `seenContains` | 1 | 1 | `shrx` 1 |
+| `seenInsert` | 4 | 1 | `shlx` 1 |
+| `showBoard` | 3 | 3 | `sarx` 2, `shrx` 1 |
+| 合計 | 69 | 92 | |
+
+### 命令の総数（変わった関数だけ）
+
+| 関数 | `old` | `new` | 差 |
+|---|---|---|---|
+| `nextBoardSeenNormal` | 75 | 90 | +15 |
+| `rankBoard` | 0 | 19 | +19 |
+| `rankOf` | 0 | 140 | +140 |
+| `rankRange` | 0 | 13 | +13 |
+| `rankTablesBuild.part.0` | 0 | 459 | +459 |
+| `rankValid` | 0 | 81 | +81 |
+| `seenContains` | 28 | 30 | +2 |
+| `seenFree` | 14 | 10 | -4 |
+| `seenInit` | 37 | 44 | +7 |
+| `seenInsert` | 135 | 38 | -97 |

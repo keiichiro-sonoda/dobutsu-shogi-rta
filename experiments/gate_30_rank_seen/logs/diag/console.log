@@ -1,0 +1,8 @@
+--- d1_new: ノード0の 2 MiB 以上の空きブロック 21.59 GiB ---
+=== 診断 d1_new (new: impl/30_rank_seen (so sha256 1948f6c159f2)) GLIBC_TUNABLES=glibc.malloc.mmap_threshold=33554432 2026-10-03T17:20:37+00:00 ===
+  手数別局面数の合計: 96802868
+=== 完了 d1_new 2026-10-03T17:22:53+00:00 ===
+--- d2_old: ノード0の 2 MiB 以上の空きブロック 21.56 GiB ---
+=== 診断 d2_old (old: impl/28_march_native (so sha256 5128798ef4a5)) GLIBC_TUNABLES=glibc.malloc.mmap_threshold=33554432 2026-10-03T17:22:54+00:00 ===
+  手数別局面数の合計: 96802868
+=== 完了 d2_old 2026-10-03T17:25:23+00:00 ===

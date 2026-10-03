@@ -2,7 +2,7 @@
 
 > **結果: 同点（F1・P2 のユーザー時間のどちらも下がったと言えなかった）。記録にせず、本走もしていない。**
 > 門番を回したときの `new` は `impl/29_static_const_moves` だったが、記録にしなかったので、その版を
-> [`patches/static_const.patch`](patches/static_const.patch) にして `impl/` から外した（番号は記録のために空けておく）。
+> [`patches/static_const.patch`](patches/static_const.patch) にして `impl/` から外した。**番号 29 は欠番にし、次の記録は #30 にする**（下の「`impl/29_static_const_moves` の扱い」）。
 > 下の「腕と配置」以降の `impl/29_static_const_moves` は、回したときの名前のまま残してある。
 
 `impl/29_static_const_moves` は、`impl/28_march_native` の移動表4本（`GIRAFFE_MOVE` / `ELEPHANT_MOVE` / `LION_MOVE` /
@@ -160,7 +160,11 @@ lever_scan（#19 のコード、各腕3本）の F1 −0.57・P2 −0.39 も区�
 
 CLAUDE.md は、記録を取らない実験を `experiments/<名前>/` に置き、`impl/<番号>_*` は記録試行に使うと決めている。
 同点で記録にしなかったので、`impl/29_static_const_moves` とそのテスト（`tests/test_impl_29_static_const_moves.py`）を外し、
-`impl/28` からの差分を [`patches/static_const.patch`](patches/static_const.patch) にした。**番号 29 は次の記録のために空けておく。**
+`impl/28` からの差分を [`patches/static_const.patch`](patches/static_const.patch) にした。**番号 29 は欠番にする。**
+次の記録は #30 で、README の記録表には「29 — 門番で同点、本走せず」の1行を残す。番号を空けて次の記録に回すと、
+`記録 #29` を含むコミットと `gate_29_*` が2組できてしまうので、外した試行にも番号を使い切る扱いにした
+（このディレクトリ名とコミットの件名の「#29」は、この試行を指すものとしてそのまま残す。CLAUDE.md にも足した）。
+この扱いは門番の結果のコミット（388be75）のあとで決めたもので、そのメッセージの「番号 29 は次の記録のために空けておく」は誤り。
 
 - パッチの中身は、門番を回したときの `impl/29` の `.c` / `.h` との差分そのもの。コメント2か所だけ「記録 #29」を
   「門番 #29 の new 腕」に書き換えた（コメントは `.so` に入らない）

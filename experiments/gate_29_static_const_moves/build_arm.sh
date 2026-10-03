@@ -7,7 +7,7 @@
 #   new  impl/28_march_native ＋ patches/static_const.patch (移動表4本を static const にしたもの)
 #
 # ⚠️ 門番を回したときの new は impl/29_static_const_moves だった. 同点で記録にしなかったので,
-#    その版はこのパッチにして impl/ から外した (番号は記録のために空けておく). パッチを当てた
+#    その版はこのパッチにして impl/ から外した (番号 29 は欠番. 次の記録は #30). パッチを当てた
 #    .so は, 門番を回したときの new と同じ sha256 (02852e36584f) になる (コメントは .so に入らない).
 #    パッチは fuzz なしで当て, 衝突したら止める. どちらもその実装の Makefile でビルドする
 set -euo pipefail

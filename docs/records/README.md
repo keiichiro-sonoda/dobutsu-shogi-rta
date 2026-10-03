@@ -38,5 +38,6 @@ frontmatter の2か所にある。読み物としては記録表、機械可読�
 | [#26](26-inv-bits.md) | [`impl/26_inv_bits/`](../../impl/26_inv_bits/) |
 | [#27](27-no-interposition.md) | [`impl/27_no_interposition/`](../../impl/27_no_interposition/) |
 | [#28](28-march-native.md) | [`impl/28_march_native/`](../../impl/28_march_native/) |
+| #29 | 欠番（門番で同点だったので記録にしていない。[`gate_29_static_const_moves`](../../experiments/gate_29_static_const_moves/)） |
 
 試行をまたぐ話は [`../measurement-noise.md`](../measurement-noise.md) にある。

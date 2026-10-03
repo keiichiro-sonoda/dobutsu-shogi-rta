@@ -1,0 +1,10 @@
+# 門番 #30 を回す前に, #28 本走の dat/ (runs/ の中, git 管理外) で取った. impl/30_rank_seen の rankBoard を全局面に通した
+# gcc -O2 -march=native -I impl/30_rank_seen -o rank_check experiments/gate_30_rank_seen/rank_check.c
+range	855232344
+files	213
+positions	246803167
+invalid	0
+outside	0
+duplicates	0
+ratio	3.4652
+PASS: injective on all positions

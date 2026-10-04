@@ -81,6 +81,10 @@ IMPLS = (
     "30_rank_seen",
     # #32 は rankOf() に always_inline を付けただけ (#31 は欠番)。後退解析のコードは同じ
     "32_inline_rank",
+    # #33 は Makefile のフラグとリンカースクリプトで関数の置き場所を変えただけ。C も Python も
+    # #32 とバイト同一。Makefile で作った .so どうしの突き合わせは
+    # tests/test_impl_33_hot_layout.py が持っている
+    "33_hot_layout",
 )
 PAIRS = list(itertools.pairwise(IMPLS))
 

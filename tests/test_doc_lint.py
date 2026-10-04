@@ -167,8 +167,8 @@ def test_d3_forbids_the_key_symbol_outright(tmp_path: pathlib.Path) -> None:
 @pytest.mark.parametrize(
     ("rel", "n_lines", "flagged"),
     [
-        ("README.md", 400, False),
-        ("README.md", 401, True),
+        ("README.md", 350, False),
+        ("README.md", 351, True),
         ("docs/a.md", 300, False),
         ("docs/a.md", 301, True),
         ("CLAUDE.md", 200, False),
@@ -195,23 +195,37 @@ def test_width_counts_full_width_characters_as_two() -> None:
     [
         ("CLAUDE.md", True),
         (".claude/rules/experiments.md", True),
-        ("README.md", False),
+        ("README.md", True),
         ("docs/a.md", False),
         (".claude/skills/measure/SKILL.md", False),
     ],
 )
-def test_d4_limits_the_width_only_where_it_is_loaded_every_time(
+def test_d4_limits_the_width_where_it_is_loaded_every_time_and_in_the_readme(
     tmp_path: pathlib.Path, rel: str, checked: bool
 ) -> None:
     """行数だけを締めると1行に詰め込んで逃げられるので、幅と対にする。
 
-    見るのは Claude Code が自動で読み込む文書だけ。README の記録表の行は長くてよい。
+    見るのは Claude Code が自動で読み込む文書と README。README は 400 行に収めるために
+    段落の改行を畳むことが続いたので足した。
     """
     ok = "あ" * (doc_lint.WIDTH_LIMIT // 2)
     wide = "あ" * (doc_lint.WIDTH_LIMIT // 2) + "a"
     write(tmp_path, rel, f"{ok}\n## 節\n{wide}\n{wide}\n")
     got = [v for v in doc_lint.inspect(tmp_path / rel, tmp_path) if v[0] == "D4"]
     assert got == ([("D4", rel, "節", 2)] if checked else [])
+
+
+def test_d4_skips_table_rows_only_in_the_readme(tmp_path: pathlib.Path) -> None:
+    """README の記録表は1記録1行で伸び、折り返せないので表の行だけ外す。
+
+    CLAUDE.md の表の行は外さない (毎回の文脈に入るので締めたまま)。段落は README でも数える。
+    """
+    row = "| " + "あ" * (doc_lint.WIDTH_LIMIT // 2) + " |"
+    para = "あ" * (doc_lint.WIDTH_LIMIT // 2) + "a"
+    for rel, want in (("README.md", 1), ("CLAUDE.md", 3)):
+        write(tmp_path, rel, f"## 節\n{row}\n   {row}\n{para}\n")
+        got = [v for v in doc_lint.inspect(tmp_path / rel, tmp_path) if v[0] == "D4"]
+        assert got == [("D4", rel, "節", want)], rel
 
 
 def test_d4_counts_lines_inside_fences_too(tmp_path: pathlib.Path) -> None:

@@ -3,9 +3,7 @@
 # ルール	ファイル	節	個数
 D1	experiments/forward_profile/README.md	上限 300 行	304
 D2	README.md	実行方法	3
-D2	README.md	次の標的	11
 D2	README.md	記録	2
-D2	README.md	記録を取らない実験（`experiments/`）	5
 D2	docs/measurement-noise.md	計測機のばらつきについて（記録 #5 から計装）	5
 D2	docs/records/04-resident-unknown.md	記録 #4 で分かったこと	3
 D2	docs/records/05-batch-wl-write.md	記録 #5 で分かったこと	2

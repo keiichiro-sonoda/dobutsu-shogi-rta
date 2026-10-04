@@ -1,0 +1,38 @@
+- `old`: so sha256 1948f6c159f2
+- `new`: so sha256 14effc10ba75
+
+| 関数 | `old` 番地 | `new` 番地 | ずれ（バイト） | 大きさ | mod 64 |
+|---|---|---|---|---|---|
+| `main` | 0x11c0 | 0x11c0 | +0 | 157 | 0 |
+| `rankValid` | 0x1320 | 0x1320 | +0 | 267 | 32 |
+| `rankTablesBuild.part.0` | 0x1430 | 0x1430 | +0 | 1802 | 48 |
+| `rankOf` | 0x1b40 | 0x1b40 | +0 | 550 | 0 |
+| `showBoard` | 0x1d70 | 0x1d70 | +0 | 479 | 48 |
+| `invBoard` | 0x1f50 | 0x1f50 | +0 | 137 | 16 |
+| `normalBoard` | 0x1fe0 | 0x1fe0 | +0 | 49 | 32 |
+| `nextBoardInvNormal` | 0x2020 | 0x2020 | +0 | 1102 | 32 |
+| `hugeFill` | 0x2470 | 0x2470 | +0 | 114 | 48 |
+| `indexFree` | 0x24f0 | 0x24f0 | +0 | 78 → 57 | 48 |
+| `indexBuild` | 0x2540 | 0x2530 | -16 | 627 → 562 | 0 → 48 |
+| `nextBoardIndexNormal` | 0x27c0 | 0x2770 | -80 | 388 → 292 | 0 → 48 |
+| `rankBoard` | 0x2950 | 0x28a0 | -176 | 57 | 16 → 32 |
+| `rankRange` | 0x2990 | 0x28e0 | -176 | 53 | 16 → 32 |
+| `seenFree` | 0x29d0 | 0x2920 | -176 | 58 | 16 → 32 |
+| `seenInit` | 0x2a10 | 0x2960 | -176 | 173 | 16 → 32 |
+| `seenInsert` | 0x2ac0 | 0x2a10 | -176 | 119 | 0 → 16 |
+| `seenInsertMany` | 0x2b40 | 0x2a90 | -176 | 126 | 0 → 16 |
+| `seenCount` | 0x2bc0 | 0x2b10 | -176 | 12 | 0 → 16 |
+| `seenContains` | 0x2bd0 | 0x2b20 | -176 | 81 | 16 → 32 |
+| `seenProbes` | 0x2c30 | 0x2b80 | -176 | 12 | 48 → 0 |
+| `seenRehashes` | 0x2c40 | 0x2b90 | -176 | 7 | 0 → 16 |
+| `nextBoardSeenNormal` | 0x2c50 | 0x2ba0 | -176 | 353 | 16 → 32 |
+| `predCount` | 0x2dc0 | 0x2d10 | -176 | 190 | 0 → 16 |
+| `predScatter` | 0x2e80 | 0x2dd0 | -176 | 277 | 0 → 16 |
+| `expandNewPtr` | 0x2fa0 | 0x2ef0 | -176 | 12 | 32 → 48 |
+| `expandNewCount` | 0x2fb0 | 0x2f00 | -176 | 12 | 48 → 0 |
+| `expandFreeBuffer` | 0x2fc0 | 0x2f10 | -176 | 58 | 0 → 16 |
+| `expandRound` | 0x3000 | 0x2f50 | -176 | 690 | 0 → 16 |
+| `retreatStep` | 0x32c0 | 0x3210 | -176 | 650 | 0 → 16 |
+| `buildSuccRange` | 0x3550 | 0x34a0 | -176 | 692 | 16 → 32 |
+| `gatherPacked` | 0x3810 | 0x3760 | -176 | 73 | 16 → 32 |
+| `gatherDraws` | 0x3860 | 0x37b0 | -176 | 122 | 32 → 48 |

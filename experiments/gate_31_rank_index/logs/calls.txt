@@ -1,0 +1,12 @@
+- `old`: so sha256 1948f6c159f2
+- `new`: so sha256 14effc10ba75
+
+| 呼び出し元 | 行き先 | `old` | `new` |
+|---|---|---|---|
+| `indexBuild` | `__stack_chk_fail@plt` | 0 | 1 |
+| `indexBuild` | `rankOf` | 0 | 1 |
+| `indexBuild` | `rankTablesBuild.part.0` | 0 | 1 |
+| `nextBoardIndexNormal` | `rankOf` | 0 | 1 |
+
+- `old`: PLT 経由 46 / 直接 21 / normalBoard への call 0
+- `new`: PLT 経由 47 / 直接 24 / normalBoard への call 0

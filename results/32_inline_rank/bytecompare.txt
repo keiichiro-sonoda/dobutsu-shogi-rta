@@ -1,0 +1,17 @@
+# 記録 #30 (impl/30_rank_seen) の成果物との照合 (バイト単位)
+# diff -rq <#30 の dat/> <#32 の dat/>  と  md5sum 一覧 (LC_ALL=C sort) の sha256
+#   cd <dat>; find . -type f -print0 | LC_ALL=C sort -z | xargs -0 md5sum | sha256sum
+#
+# #32 は rankOf() に always_inline を付けただけで (#31 は欠番), ランクの値も採番順も変わらない。
+# 指紋ではなくバイト比較で見る。
+#
+# 指紋 (件数・総和・XOR) より強い検査で、一致しなければ「どこかで順序が動いた」証拠になる。
+# ⚠️ #18 で戻った鎖がここでも続く。門番でも2腕 12本の出力がすべて #30 本走とバイト一致している
+#    (experiments/gate_32_inline_rank/logs/bytecompare.tsv)。
+#
+files:        #30 213 / #32 213
+bytes:        #30 1974425336 / #32 1974425336
+md5_list_sha256: #30 f18f3075ba25f13987c520fe98cba074a5916c08ead02eb4719af2a87141b488
+                 #32 f18f3075ba25f13987c520fe98cba074a5916c08ead02eb4719af2a87141b488
+diff -rq:     exit=0
+md5 list:     一致

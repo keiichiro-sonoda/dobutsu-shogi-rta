@@ -1,0 +1,11 @@
+- `old`: so sha256 1948f6c159f2
+- `new`: so sha256 0ff76aa55cec
+
+| 呼び出し元 | 行き先 | `old` | `new` |
+|---|---|---|---|
+| `nextBoardSeenNormal` | `rankOf` | 1 | 0 |
+| `seenContains` | `rankOf` | 1 | 0 |
+| `seenInsert` | `rankOf` | 1 | 0 |
+
+- `old`: PLT 経由 46 / 直接 21 / normalBoard への call 0
+- `new`: PLT 経由 46 / 直接 18 / normalBoard への call 0

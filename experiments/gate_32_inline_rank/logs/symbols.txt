@@ -1,0 +1,38 @@
+- `old`: so sha256 1948f6c159f2
+- `new`: so sha256 0ff76aa55cec
+
+| 関数 | `old` 番地 | `new` 番地 | ずれ（バイト） | 大きさ | mod 64 |
+|---|---|---|---|---|---|
+| `main` | 0x11c0 | 0x11c0 | +0 | 157 | 0 |
+| `rankValid` | 0x1320 | 0x1320 | +0 | 267 | 32 |
+| `rankTablesBuild.part.0` | 0x1430 | 0x1430 | +0 | 1802 | 48 |
+| `rankOf` | 片方にしか無い | | | | |
+| `showBoard` | 0x1d70 | 0x1b40 | -560 | 479 | 48 → 0 |
+| `invBoard` | 0x1f50 | 0x1d20 | -560 | 137 | 16 → 32 |
+| `normalBoard` | 0x1fe0 | 0x1db0 | -560 | 49 | 32 → 48 |
+| `nextBoardInvNormal` | 0x2020 | 0x1df0 | -560 | 1102 | 32 → 48 |
+| `hugeFill` | 0x2470 | 0x2240 | -560 | 114 | 48 → 0 |
+| `indexFree` | 0x24f0 | 0x22c0 | -560 | 78 | 48 → 0 |
+| `indexBuild` | 0x2540 | 0x2310 | -560 | 627 | 0 → 16 |
+| `nextBoardIndexNormal` | 0x27c0 | 0x2590 | -560 | 388 | 0 → 16 |
+| `rankBoard` | 0x2950 | 0x2720 | -560 | 57 → 592 | 16 → 32 |
+| `rankRange` | 0x2990 | 0x2970 | -32 | 53 | 16 → 48 |
+| `seenFree` | 0x29d0 | 0x29b0 | -32 | 58 | 16 → 48 |
+| `seenInit` | 0x2a10 | 0x29f0 | -32 | 173 | 16 → 48 |
+| `seenInsert` | 0x2ac0 | 0x2aa0 | -32 | 119 → 671 | 0 → 32 |
+| `seenInsertMany` | 0x2b40 | 0x2d40 | +512 | 126 | 0 |
+| `seenCount` | 0x2bc0 | 0x2dc0 | +512 | 12 | 0 |
+| `seenContains` | 0x2bd0 | 0x2dd0 | +512 | 81 → 625 | 16 |
+| `seenProbes` | 0x2c30 | 0x3050 | +1056 | 12 | 48 → 16 |
+| `seenRehashes` | 0x2c40 | 0x3060 | +1056 | 7 | 0 → 32 |
+| `nextBoardSeenNormal` | 0x2c50 | 0x3070 | +1056 | 353 → 939 | 16 → 48 |
+| `predCount` | 0x2dc0 | 0x3420 | +1632 | 190 | 0 → 32 |
+| `predScatter` | 0x2e80 | 0x34e0 | +1632 | 277 | 0 → 32 |
+| `expandNewPtr` | 0x2fa0 | 0x3600 | +1632 | 12 | 32 → 0 |
+| `expandNewCount` | 0x2fb0 | 0x3610 | +1632 | 12 | 48 → 16 |
+| `expandFreeBuffer` | 0x2fc0 | 0x3620 | +1632 | 58 | 0 → 32 |
+| `expandRound` | 0x3000 | 0x3660 | +1632 | 690 | 0 → 32 |
+| `retreatStep` | 0x32c0 | 0x3920 | +1632 | 650 | 0 → 32 |
+| `buildSuccRange` | 0x3550 | 0x3bb0 | +1632 | 692 | 16 → 48 |
+| `gatherPacked` | 0x3810 | 0x3e70 | +1632 | 73 | 16 → 48 |
+| `gatherDraws` | 0x3860 | 0x3ec0 | +1632 | 122 | 32 → 0 |

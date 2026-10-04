@@ -79,6 +79,8 @@ IMPLS = (
     "28_march_native",
     # #30 は全探索の発見済み表をランクのビット表に替えた (#29 は欠番)。後退解析のコードは同じ
     "30_rank_seen",
+    # #31 は索引をランクの対応表にした。連番は同じなので後退解析の成果物は変わらない
+    "31_rank_index",
 )
 PAIRS = list(itertools.pairwise(IMPLS))
 

@@ -97,20 +97,40 @@ def test_every_relative_link_resolves(src: pathlib.Path, raw: str) -> None:
         )
 
 
+def gap_numbers() -> list[int]:
+    """記録表に「（欠番）」として書いた番号 (門番で止めた試行。CLAUDE.md)。"""
+    text = (ROOT / "README.md").read_text(encoding="utf-8")
+    return [int(m) for m in re.findall(r"^\| (\d+) \| （欠番） \|", text, flags=re.M)]
+
+
 def test_the_record_numbers_run_from_one_without_gaps_or_duplicates() -> None:
     """件数は固定しない。記録 #13 を足したら通るのが正しい。
 
     見るのは番号が1から連番であること。⚠️ 辞書のキーではなく表に出てきた生の
     リストで見る。辞書にすると同じ番号の2行目が1行目を上書きして、重複が
     連番検査まで残らない (タイムだけ違う #12 を足しても全部通ってしまった)。
+
+    門番で止めた試行の番号は欠番にし、記録表に「（欠番）」の行を残す (#29 が最初)。
+    欠番は連番の穴として数えるが、行を書かずに番号を飛ばしたら落ちる。
     """
     numbers = record_numbers()
+    gaps = gap_numbers()
     assert numbers, "記録表が読めていない (表の書式が変わった可能性)"
-    duplicated = duplicates(numbers)
+    duplicated = duplicates(numbers + gaps)
     assert not duplicated, f"記録表に同じ番号の行が複数ある: {duplicated}"
-    assert sorted(numbers) == list(range(1, len(numbers) + 1)), (
-        f"番号が連番でない: {sorted(numbers)}"
-    )
+    every = sorted(numbers + gaps)
+    assert every == list(range(1, len(every) + 1)), f"番号が連番でない: {every}"
+
+
+@pytest.mark.parametrize("number", gap_numbers())
+def test_a_gap_has_no_note_no_results_and_no_impl(number: int) -> None:
+    """欠番には記録ノートも results/ も impl/ も無い (版は門番の patches/ に置く)。"""
+    for pattern in (
+        f"docs/records/{number:02d}-*.md",
+        f"results/{number:02d}_*",
+        f"impl/{number:02d}_*",
+    ):
+        assert not list(ROOT.glob(pattern)), f"欠番 #{number} に {pattern} がある"
 
 
 def test_the_table_and_the_notes_match_one_to_one() -> None:

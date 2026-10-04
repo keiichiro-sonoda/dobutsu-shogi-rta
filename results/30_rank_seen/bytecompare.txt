@@ -1,0 +1,17 @@
+# 記録 #28 (impl/28_march_native) の成果物との照合 (バイト単位)
+# diff -rq <#28 の dat/> <#30 の dat/>  と  md5sum 一覧 (LC_ALL=C sort) の sha256
+#   cd <dat>; find . -type f -print0 | LC_ALL=C sort -z | xargs -0 md5sum | sha256sum
+#
+# #30 は全探索の発見済み表を, ランクで引く到達済みビット表に替えた (#29 は欠番)。初めて見た局面だけを
+# 返す意味と返す順序は変えていないので, 採番順も成果物も変わらないはず。指紋ではなくバイト比較で見る。
+#
+# 指紋 (件数・総和・XOR) より強い検査で、一致しなければ「どこかで順序が動いた」証拠になる。
+# ⚠️ #18 で戻った鎖がここでも続く。門番でも2腕 12本の出力がすべて #28 本走とバイト一致している
+#    (experiments/gate_30_rank_seen/logs/bytecompare.tsv)。
+#
+files:        #28 213 / #30 213
+bytes:        #28 1974425336 / #30 1974425336
+md5_list_sha256: #28 f18f3075ba25f13987c520fe98cba074a5916c08ead02eb4719af2a87141b488
+                 #30 f18f3075ba25f13987c520fe98cba074a5916c08ead02eb4719af2a87141b488
+diff -rq:     exit=0
+md5 list:     一致

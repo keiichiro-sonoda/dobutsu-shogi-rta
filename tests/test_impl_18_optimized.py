@@ -31,7 +31,7 @@ PREV_DIR = ROOT / "impl" / "17_no_set"
 
 # 門番 gate_18_opt で測った段。ここに無いフラグが入ったら、測っていないものを
 # 記録に入れたことになる。-Ofast は浮動小数点が1つも無いので得るものがゼロ、
-# -march=native は別のレバー（README の残りレバー表）。
+# -march=native は別のレバー（docs/levers.md のレバー表）。
 MEASURED_FLAGS = ("-O1", "-O2", "-O3")
 
 
@@ -156,6 +156,6 @@ def test_the_gcc_line_keeps_the_rest_of_the_flags() -> None:
     line = gcc_line(IMPL_DIR)
     for flag in ("-Wall", "-fPIC", "-shared"):
         assert re.search(rf"(?<!\S){re.escape(flag)}(?!\S)", line), f"{flag} が消えている"
-    assert "-march" not in line, "-march=native は別のレバー（README の残りレバー表）"
+    assert "-march" not in line, "-march=native は別のレバー（docs/levers.md のレバー表）"
     assert "-Ofast" not in line, "-Ofast は浮動小数点が1つも無いので得るものがゼロ"
     assert "-Wextra" not in line, "-Wextra は門番で見るだけ。入れると差分が2つになる"

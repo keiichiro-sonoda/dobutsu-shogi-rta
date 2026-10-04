@@ -8,17 +8,24 @@
 
 | ID | 内容 | 既定値 |
 |----|------|--------|
-| D1 | ファイルの行数上限 | `README.md` 400 / `CLAUDE.md` 200 / その他 300 |
+| D1 | ファイルの行数上限 | `README.md` 350 / `CLAUDE.md` 200 / その他 300 |
 | D2 | `⚠️` は1見出し節につき1個まで | 1 |
 | D3 | `🔑` は使わない | 0 |
-| D4 | 1行の表示幅の上限 (毎回読み込まれる文書だけ) | 100 桁 |
+| D4 | 1行の表示幅の上限 (毎回読み込まれる文書と README) | 100 桁 |
 
 D1 の `CLAUDE.md` を 200 行にしたのは、Claude Code の公式の目安 (1ファイル200行未満) に
 合わせたため。
 CLAUDE.md は毎回の文脈に入るので、長いと大事な規則が雑音に埋もれる。
 D4 は、行数だけを締めると1行に詰め込んで逃げられる (実際に 300 行に収めるため畳んだ) ので、
 行数と対にして置く。表示幅は全角を2桁で数える。対象は `CLAUDE.md` と `.claude/rules/*.md`
-(Claude Code が自動で読み込む文書) だけで、記録表の長い行を持つ README などは見ない。
+(Claude Code が自動で読み込む文書) と `README.md`。
+
+README は初め D4 の外に置いていた (記録表の行が長いため)。すると 400 行に収めるために
+段落の改行を畳むことが続き、「次の標的」の節は1段落が 1,000 桁を超えた。行数が上限に
+張り付いたまま、中身は増え続けていた。そこで README も幅を見る。ただし表の行 (`|` で始まる行)
+だけは外す。記録表は1記録1行で伸びるのが正しい姿で、折り返せないため。
+上限を 400 から 350 に下げたのは、レバーの中身を `docs/levers.md` へ出して 325 行になったときに、
+記録表があと 25 行ほど伸びたら次の整理を考える、という置き方にしたため。
 
 D2 を総数ではなく節ごとにするのは、総数だと長いファイルほど薄まって
 通ってしまうため。節ごとなら「この節で一番効く警告はどれか」を毎回1つ選ぶ。
@@ -64,12 +71,15 @@ GLOBS = (
     ".claude/skills/*/SKILL.md",
 )
 
-LINE_LIMITS = {"README.md": 400, "CLAUDE.md": 200}
+LINE_LIMITS = {"README.md": 350, "CLAUDE.md": 200}
 DEFAULT_LINE_LIMIT = 300
 WARN_PER_SECTION = 1
 # D4: 1行の表示幅の上限と、それを見る文書 (毎回か、パスに応じて自動で読み込まれるもの)
 WIDTH_LIMIT = 100
-WIDTH_CHECKED = ("CLAUDE.md", ".claude/rules/*.md")
+WIDTH_CHECKED = ("CLAUDE.md", ".claude/rules/*.md", "README.md")
+# そのうち表の行を数えない文書 (README の記録表は1記録1行で伸び、折り返せない)
+WIDTH_TABLES_EXEMPT = ("README.md",)
+TABLE_ROW = re.compile(r"^ {0,3}\|")
 
 # ⚠️ は U+26A0 (+ 異体字セレクタ)、🔑 は U+1F511
 WARN = re.compile("⚠️?")
@@ -165,13 +175,18 @@ def width(line: str) -> int:
     return sum(2 if unicodedata.east_asian_width(c) in "WF" else 1 for c in line)
 
 
-def wide_lines(text: str) -> Iterator[tuple[str, int]]:
-    """WIDTH_LIMIT を超える行を、(節, 行番号) で返す。フェンスの中も数える (読み込まれるので)。"""
+def wide_lines(text: str, skip_tables: bool = False) -> Iterator[tuple[str, int]]:
+    """WIDTH_LIMIT を超える行を、(節, 行番号) で返す。フェンスの中も数える (読み込まれるので)。
+
+    `skip_tables` なら表の行 (`|` で始まる行) を数えない。
+    """
     locator = PREAMBLE
     for number, line in enumerate(text.splitlines(), 1):
         m = HEADING.match(line)
         if m:
             locator = m.group(1).strip().replace("\t", " ")
+        if skip_tables and TABLE_ROW.match(line):
+            continue
         if width(line) > WIDTH_LIMIT:
             yield locator, number
 
@@ -196,7 +211,8 @@ def inspect(path: pathlib.Path, root: pathlib.Path) -> Iterator[Violation]:
 
     if any(fnmatch.fnmatch(rel, pattern) for pattern in WIDTH_CHECKED):
         per_section: dict[str, int] = {}
-        for locator, _number in wide_lines(text):
+        skip_tables = any(fnmatch.fnmatch(rel, pattern) for pattern in WIDTH_TABLES_EXEMPT)
+        for locator, _number in wide_lines(text, skip_tables):
             per_section[locator] = per_section.get(locator, 0) + 1
         for locator, n_wide in per_section.items():
             yield ("D4", rel, locator, n_wide)
@@ -284,8 +300,8 @@ def main(argv: list[str]) -> int:
             print(f"  {line}")
         print(
             f"\ndoc_lint: 新規違反 {len(bad)} 件。"
-            "⚠️ は1節1個まで、🔑 は使わない、README は 400行・CLAUDE.md は 200行まで、"
-            f"CLAUDE.md と .claude/rules/ は1行 {WIDTH_LIMIT} 桁まで。"
+            "⚠️ は1節1個まで、🔑 は使わない、README は 350行・CLAUDE.md は 200行まで、"
+            f"CLAUDE.md と .claude/rules/ と README (表の行を除く) は1行 {WIDTH_LIMIT} 桁まで。"
         )
         return 1
     print(f"doc_lint: 新規違反ゼロ（既知 {len(found)} 件は baseline に固定済み）")

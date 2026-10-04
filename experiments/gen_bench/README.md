@@ -179,7 +179,7 @@ C を変えるので、#23・#25 と同じく後ろの関数の番地もずれ�
 
 - 先行判定を分岐の少ない形にする（上の節）
 - `normalBoard()` の呼び出し（未知局面で平均 9.4 回、`-fPIC -shared` なので同じ `.so` の中でも関数呼び出しのまま）。
-  `-fno-semantic-interposition` はこれをインライン展開させるレバーで、README のレバー表に残っている
+  `-fno-semantic-interposition` はこれをインライン展開させるレバーで、README のレバー表（いまは [`docs/levers.md`](../../docs/levers.md)）に残っている
 - 手の生成の表引き化・分岐の削減
 
 ## 推奨（決めない）

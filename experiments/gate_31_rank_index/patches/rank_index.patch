@@ -1,0 +1,211 @@
+--- a/animal_shogi.c
++++ b/animal_shogi.c
+@@ -197,16 +197,24 @@
+     return nbs_p;
+ }
+ 
+-// パック値 -> 連番 の索引 (オープンアドレス法・線形探査)
+-static IndexEntry *g_index = NULL;
++// パック値 -> 連番 の索引 (門番 #31 の new 腕. 記録にしていない: 「ランク -> 連番」の対応表)
++//
++// #8〜#30 はオープンアドレス法のハッシュ表 (16 B のエントリ, 2^29 スロット = 8 GiB) だった.
++// この版では, #30 の全探索で作ったランク (正規化した盤面どうしで単射, 値域 855,232,344) を
++// 添字にした uint32_t の表で, 連番を直接引く. 表は 855,232,344 x 4 B = 3.42 GB で, 索引にない
++// 位置は INDEX_NONE. 連番は今までと同じ (packed の並びの添字) で, 採番順は動かない.
++// ランクの関数と前計算の表は下の「ランクで引く到達済みビット表 (記録 #30)」の節にあるので, ここで前方宣言する
++static uint32_t *g_index = NULL;
+ // Python 側の array('Q') をそのまま指す. indexFree までリサイズしてはいけない
+ static const u_long *g_packed = NULL;
+ static uint32_t g_index_n = 0;
+-static size_t g_index_mask = 0;
+-// 乗算ハッシュの右シフト量 (= 64 - スロット数のビット幅)
+-static int g_index_shift = 0;
+-
+-#define INDEX_SLOT(key) ((size_t)(((u_long)(key) * INDEX_MULT) >> g_index_shift))
++// 対応表の「索引にない」位置の番兵. 連番は 0〜n-1 で n < 2^32 - 1 なので実在しない
++#define INDEX_NONE 0xffffffffu
++// 先読みの区切り (この数ずつランクを出して取り寄せてから書く. 調整はしていない)
++#define INDEX_BUILD_BLOCK 64
++static void rankTablesBuild(void);
++static inline uint64_t rankOf(u_long b);
++static uint64_t g_rank_range;
+ 
+ // ---- 2 MiB ページを頼んで確保する (記録 #21) ------------------------------------
+ //
+@@ -249,52 +257,43 @@
+     g_index = NULL;
+     g_packed = NULL;
+     g_index_n = 0;
+-    g_index_mask = 0;
+-    g_index_shift = 0;
+ }
+ 
+ int indexBuild(const u_long *packed, uint32_t n) {
+-    size_t i, slot, slots;
+-    int bits;
+-    u_long key;
++    size_t i, j, e, bytes;
++    uint64_t r[INDEX_BUILD_BLOCK];
+     if (!packed) return -1;
+-    // 占有率が 0.5 を超えないビット幅を選ぶ
+-    for (bits = INDEX_MIN_BITS; bits <= INDEX_MAX_BITS; bits++) {
+-        if (((size_t)1 << bits) >= (size_t)n * 2) break;
+-    }
+-    if (bits > INDEX_MAX_BITS) return -2;
++    // 連番が番兵 (INDEX_NONE) と重ならないこと
++    if (n >= INDEX_NONE) return -2;
+     indexFree();
+-    slots = (size_t)1 << bits;
+-    // 2 MiB 境界に揃えて確保し, 巨大ページを頼む (記録 #21). 64B 境界より強いので,
+-    // エントリ (16 B) がキャッシュラインを跨がないことも保たれる
+-    g_index = (IndexEntry *)hugeAlloc(slots * sizeof(IndexEntry));
++    rankTablesBuild();
++    bytes = (size_t)g_rank_range * sizeof(uint32_t);
++    // 2 MiB 境界に揃えて確保し, 巨大ページを頼む (記録 #21). madvise (hugeAlloc の中) のあとに埋める
++    g_index = (uint32_t *)hugeAlloc(bytes);
+     if (!g_index) return -3;
+-    g_index_mask = slots - 1;
+-    g_index_shift = 64 - bits;
+-    // 0xff で埋めると key が INDEX_EMPTY になる
+-    memset(g_index, 0xff, slots * sizeof(IndexEntry));
+-    for (i = 0; i < (size_t)n; i++) {
+-        // 記録 #20: 16 個先のキーのスロットを先読みする. 挿入は乱択なので,
+-        // 1個ずつ待つと DRAM 往復がそのまま積み上がる (距離 16 は固定. 調整はしていない)
+-        if (i + 16 < (size_t)n) __builtin_prefetch(&g_index[INDEX_SLOT(packed[i + 16])], 1, 3);
+-        key = packed[i];
+-        if (key == INDEX_EMPTY) {
+-            indexFree();
+-            return -4;
+-        }
+-        slot = INDEX_SLOT(key);
+-        for (;;) {
+-            if (g_index[slot].key == INDEX_EMPTY) {
+-                g_index[slot].key = key;
+-                g_index[slot].val = (uint32_t)i;
+-                break;
++    // 0xff で埋めると全項目が INDEX_NONE になる
++    memset(g_index, 0xff, bytes);
++    for (i = 0; i < (size_t)n; i = e) {
++        e = i + INDEX_BUILD_BLOCK < (size_t)n ? i + INDEX_BUILD_BLOCK : (size_t)n;
++        // 記録 #20 と同じ考え: 書き込み先は乱択なので, 区切りの分のランクを先に出して取り寄せてから書く.
++        // ⚠️ packed は全探索の成果物 (正規化した正しい盤面) である前提で, 盤面としての検査 (rankValid) は
++        //    しない. 全件に通すと 1件約 23 ns で P1 に 5 秒以上足される. 弾くのは #30 までと同じく番兵だけ
++        for (j = i; j < e; j++) {
++            if (packed[j] == INDEX_EMPTY) {
++                indexFree();
++                return -4;
+             }
+-            // 重複があると連番が全単射にならない (3群が互いに素であることの検算)
+-            if (g_index[slot].key == key) {
++            r[j - i] = rankOf(packed[j]);
++            __builtin_prefetch(&g_index[r[j - i]], 1, 3);
++        }
++        for (j = i; j < e; j++) {
++            // 重複があると連番が全単射にならない (3群が互いに素であることの検算).
++            // ランクは正規化した盤面どうしで単射なので, 同じ位置に2度書くのは同じ盤面が2度来たときだけ
++            if (g_index[r[j - i]] != INDEX_NONE) {
+                 indexFree();
+                 return -5;
+             }
+-            slot = (slot + 1) & g_index_mask;
++            g_index[r[j - i]] = (uint32_t)j;
+         }
+     }
+     g_packed = packed;
+@@ -304,29 +303,24 @@
+ 
+ int nextBoardIndexNormal(uint32_t src, uint32_t *out) {
+     u_long nbs[MAX_ACTION_NUM];
+-    u_long key;
+-    size_t slot;
++    uint64_t r[MAX_ACTION_NUM];
++    uint32_t v;
+     int nbn, i;
+     int found = 0;
+     if (!g_index || src >= g_index_n) return -3;
+     nbn = nextBoardInvNormal(g_packed[src], nbs);
+     // 0 = キャッチ / -1 = トライ負け. どちらも後続を持たない
+     if (nbn <= 0) return nbn;
+-    // 記録 #20: 全後続のスロットを先に取り寄せてから探査する. 後続は最大 48 個で,
+-    // 探査を1つずつ待たせずに DRAM 往復を重ねるため (nextBoardSeenNormal と同じ形)
+-    for (i = 0; i < nbn; i++) __builtin_prefetch(&g_index[INDEX_SLOT(nbs[i])], 0, 3);
++    // 記録 #20 と同じ形 (#30 の nextBoardSeenNormal とも同じ): 全後続のランクを先に出して
++    // 対応表の項目を取り寄せてから引く. 後続は最大 48 個
+     for (i = 0; i < nbn; i++) {
+-        key = nbs[i];
+-        slot = INDEX_SLOT(key);
+-        for (;;) {
+-            if (g_index[slot].key == key) {
+-                out[found++] = g_index[slot].val;
+-                break;
+-            }
+-            // 番兵に当たったら索引外. 全探索を打ち切った dat/ でだけ起きる
+-            if (g_index[slot].key == INDEX_EMPTY) break;
+-            slot = (slot + 1) & g_index_mask;
+-        }
++        r[i] = rankOf(nbs[i]);
++        __builtin_prefetch(&g_index[r[i]], 0, 3);
++    }
++    for (i = 0; i < nbn; i++) {
++        v = g_index[r[i]];
++        // 番兵なら索引外. 全探索を打ち切った dat/ でだけ起きる
++        if (v != INDEX_NONE) out[found++] = v;
+     }
+     if (found != nbn) {
+         out[MAX_ACTION_NUM] = (uint32_t)found;
+--- a/animal_shogi.h
++++ b/animal_shogi.h
+@@ -55,43 +55,29 @@
+ int nextBoardInvNormal(u_long b, u_long *nbs);
+ 
+ // --------------------------------------------------------------------
+-// 記録 #8: パック値 -> 連番 の索引をC側に置く
++// 記録 #8: パック値 -> 連番 の索引をC側に置く (門番 #31 の new 腕では「ランク -> 連番」の対応表)
+ //
+ // Python の dict は 24.41 GiB に膨らんでキャッシュに全く乗らず,
+-// 1回の引きに約 0.85 us かかっていた. オープンアドレス法の平坦な表なら
+-// 本番 (246,803,167 件) で 8.59 GB に収まり, 1回の引きで触る
+-// キャッシュラインが1本で済む.
++// 1回の引きに約 0.85 us かかっていた. #8〜#30 はオープンアドレス法の平坦な表
++// (16 B のエントリ, 本番 2^29 スロット = 8.59 GB) で, 1回の引きで触るキャッシュラインが1本だった.
+ //
+-// キーと値を別配列にすると keys[slot] と vals[slot] で DRAM 往復が2回に
+-// なるので, 16 B のエントリ1本にまとめてある (ラインを跨がない).
++// この版では, #30 のランク (正規化した盤面どうしで単射, 値域 855,232,344) を添字にした
++// uint32_t の表で連番を直接引く (855,232,344 x 4 B = 3.42 GB). 探査の繰り返しが無く,
++// 1回の引きで読むのは 4 B. 表の大きさは入力の件数によらず値域で決まる (小さな入力でも 3.42 GB).
++// 連番は今までと同じ (packed の並びの添字) なので, 採番順は動かない.
+ // --------------------------------------------------------------------
+ 
+ #include <stddef.h>
+ #include <stdint.h>
+ #include <string.h>
+ 
+-// 空きスロットの番兵. パック値は 60bit なので実在しない
+-// (indexBuild が入力にこの値が無いことを検査する)
++// 盤面として使わない値. パック値は 60bit なので実在しない
++// (indexBuild が入力にこの値が無いことを検査する. rankBoard の「正しくない盤面」にも使う)
+ #define INDEX_EMPTY (u_long)0xffffffffffffffff
+ 
+-// 乗算ハッシュ. 上位ビットほどよく混ざるので上から桁を取る
+-#define INDEX_MULT (u_long)0x9e3779b97f4a7c15
+-
+-// スロット数は n 以上の 2 の冪のうち, 占有率が 0.5 を超えないものにする.
+-// 本番の 246,803,167 件なら 2^29 = 536,870,912 スロット (占有率 0.46) で
+-// 16 B x 2^29 = 8.59 GB. 小さな入力ではそのぶん小さく確保する
+-// (等価性テストが数千件で回るので, ここを固定にすると 8.59 GB を毎回掴む)
+-#define INDEX_MIN_BITS 4
+-#define INDEX_MAX_BITS 33
+-
+-typedef struct {
+-    u_long key;
+-    uint32_t val;
+-    uint32_t pad;
+-} IndexEntry;
+-
+ // 0=成功 / -1=引数不正 / -2=件数が多すぎる / -3=確保できない
+ // -4=入力に番兵と同じ値がある / -5=キーが重複している
++// ⚠️ この版では packed は正規化した正しい盤面 (全探索の成果物) でなければならない (ランクの定義域)
+ int indexBuild(const u_long *packed, uint32_t n);
+ 
+ void indexFree(void);

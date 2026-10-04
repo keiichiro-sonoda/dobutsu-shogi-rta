@@ -40,5 +40,6 @@ frontmatter の2か所にある。読み物としては記録表、機械可読�
 | [#28](28-march-native.md) | [`impl/28_march_native/`](../../impl/28_march_native/) |
 | #29 | 欠番（門番で同点だったので記録にしていない。[`gate_29_static_const_moves`](../../experiments/gate_29_static_const_moves/)） |
 | [#30](30-rank-seen.md) | [`impl/30_rank_seen/`](../../impl/30_rank_seen/) |
+| #31 | 欠番（門番で同点だったので記録にしていない。[`gate_31_rank_index`](../../experiments/gate_31_rank_index/)） |
 
 試行をまたぐ話は [`../measurement-noise.md`](../measurement-noise.md) にある。

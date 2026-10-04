@@ -17,8 +17,8 @@ if [ -e "$HERE/logs/console.log" ]; then
     echo "logs/console.log が残っている. 前回と混ざるので, 退避してから起動すること" >&2
     exit 2
 fi
-if [ -n "$(find "$ROOT/impl/30_rank_seen" "$ROOT/impl/31_rank_index" -name __pycache__)" ]; then
-    echo "impl/30_rank_seen か impl/31_rank_index に __pycache__ がある. 消してから起動すること" >&2
+if [ -n "$(find "$ROOT/impl/30_rank_seen" -name __pycache__)" ]; then
+    echo "impl/30_rank_seen に __pycache__ がある. 消してから起動すること" >&2
     exit 2
 fi
 exec > >(tee "$HERE/logs/console.log") 2>&1

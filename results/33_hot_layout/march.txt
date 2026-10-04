@@ -1,0 +1,7 @@
+# 記録 #33 の本走のあとに experiments/gate_33_hot_layout/march.sh で取った、-march=native の解決先 (Makefile の最適化の指定は #28 と同じ)
+# gcc: gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+# gcc -march=native -Q --help=target の -march= / -mtune=
+ -march= broadwell
+ -mtune= broadwell
+# -march=native で増える事前定義マクロ (__AVX2__ など, 命令セットのものだけ)
+__ABM__ __ADX__ __AES__ __AVX__ __AVX2__ __BMI__ __BMI2__ __F16C__ __FMA__ __FSGSBASE__ __LAHF_SAHF__ __LZCNT__ __MOVBE__ __PCLMUL__ __POPCNT__ __PRFCHW__ __RDRND__ __RDSEED__ __RTM__ __SSE3__ __SSE4_1__ __SSE4_2__ __XSAVE__ __XSAVEOPT__ 

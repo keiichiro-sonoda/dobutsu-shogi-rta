@@ -1,0 +1,19 @@
+# 記録 #32 (impl/32_inline_rank) の成果物との照合 (バイト単位)
+# diff -rq <#30 の dat/> <#33 の dat/>  と  md5sum 一覧 (LC_ALL=C sort) の sha256
+#   cd <dat>; find . -type f -print0 | LC_ALL=C sort -z | xargs -0 md5sum | sha256sum
+#
+# #33 は関数の置き場所だけを変え (C も Python も #32 とバイト同一), 命令は全関数で #32 と同じ。
+# 指紋ではなくバイト比較で見る。
+#
+# ⚠️ #32 本走の dat/ はもう消してあるので, diff -rq の相手は #30 本走の dat/。#30 と #32 の dat/ は
+#    バイト一致している (results/32_inline_rank/bytecompare.txt)。md5 一覧の sha256 は
+#    results/32_inline_rank/bytecompare.txt の #32 の値とも照合した。
+#    門番でも2腕 12本の出力がすべてこの値と一致している (experiments/gate_33_hot_layout/logs/bytecompare.tsv)。
+#
+files:        #30 213 / #33 213
+bytes:        #30 1974425336 / #33 1974425336
+md5_list_sha256: #30 f18f3075ba25f13987c520fe98cba074a5916c08ead02eb4719af2a87141b488
+                 #32 f18f3075ba25f13987c520fe98cba074a5916c08ead02eb4719af2a87141b488 (results/32_inline_rank/bytecompare.txt)
+                 #33 f18f3075ba25f13987c520fe98cba074a5916c08ead02eb4719af2a87141b488
+diff -rq:     exit=0
+md5 list:     一致

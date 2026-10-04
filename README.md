@@ -136,6 +136,7 @@ python3 tools/fingerprint_dat.py <dat> --against oracle/fingerprint.tsv  # 固�
 | 30 | `impl/30_rank_seen/` | 1スレッド | **0:02:14** | **238.08×** | 2026-10-04 | [ログ](results/30_rank_seen/) [ノート](docs/records/30-rank-seen.md) 全探索の発見済み表（ハッシュ表、倍々に作り直して最終 4 GiB）を、盤面から番号を計算で直接出す関数（ランク。値域 855,232,344 = 到達局面の 3.47 倍）で引く 1 ビットの表（106.9 MB）に替えた。**F1 62.7 → 50.3 秒**、F1 のカーネル時間 3.0 → 0.8 秒、**全探索のピーク RSS 7.8 → 2.4 GB**。全探索 0:00:55 / 残り 0:01:19（後退解析）。[門番](experiments/gate_30_rank_seen/)で **F1 のユーザー＋カーネル時間 −11.52 s（区間 −11.90〜−11.14）**。止める条件3（F6 +0.61 s）に掛かり、原因が malloc の mmap のしきい値の副作用（#28 は表の作り直しの `free` で偶然しきい値が上がっていた）だと確かめてから本走した。**`dat/` は #28 と全213ファイルがバイト一致**（[出力](results/30_rank_seen/bytecompare.txt)） |
 | 31 | （欠番） | — | — | — | 2026-10-04 | 後退解析の索引（ハッシュ表 8 GiB）を #30 のランクで引く対応表（3.42 GB）に替えたが、[門番](experiments/gate_31_rank_index/)で P1 ＋ P2 が同点（P1 −1.48 s・P2 +1.48 s、区間が 0 をまたぐ）。全体のピーク RSS は −3.58 GiB。本走せず、記録にしていない。`rankOf()` のインライン展開のあとで、新しい番号で測り直す。版は門番の [`patches/`](experiments/gate_31_rank_index/patches/) にある |
 | 32 | `impl/32_inline_rank/` | 1スレッド | **0:02:15** | **237.64×** | 2026-10-04 | [ログ](results/32_inline_rank/) [ノート](docs/records/32-inline-rank.md) #30 の `rankOf()` に `always_inline` を付け、後続ごとの `call`（F1 で 938,671,869 回）を消した。次の記録（索引のランク化の測り直し）の土台。[門番](experiments/gate_32_inline_rank/)で **F1 のユーザー時間 −0.41 s（区間 −0.62〜−0.21）**だが、命令が同じ P2 が関数の置き場所だけで **+0.63 s** 動き（止める条件3）、完走は +0.36 s（区間が 0 をまたぐ）。本人の判断で本走し、タイムはそのまま載せる。全探索 0:00:55 / 残り 0:01:19（後退解析）。**`dat/` は #30 と全213ファイルがバイト一致**（[出力](results/32_inline_rank/bytecompare.txt)） |
+| 33 | `impl/33_hot_layout/` | 1スレッド | **0:02:14** | **238.66×** | 2026-10-04 | [ログ](results/33_hot_layout/) [ノート](docs/records/33-hot-layout.md) 熱い関数12個を `.text` の前の専用の区画に並べ、ほかの関数を変えても動かないようにした（C は #32 とバイト同一。`gcc` 行の2つとリンカースクリプトだけ）。目的は速さではなく、以後の門番がレバーの効果だけを測れるようにすること。詰め物の検査で、#32 の作り方では熱い関数が動き、#33 では1つも動かない。[門番](experiments/gate_33_hot_layout/)で **F1 −0.40 s（区間 −0.63〜−0.17）、P2 −0.52 s（区間 −0.74〜−0.29）**、ほかの段は差なし。全探索 0:00:55 / 残り 0:01:19（後退解析）。**`dat/` は #32 と全213ファイルがバイト一致**（[出力](results/33_hot_layout/bytecompare.txt)） |
 
 各試行の分析は [`docs/records/`](docs/records/) に1本ずつ置いてある
 （[索引](docs/records/README.md)）。
@@ -182,17 +183,16 @@ Python が集合演算とファイル分割を担当し、C が指し手生成�
 
 ## 次の標的
 
-段ごとの大きい順は **F1 展開 50.0 s（37.0%）、P2 後続生成 39.8 s（29.4%）、
-P4 前任リスト 15.8 s（11.7%）、174段ループ 14.5 s（10.7%）、P1 索引 7.2 s、F6 2.4 s、
+段ごとの大きい順は **F1 展開 49.9 s（37.1%）、P2 後続生成 39.2 s（29.1%）、
+P4 前任リスト 15.8 s（11.8%）、174段ループ 14.5 s（10.8%）、P1 索引 7.2 s、F6 2.4 s、
 F0＋F2＋F5 2.2 s、P0 1.4 s**
-（[`forward_summary.tsv`](results/32_inline_rank/forward_summary.tsv) と
-[`retreat_summary.tsv`](results/32_inline_rank/retreat_summary.tsv)）。
+（[`forward_summary.tsv`](results/33_hot_layout/forward_summary.tsv) と
+[`retreat_summary.tsv`](results/33_hot_layout/retreat_summary.tsv)）。
 **残っているのは全部 C の中**で、F1 と P2 は同じ関数（`nextBoardInvNormal`）を共有している。
 
 残っているレバー（中身と実測は [`docs/levers.md`](docs/levers.md) のレバー表）:
 
-- 索引をランクで引く（門番 #31 は同点で欠番。#32 の上で測り直す）
-- 関数の置き場所を固定する
+- 索引をランクで引く（門番 #31 は同点で欠番。#33 の上で測り直す）
 - キャッチの先行判定
 - malloc の mmap のしきい値
 - 待ち行列の塊の大きさ

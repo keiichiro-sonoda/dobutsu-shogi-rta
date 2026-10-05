@@ -14,7 +14,7 @@ LABEL ?= $(notdir $(patsubst %/,%,$(IMPL)))
 
 .DEFAULT_GOAL := help
 
-.PHONY: help setup fmt lint lint-sh type doc test cov check publish-check hooks measure clean
+.PHONY: help setup fmt lint lint-sh type doc test cov check publish-check prereg-check hooks measure clean
 
 help:  ## このヘルプを出す
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) \
@@ -53,6 +53,10 @@ check: lint lint-sh type doc test  ## CI と同じ一式を回す
 # CI の一式には乗らない (記録と証拠の食い違いだけは test 側でも見ている)
 publish-check:  ## 公開で取り消せないものだけを検査する (BASE=origin/main)
 	$(UV) run python tools/publish_lint.py --base $(BASE)
+
+# 事前登録の節 (「〜前に書いた／決めた」) を読み直すレビューの道具。push は止めない
+prereg-check:  ## 変わった実験の事前登録の節を読み直す (BASE=origin/main)
+	$(UV) run python tools/prereg_check.py --base $(BASE)
 
 hooks:  ## pre-commit と pre-push を git フックとして仕掛ける
 	$(UV) run pre-commit install

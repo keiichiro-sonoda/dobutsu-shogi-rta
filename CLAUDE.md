@@ -155,6 +155,7 @@
 make setup && make hooks   # 新しい作業コピーで最初に一度 (pre-commit フックは clone に付いてこない)
 make check                 # ruff / shellcheck / mypy / doc_lint / pytest。CI と同じ
 make publish-check         # push の前だけ。取り消せないものだけを見る
+make prereg-check          # 門番・実験を足したとき。事前登録の節を読み直す (止めない)
 ```
 
 `make publish-check`（`tools/publish_lint.py`）が落とすのは、鍵・計測機や個人の同定情報・

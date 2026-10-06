@@ -21,7 +21,7 @@ if [ -e "$HERE/logs/timing.tsv" ]; then
     echo "logs/timing.tsv が残っている. 退避してから起動すること" >&2
     exit 2
 fi
-if ! grep -q '食い違い 0 局面 => PASS' "$HERE/logs/count.txt"; then
+if ! grep -q '^一致の検査: .* 0 => PASS$' "$HERE/logs/count.txt"; then
     echo "!!! B1′ の一致の検査が PASS でないので測らない (止める条件)" >&2
     exit 1
 fi

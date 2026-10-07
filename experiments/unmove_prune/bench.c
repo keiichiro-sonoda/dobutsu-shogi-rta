@@ -3,6 +3,7 @@
 //   bench prep    <prune.so> <dat/> <出力先>              cls.bin と計時用の抜き出し (unmove_catch と同じ作り方・同じシード
 //                                                         ＋ 未知とトライ負けから抜き出した sample_expand.bin)
 //   bench verify  <prune.so> <dat/> <出力先>              一致の検査と, ついでに数えるもの (全到達局面)
+//   bench diag    <prune.so> <dat/> <出力先>              verify の (e)・(f) が外れたあとに足した診断 (候補を生成器に通して判定と比べる)
 //   bench retreat <prune.so> <dat/> <出力先> <版> <ラベル>  試作の後退解析 (unmove_catch の drop) を1本回し, 全局面で dat/ と比べる
 //   bench time    <prune.so> <出力先> <版> <周>           抜き出した局面で版を1つ計時する (種類ごとに1行の TSV)
 //
@@ -607,12 +608,57 @@ static int timing(const char *out, const char *ver, int round) {
     return 0;
 }
 
+// ---- diag: verify の (e)・(f) が外れたときの診断 (何も変えない) --------------------------------------
+// 候補ごとの判定を, cls (到達局面の種類) ではなく, 候補そのものをいまの生成器に通した戻り値 (0 ならキャッチ局面) と比べる.
+// 捨てた候補と残した候補を, cls の値 (0 到達しない / 1 未知 / 2 キャッチ / 3 トライ負け) × 生成器でキャッチ局面か で数える
+static int diag(const char *dat, const char *out) {
+    uint8_t *lab;
+    u_long *all = load_dat(dat, &lab);
+    uint8_t *cls = load_cls(out);
+    // [全到達局面 0 / 展開する局面 1][捨てた 1 / 残した 0][cls][生成器でキャッチ局面か]
+    uint64_t c[2][2][4][2];
+    memset(c, 0, sizeof c);
+    double t0 = now();
+    for (size_t i = 0; i < N_ALL; i++) {
+        u_long q = all[i], cc[UNMOVE_MAX];
+        uint8_t ckind[UNMOVE_MAX], code[UNMOVE_MAX], asz[UNMOVE_MAX];
+        int aq, am;
+        int t = cls[f_rank(q)];
+        int nc = f_classify(q, cc, ckind, code, asz, &aq, &am);
+        int expand = lab[i] != DRAW && t != T_CATCH;
+        for (int j = 0; j < nc; j++) {
+            u_long nbs[64];
+            int k = cls[f_rank(cc[j])];
+            int rule = f_next(cc[j], nbs) == 0;
+            for (int u = 0; u <= expand; u++) c[u][code[j] != 0][k][rule]++;
+        }
+        if (i % 50000000 == 0 && i) {
+            printf("... %zu 局面 (%.0f 秒)\n", i, now() - t0);
+            fflush(stdout);
+        }
+    }
+    printf("診断: %.1f 秒\n", now() - t0);
+    const char *unit[2] = {"全到達局面", "展開する局面 (試作の drop)"};
+    const char *cn[4] = {"到達しない", "未知", "キャッチ", "トライ負け"};
+    uint64_t bad = 0;
+    for (int u = 0; u < 2; u++) {
+        printf("\n## %s\n\n| 候補 | cls | 生成器でキャッチ局面 | そうでない |\n|---|---|---|---|\n", unit[u]);
+        for (int s = 1; s >= 0; s--)
+            for (int k = 0; k < 4; k++)
+                printf("| %s | %s | %lu | %lu |\n", s ? "捨てた" : "残した", cn[k], c[u][s][k][1], c[u][s][k][0]);
+    }
+    for (int k = 0; k < 4; k++) bad += c[0][1][k][0] + c[0][0][k][1];
+    printf("\n捨てた候補のうち生成器でキャッチ局面でないもの ＋ 残した候補のうち生成器でキャッチ局面のもの: %lu\n", bad);
+    return bad ? 1 : 0;
+}
+
 int main(int argc, char **argv) {
     if (argc < 3) die("使い方は bench.c の先頭");
     load_so(argv[2]);
     f_range();
     if (!strcmp(argv[1], "prep") && argc == 5) return prep(argv[3], argv[4]);
     if (!strcmp(argv[1], "verify") && argc == 5) return verify(argv[3], argv[4]);
+    if (!strcmp(argv[1], "diag") && argc == 5) return diag(argv[3], argv[4]);
     if (!strcmp(argv[1], "retreat") && argc == 7) return retreat(argv[3], argv[4], argv[5], argv[6]);
     if (!strcmp(argv[1], "time") && argc == 6) return timing(argv[3], argv[4], atoi(argv[5]));
     die("使い方は bench.c の先頭");

@@ -1,0 +1,13 @@
+dat: 213 ファイル / 246803167 局面
+分類: 未知 99485568 / キャッチ 140298614 / トライ負け 7018985
+抜き出し unknown: 4030968 局面
+抜き出し catch: 5684636 局面
+抜き出し try: 284396 局面
+抜き出し mixed: 10000000 局面 (シード 20261005)
+抜き出し expand: 10000000 局面 (未知 9340420 / トライ負け 659580. シード 20261005)
+8ecd2dbc39444ee3487f9e111f893d00dbdbfccbc76e011440b50cca00076c95  cls.bin
+5f40e57880bc4a1a0babc84a05ed3a74ee19f271b0493a97bbe845427cedf240  sample_catch.bin
+e9a52b5e84804095de54a04fd8fed4b3e942d92079aa84971f6303fe27e97bd8  sample_expand.bin
+5f33d5a8781ed1dbed651386601524e569cd659e1cc9637cb4e47ca529dce0ad  sample_mixed.bin
+fa3bca88ce99facf39ccc31c376d56c2eec845b5a7510df69d455c180f0defa6  sample_try.bin
+ba93d4e213cb18d85ef028aa00db529726f9c864f4df88e0eb5347a92935a812  sample_unknown.bin

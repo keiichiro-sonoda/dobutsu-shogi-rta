@@ -1,0 +1,4 @@
+# impl/33 の gcc 行: gcc -O2 -fno-semantic-interposition -march=native -ffunction-sections animal_shogi.c -o animal_shogi.so -Wall -fPIC -shared -Wl,-T,hot_layout.ld
+# prune.so: gcc -O2 -fno-semantic-interposition -march=native -ffunction-sections prune.c -o prune.so -Wall -fPIC -shared -Wl,-T,hot_layout.ld
+unmove.c sha256 ae8a580195df / catch.c sha256 0339cfa41aec
+prune.so sha256 4d1a352f9abc / bench sha256 f6b2ee704dc4

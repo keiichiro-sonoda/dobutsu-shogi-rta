@@ -1,0 +1,239 @@
+=== forward_prep 門番 開始 2026-10-07T15:48:11+00:00 ===
+load average: 1.02, 1.23, 1.12
+CPU 使用率 (全 CPU, 1秒): 2%
+THP enabled: always [madvise] never
+--- t11_old の前のノード0: 2 MiB 以上の空きブロック 17.37 GiB (しきい値 8) ---
+=== 開始 t11_old (old: impl/33_hot_layout / animal_shogi.so sha256 23b75af2b667) 2026-10-07T15:48:12+00:00 ===
+=== 終了 t11_old 2026-10-07T15:49:15+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:02.05
+	Maximum resident set size (kbytes): 3091384
+	Minor (reclaiming a frame) page faults: 2497985
+全探索の所要時間：55.9048 秒
+F1	50.2051 
+--- thp_fault_fallback の前後差: 0 ---
+--- 全探索の側の dat/: 31 ファイル, #33 本走の dat/ の同じ名前のファイルと違うもの 0 ---
+--- forward.tsv の件数の列 (round〜n_try_total): #33 と一致 ---
+--- 3本の列の sha256 (並びまで): old と一致 ---
+=== 完了 t11_old 2026-10-07T15:49:16+00:00 ===
+--- t12_recalc の前のノード0: 2 MiB 以上の空きブロック 17.28 GiB (しきい値 8) ---
+=== 開始 t12_recalc (recalc: impl/33_hot_layout + patches/recalc.patch / animal_shogi.so sha256 871cd22a0ced) 2026-10-07T15:49:17+00:00 ===
+=== 終了 t12_recalc 2026-10-07T15:50:30+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:12.80
+	Maximum resident set size (kbytes): 3926508
+	Minor (reclaiming a frame) page faults: 2498393
+全探索の所要時間：66.6222 秒
+F1	60.9149 
+--- thp_fault_fallback の前後差: 0 ---
+--- 全探索の側の dat/: 31 ファイル, #33 本走の dat/ の同じ名前のファイルと違うもの 0 ---
+--- forward.tsv の件数の列 (round〜n_try_total): #33 と一致 ---
+--- 3本の列の sha256 (並びまで): old と一致 ---
+=== 完了 t12_recalc 2026-10-07T15:50:31+00:00 ===
+--- t13_carry の前のノード0: 2 MiB 以上の空きブロック 17.30 GiB (しきい値 8) ---
+=== 開始 t13_carry (carry: impl/33_hot_layout + patches/carry.patch / animal_shogi.so sha256 7c4f43046070) 2026-10-07T15:50:32+00:00 ===
+=== 終了 t13_carry 2026-10-07T15:51:42+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:09.87
+	Maximum resident set size (kbytes): 3938344
+	Minor (reclaiming a frame) page faults: 2183511
+全探索の所要時間：63.7003 秒
+F1	58.0665 
+--- thp_fault_fallback の前後差: 0 ---
+--- 全探索の側の dat/: 31 ファイル, #33 本走の dat/ の同じ名前のファイルと違うもの 0 ---
+--- forward.tsv の件数の列 (round〜n_try_total): #33 と一致 ---
+--- 3本の列の sha256 (並びまで): old と一致 ---
+=== 完了 t13_carry 2026-10-07T15:51:43+00:00 ===
+--- t21_recalc の前のノード0: 2 MiB 以上の空きブロック 17.27 GiB (しきい値 8) ---
+=== 開始 t21_recalc (recalc: impl/33_hot_layout + patches/recalc.patch / animal_shogi.so sha256 871cd22a0ced) 2026-10-07T15:51:44+00:00 ===
+=== 終了 t21_recalc 2026-10-07T15:52:57+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:13.11
+	Maximum resident set size (kbytes): 3926304
+	Minor (reclaiming a frame) page faults: 2498396
+全探索の所要時間：66.9257 秒
+F1	61.1710 
+--- thp_fault_fallback の前後差: 0 ---
+--- 全探索の側の dat/: 31 ファイル, #33 本走の dat/ の同じ名前のファイルと違うもの 0 ---
+--- forward.tsv の件数の列 (round〜n_try_total): #33 と一致 ---
+--- 3本の列の sha256 (並びまで): old と一致 ---
+=== 完了 t21_recalc 2026-10-07T15:52:58+00:00 ===
+--- t22_carry の前のノード0: 2 MiB 以上の空きブロック 17.23 GiB (しきい値 8) ---
+=== 開始 t22_carry (carry: impl/33_hot_layout + patches/carry.patch / animal_shogi.so sha256 7c4f43046070) 2026-10-07T15:52:59+00:00 ===
+=== 終了 t22_carry 2026-10-07T15:54:09+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:09.91
+	Maximum resident set size (kbytes): 3938064
+	Minor (reclaiming a frame) page faults: 2183513
+全探索の所要時間：63.7402 秒
+F1	58.0387 
+--- thp_fault_fallback の前後差: 0 ---
+--- 全探索の側の dat/: 31 ファイル, #33 本走の dat/ の同じ名前のファイルと違うもの 0 ---
+--- forward.tsv の件数の列 (round〜n_try_total): #33 と一致 ---
+--- 3本の列の sha256 (並びまで): old と一致 ---
+=== 完了 t22_carry 2026-10-07T15:54:10+00:00 ===
+--- t23_old の前のノード0: 2 MiB 以上の空きブロック 17.29 GiB (しきい値 8) ---
+=== 開始 t23_old (old: impl/33_hot_layout / animal_shogi.so sha256 23b75af2b667) 2026-10-07T15:54:11+00:00 ===
+=== 終了 t23_old 2026-10-07T15:55:14+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:02.59
+	Maximum resident set size (kbytes): 3090640
+	Minor (reclaiming a frame) page faults: 2497988
+全探索の所要時間：56.3789 秒
+F1	50.5759 
+--- thp_fault_fallback の前後差: 0 ---
+--- 全探索の側の dat/: 31 ファイル, #33 本走の dat/ の同じ名前のファイルと違うもの 0 ---
+--- forward.tsv の件数の列 (round〜n_try_total): #33 と一致 ---
+--- 3本の列の sha256 (並びまで): old と一致 ---
+=== 完了 t23_old 2026-10-07T15:55:15+00:00 ===
+--- t31_carry の前のノード0: 2 MiB 以上の空きブロック 17.21 GiB (しきい値 8) ---
+=== 開始 t31_carry (carry: impl/33_hot_layout + patches/carry.patch / animal_shogi.so sha256 7c4f43046070) 2026-10-07T15:55:16+00:00 ===
+=== 終了 t31_carry 2026-10-07T15:56:25+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:09.41
+	Maximum resident set size (kbytes): 3938412
+	Minor (reclaiming a frame) page faults: 2183511
+全探索の所要時間：63.3224 秒
+F1	57.7236 
+--- thp_fault_fallback の前後差: 0 ---
+--- 全探索の側の dat/: 31 ファイル, #33 本走の dat/ の同じ名前のファイルと違うもの 0 ---
+--- forward.tsv の件数の列 (round〜n_try_total): #33 と一致 ---
+--- 3本の列の sha256 (並びまで): old と一致 ---
+=== 完了 t31_carry 2026-10-07T15:56:27+00:00 ===
+--- t32_old の前のノード0: 2 MiB 以上の空きブロック 17.22 GiB (しきい値 8) ---
+=== 開始 t32_old (old: impl/33_hot_layout / animal_shogi.so sha256 23b75af2b667) 2026-10-07T15:56:27+00:00 ===
+=== 終了 t32_old 2026-10-07T15:57:30+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:02.18
+	Maximum resident set size (kbytes): 3091088
+	Minor (reclaiming a frame) page faults: 2497984
+全探索の所要時間：56.0206 秒
+F1	50.2832 
+--- thp_fault_fallback の前後差: 0 ---
+--- 全探索の側の dat/: 31 ファイル, #33 本走の dat/ の同じ名前のファイルと違うもの 0 ---
+--- forward.tsv の件数の列 (round〜n_try_total): #33 と一致 ---
+--- 3本の列の sha256 (並びまで): old と一致 ---
+=== 完了 t32_old 2026-10-07T15:57:31+00:00 ===
+--- t33_recalc の前のノード0: 2 MiB 以上の空きブロック 17.21 GiB (しきい値 8) ---
+=== 開始 t33_recalc (recalc: impl/33_hot_layout + patches/recalc.patch / animal_shogi.so sha256 871cd22a0ced) 2026-10-07T15:57:32+00:00 ===
+=== 終了 t33_recalc 2026-10-07T15:58:45+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:13.04
+	Maximum resident set size (kbytes): 3926416
+	Minor (reclaiming a frame) page faults: 2498398
+全探索の所要時間：66.9223 秒
+F1	61.1684 
+--- thp_fault_fallback の前後差: 0 ---
+--- 全探索の側の dat/: 31 ファイル, #33 本走の dat/ の同じ名前のファイルと違うもの 0 ---
+--- forward.tsv の件数の列 (round〜n_try_total): #33 と一致 ---
+--- 3本の列の sha256 (並びまで): old と一致 ---
+=== 完了 t33_recalc 2026-10-07T15:58:46+00:00 ===
+--- t41_old の前のノード0: 2 MiB 以上の空きブロック 17.20 GiB (しきい値 8) ---
+=== 開始 t41_old (old: impl/33_hot_layout / animal_shogi.so sha256 23b75af2b667) 2026-10-07T15:58:47+00:00 ===
+=== 終了 t41_old 2026-10-07T15:59:49+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:01.80
+	Maximum resident set size (kbytes): 3090644
+	Minor (reclaiming a frame) page faults: 2497986
+全探索の所要時間：55.6389 秒
+F1	49.9078 
+--- thp_fault_fallback の前後差: 0 ---
+--- 全探索の側の dat/: 31 ファイル, #33 本走の dat/ の同じ名前のファイルと違うもの 0 ---
+--- forward.tsv の件数の列 (round〜n_try_total): #33 と一致 ---
+--- 3本の列の sha256 (並びまで): old と一致 ---
+=== 完了 t41_old 2026-10-07T15:59:50+00:00 ===
+--- t42_carry の前のノード0: 2 MiB 以上の空きブロック 17.14 GiB (しきい値 8) ---
+=== 開始 t42_carry (carry: impl/33_hot_layout + patches/carry.patch / animal_shogi.so sha256 7c4f43046070) 2026-10-07T15:59:51+00:00 ===
+=== 終了 t42_carry 2026-10-07T16:01:01+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:09.46
+	Maximum resident set size (kbytes): 3938180
+	Minor (reclaiming a frame) page faults: 2183506
+全探索の所要時間：63.3375 秒
+F1	57.7064 
+--- thp_fault_fallback の前後差: 0 ---
+--- 全探索の側の dat/: 31 ファイル, #33 本走の dat/ の同じ名前のファイルと違うもの 0 ---
+--- forward.tsv の件数の列 (round〜n_try_total): #33 と一致 ---
+--- 3本の列の sha256 (並びまで): old と一致 ---
+=== 完了 t42_carry 2026-10-07T16:01:02+00:00 ===
+--- t43_recalc の前のノード0: 2 MiB 以上の空きブロック 17.17 GiB (しきい値 8) ---
+=== 開始 t43_recalc (recalc: impl/33_hot_layout + patches/recalc.patch / animal_shogi.so sha256 871cd22a0ced) 2026-10-07T16:01:03+00:00 ===
+=== 終了 t43_recalc 2026-10-07T16:02:15+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:12.66
+	Maximum resident set size (kbytes): 3926624
+	Minor (reclaiming a frame) page faults: 2498392
+全探索の所要時間：66.5125 秒
+F1	60.7503 
+--- thp_fault_fallback の前後差: 0 ---
+--- 全探索の側の dat/: 31 ファイル, #33 本走の dat/ の同じ名前のファイルと違うもの 0 ---
+--- forward.tsv の件数の列 (round〜n_try_total): #33 と一致 ---
+--- 3本の列の sha256 (並びまで): old と一致 ---
+=== 完了 t43_recalc 2026-10-07T16:02:17+00:00 ===
+--- t51_carry の前のノード0: 2 MiB 以上の空きブロック 17.10 GiB (しきい値 8) ---
+=== 開始 t51_carry (carry: impl/33_hot_layout + patches/carry.patch / animal_shogi.so sha256 7c4f43046070) 2026-10-07T16:02:17+00:00 ===
+=== 終了 t51_carry 2026-10-07T16:03:27+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:09.49
+	Maximum resident set size (kbytes): 3937884
+	Minor (reclaiming a frame) page faults: 2183510
+全探索の所要時間：63.3558 秒
+F1	57.7188 
+--- thp_fault_fallback の前後差: 0 ---
+--- 全探索の側の dat/: 31 ファイル, #33 本走の dat/ の同じ名前のファイルと違うもの 0 ---
+--- forward.tsv の件数の列 (round〜n_try_total): #33 と一致 ---
+--- 3本の列の sha256 (並びまで): old と一致 ---
+=== 完了 t51_carry 2026-10-07T16:03:29+00:00 ===
+--- t52_recalc の前のノード0: 2 MiB 以上の空きブロック 17.04 GiB (しきい値 8) ---
+=== 開始 t52_recalc (recalc: impl/33_hot_layout + patches/recalc.patch / animal_shogi.so sha256 871cd22a0ced) 2026-10-07T16:03:29+00:00 ===
+=== 終了 t52_recalc 2026-10-07T16:04:42+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:12.41
+	Maximum resident set size (kbytes): 3926424
+	Minor (reclaiming a frame) page faults: 2498398
+全探索の所要時間：66.2217 秒
+F1	60.5519 
+--- thp_fault_fallback の前後差: 0 ---
+--- 全探索の側の dat/: 31 ファイル, #33 本走の dat/ の同じ名前のファイルと違うもの 0 ---
+--- forward.tsv の件数の列 (round〜n_try_total): #33 と一致 ---
+--- 3本の列の sha256 (並びまで): old と一致 ---
+=== 完了 t52_recalc 2026-10-07T16:04:43+00:00 ===
+--- t53_old の前のノード0: 2 MiB 以上の空きブロック 17.02 GiB (しきい値 8) ---
+=== 開始 t53_old (old: impl/33_hot_layout / animal_shogi.so sha256 23b75af2b667) 2026-10-07T16:04:44+00:00 ===
+=== 終了 t53_old 2026-10-07T16:05:46+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:02.63
+	Maximum resident set size (kbytes): 3090988
+	Minor (reclaiming a frame) page faults: 2497985
+全探索の所要時間：56.4019 秒
+F1	50.5854 
+--- thp_fault_fallback の前後差: 0 ---
+--- 全探索の側の dat/: 31 ファイル, #33 本走の dat/ の同じ名前のファイルと違うもの 0 ---
+--- forward.tsv の件数の列 (round〜n_try_total): #33 と一致 ---
+--- 3本の列の sha256 (並びまで): old と一致 ---
+=== 完了 t53_old 2026-10-07T16:05:48+00:00 ===
+--- t61_recalc の前のノード0: 2 MiB 以上の空きブロック 16.96 GiB (しきい値 8) ---
+=== 開始 t61_recalc (recalc: impl/33_hot_layout + patches/recalc.patch / animal_shogi.so sha256 871cd22a0ced) 2026-10-07T16:05:49+00:00 ===
+=== 終了 t61_recalc 2026-10-07T16:07:02+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:13.25
+	Maximum resident set size (kbytes): 3926756
+	Minor (reclaiming a frame) page faults: 2498394
+全探索の所要時間：67.0983 秒
+F1	61.3317 
+--- thp_fault_fallback の前後差: 0 ---
+--- 全探索の側の dat/: 31 ファイル, #33 本走の dat/ の同じ名前のファイルと違うもの 0 ---
+--- forward.tsv の件数の列 (round〜n_try_total): #33 と一致 ---
+--- 3本の列の sha256 (並びまで): old と一致 ---
+=== 完了 t61_recalc 2026-10-07T16:07:03+00:00 ===
+--- t62_old の前のノード0: 2 MiB 以上の空きブロック 16.88 GiB (しきい値 8) ---
+=== 開始 t62_old (old: impl/33_hot_layout / animal_shogi.so sha256 23b75af2b667) 2026-10-07T16:07:04+00:00 ===
+=== 終了 t62_old 2026-10-07T16:08:06+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:01.78
+	Maximum resident set size (kbytes): 3090968
+	Minor (reclaiming a frame) page faults: 2497977
+全探索の所要時間：55.6521 秒
+F1	49.9916 
+--- thp_fault_fallback の前後差: 0 ---
+--- 全探索の側の dat/: 31 ファイル, #33 本走の dat/ の同じ名前のファイルと違うもの 0 ---
+--- forward.tsv の件数の列 (round〜n_try_total): #33 と一致 ---
+--- 3本の列の sha256 (並びまで): old と一致 ---
+=== 完了 t62_old 2026-10-07T16:08:07+00:00 ===
+--- t63_carry の前のノード0: 2 MiB 以上の空きブロック 16.84 GiB (しきい値 8) ---
+=== 開始 t63_carry (carry: impl/33_hot_layout + patches/carry.patch / animal_shogi.so sha256 7c4f43046070) 2026-10-07T16:08:08+00:00 ===
+=== 終了 t63_carry 2026-10-07T16:09:18+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:09.81
+	Maximum resident set size (kbytes): 3937772
+	Minor (reclaiming a frame) page faults: 2183512
+全探索の所要時間：63.6671 秒
+F1	58.0429 
+--- thp_fault_fallback の前後差: 0 ---
+--- 全探索の側の dat/: 31 ファイル, #33 本走の dat/ の同じ名前のファイルと違うもの 0 ---
+--- forward.tsv の件数の列 (round〜n_try_total): #33 と一致 ---
+--- 3本の列の sha256 (並びまで): old と一致 ---
+=== 完了 t63_carry 2026-10-07T16:09:19+00:00 ===
+=== forward_prep 門番 全18本 完了 2026-10-07T16:09:19+00:00 ===

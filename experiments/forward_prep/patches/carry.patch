@@ -1,0 +1,435 @@
+--- a/animal_shogi.c
++++ b/animal_shogi.c
+@@ -617,17 +617,189 @@
+     return 0;
+ }
+ 
+-int nextBoardSeenNormal(u_long b, u_long *out) {
++// ---- 作り替えた後退解析の準備 (実験 forward_prep。記録試行ではない) -------------------------
++//
++// 全探索で展開した局面 p ごとに, ランクを添字にした 1 バイトの配列 g_prep に, 種類と
++// キャッチ抜きの数 (後続のうちキャッチ局面でないものの数) を書く. 後退解析を逆向きの生成器で
++// 作り替えるとき (experiments/unmove_catch〜unmove_flip) に要る準備.
++//   0       到達しない (書かれていない)
++//   1〜49   未知局面. キャッチ抜きの数 + 1 (1 ならキャッチ抜きの数が 0. 手数 2 の負けになる)
++//   0xFE    トライ負け局面
++//   0xFF    キャッチ局面
++// キャッチ抜きの数は experiments/attack_count の B1′ (相手の利きの一覧) で数える.
++#define PREP_TRY 0xFE
++#define PREP_CATCH 0xFF
++
++static uint8_t *g_prep = NULL;
++static u_long g_prep_rank_bad = 0;  // PREP_CHECK のビルドだけが数える
++static uint16_t g_att[16][12];  // 相手の駒 k (1〜5) がマス sq にいるとき届くマスの集合 (反転した盤の上)
++static int g_att_ready = 0;
++
++static void attackTableBuild(void) {
++    static const int *const tables[4] = {GIRAFFE_MOVE, ELEPHANT_MOVE, LION_MOVE, CHICKEN2_MOVE};
++    static const int sizes[4] = {4, 4, 8, 6};
++    static const int owners[4] = {GIRAFFE1, ELEPHANT1, LION1, CHICKEN1};
++    if (g_att_ready) return;
++    memset(g_att, 0, sizeof g_att);
++    for (int s = 0; s < 48; s += 4) {
++        int s16 = s % 16;
++        for (int t = 0; t < 4; t++)
++            for (int i = 0; i < sizes[t]; i++) {
++                int L = s - tables[t][i];
++                if (L < 0 || 44 < L) continue;
++                if (s16 == 12 && L % 16 == 0) continue;
++                if (s16 == 0 && L % 16 == 12) continue;
++                g_att[owners[t]][s / 4] |= (uint16_t)(1u << (L / 4));
++            }
++        if (s16 != 12) g_att[CHICK1][s / 4] |= (uint16_t)(1u << ((s + 4) / 4));
++    }
++    g_att_ready = 1;
++}
++
++// 配列を確保する (発見済み表と同じく最初に1回. 巨大ページを頼んでから 0 で埋める)
++int prepInit(void) {
++    free(g_prep);
++    attackTableBuild();
++    if (!g_rank_range) rankTablesBuild();
++    g_prep = (uint8_t *)hugeAlloc((size_t)g_rank_range);
++    if (!g_prep) return -3;
++    memset(g_prep, 0, (size_t)g_rank_range);
++    return 0;
++}
++
++u_long prepRankBad(void) {
++    return g_prep_rank_bad;
++}
++
++const uint8_t *prepPtr(void) {
++    return g_prep;
++}
++
++void prepFree(void) {
++    free(g_prep);
++    g_prep = NULL;
++}
++
++// nextBoardInvNormal の写しに, キャッチ抜きの数を数える仕事 (experiments/attack_count の B1′) を足したもの.
++// 後続の列と順番, 戻り値は nextBoardInvNormal と同じ. *non_catch にキャッチ抜きの数
++int nextBoardInvNormalNC(u_long b, u_long *nbs, int *non_catch) {
++    u_long nb, koma, dst_koma;
++    int i, j, dst, own_num, own_p, *moves = NULL, moves_num, src_mod16, dst_mod16;
++    int emp_adrs[10];
++    int emp_num = 0;
++    int nbs_p = 0;
++    int nc = 0, c;
++    int try_flag = 0;
++    unsigned att1 = 0, atkL = 0;
++    *non_catch = 0;
++    b = invBoard(b);
++    // 一覧: 相手の駒が届くマスの集合 att1 と, 手番側のライオンに届いている相手の駒のマスの集合 atkL
++    {
++        int Lsq = rankFindKoma(b & 0xffffffffffffUL, LION2);
++        for (int sq = 0; sq < 12; sq++) {
++            unsigned m = g_att[getKoma(b, 4 * sq)][sq];
++            att1 |= m;
++            atkL |= ((m >> Lsq) & 1u) << sq;
++        }
++    }
++    for (int src = 0; src < 48; src += 4) {
++        if (!(koma = getKoma(b, src))) {
++            emp_adrs[emp_num++] = src;
++        } else if (koma == CHICK2) {
++            if (src % 16 == 0) continue;
++            dst = src - 4;
++            if ((dst_koma = getKoma(b, dst))) {
++                if (dst_koma & 0b1000) continue;
++                if (dst_koma == LION1) return 0;
++                nb = delKomaDouble(b, src, dst);
++                own_p = dst_koma == CHICKEN1 ? 54 : 52 + dst_koma * 2;
++                nb ^= (b >> own_p) & 0b11 ? (u_long)0b11 << own_p : (u_long)0b01 << own_p;
++            } else {
++                nb = delKoma(b, src);
++            }
++            c = (atkL & ~(1u << (dst / 4))) != 0;
++            if (dst % 16 == 0) {
++                koma = CHICKEN2;
++            }
++            nc += !c;
++            nbs[nbs_p++] = normalBoard(nb | (koma << dst));
++        } else if (koma == LION1) {
++            if (src % 16 == 12) try_flag = 1;
++        } else {
++            switch (koma) {
++                case GIRAFFE2: moves = GIRAFFE_MOVE; moves_num = 4; break;
++                case ELEPHANT2: moves = ELEPHANT_MOVE; moves_num = 4; break;
++                case LION2: moves = LION_MOVE; moves_num = 8; break;
++                case CHICKEN2: moves = CHICKEN2_MOVE; moves_num = 6; break;
++                default: moves_num = 0;
++            }
++            if (!moves_num) continue;
++            src_mod16 = src % 16;
++            for (i = 0; i < moves_num; i++) {
++                dst = src + moves[i];
++                if (dst < 0 || 44 < dst) continue;
++                dst_mod16 = dst % 16;
++                if (src_mod16 == 0 && dst_mod16 == 12) continue;
++                if (src_mod16 == 12 && dst_mod16 == 0) continue;
++                if ((dst_koma = getKoma(b, dst))) {
++                    if (dst_koma & 0b1000) continue;
++                    if (dst_koma == LION1) return 0;
++                    nb = delKomaDouble(b, src, dst);
++                    own_p = dst_koma == CHICKEN1 ? 54 : 52 + dst_koma * 2;
++                    nb ^= (b >> own_p) & 0b11 ? (u_long)0b11 << own_p : (u_long)0b01 << own_p;
++                } else {
++                    nb = delKoma(b, src);
++                }
++                if (koma == LION2) c = (att1 >> (dst / 4)) & 1u;
++                else c = (atkL & ~(1u << (dst / 4))) != 0;
++                nc += !c;
++                nbs[nbs_p++] = normalBoard(nb | (koma << dst));
++            }
++        }
++    }
++    if (try_flag) return -1;
++    c = atkL != 0;
++    for (i = 0; i < 3; i++) {
++        own_p = 54 + i * 2;
++        own_num = (b >> own_p) & 0b11;
++        if (!own_num) continue;
++        nb = b ^ (own_num == 2 ? (u_long)0b11 << own_p : (u_long)0b01 << own_p);
++        koma = i + 9;
++        for (j = 0; j < emp_num; j++) {
++            nc += !c;
++            nbs[nbs_p++] = normalBoard(nb | (koma << emp_adrs[j]));
++        }
++    }
++    *non_catch = nc;
++    return nbs_p;
++}
++
++// 腕 carry: 展開する局面のランク rb は, 後続として見つけたときに待ち行列に一緒に積んだものを受け取る.
++// 初見の後続のランクを out_rank に out と同じ並びで返す
++int nextBoardSeenNormal(u_long b, uint32_t rb, u_long *out, uint32_t *out_rank) {
+     u_long nbs[MAX_ACTION_NUM];
+     uint64_t r[MAX_ACTION_NUM];
+-    int nbn, i;
++    int nbn, i, nc;
+     int found = 0;
+     if (!g_seen && seenInit() != 0) return -3;
+-    nbn = nextBoardInvNormal(b, nbs);
++    if (!g_prep && prepInit() != 0) return -3;
++#ifdef PREP_CHECK
++    // 一致の検査用のビルドだけ: 積んだランクが盤面から計算し直したランクと同じか
++    if ((uint64_t)rb != rankOf(b)) g_prep_rank_bad++;
++#endif
++    __builtin_prefetch(&g_prep[rb], 1, 3);
++    nbn = nextBoardInvNormalNC(b, nbs, &nc);
+     // 0 = キャッチ勝ち / -1 = トライ負け. どちらも後続を持たない
+     // ⚠️ ここで規約を付け替える. 「未知だが初見が0個」を 0 で返したいため
+-    if (nbn == 0) return -1;
+-    if (nbn < 0) return -2;
++    if (nbn == 0) {
++        g_prep[rb] = PREP_CATCH;
++        return -1;
++    }
++    if (nbn < 0) {
++        g_prep[rb] = PREP_TRY;
++        return -2;
++    }
++    g_prep[rb] = (uint8_t)(nc + 1);
+     g_seen_probes += (u_long)nbn;
+     // 記録 #20 と同じ形: 全後続の番号を先に出してビット表の語を取り寄せ, そのあとで順に立てる.
+     // 先読みはヒントなので書く値は変わらない. 返す順序は nbs の順のまま
+@@ -636,7 +808,10 @@
+         __builtin_prefetch(&g_seen[r[i] >> 6], 1, 3);
+     }
+     for (i = 0; i < nbn; i++) {
+-        if (seenTestAndSet(r[i])) out[found++] = nbs[i];
++        if (seenTestAndSet(r[i])) {
++            out_rank[found] = (uint32_t)r[i];
++            out[found++] = nbs[i];
++        }
+     }
+     return found;
+ }
+@@ -729,6 +904,7 @@
+ // (本番の最大は 1ラウンド 11,258,320 件 = 90 MB. 最悪値 n * 48 で固定すると
+ //  5,000,000 * 48 * 8 = 1.92 GB の空撃ちになるので, 倍々に伸ばす)
+ static u_long *g_exp_new = NULL;
++static uint32_t *g_exp_rank = NULL;  // 腕 carry: g_exp_new と同じ並びの, 初見の後続のランク
+ static size_t g_exp_cap = 0;
+ static u_long g_exp_n = 0;
+ 
+@@ -747,6 +923,11 @@
+     grown = (u_long *)realloc(g_exp_new, cap * sizeof(u_long));
+     if (!grown) return -2;
+     g_exp_new = grown;
++    {
++        uint32_t *gr = (uint32_t *)realloc(g_exp_rank, cap * sizeof(uint32_t));
++        if (!gr) return -2;
++        g_exp_rank = gr;
++    }
+     g_exp_cap = cap;
+     return 0;
+ }
+@@ -755,6 +936,10 @@
+     return g_exp_new;
+ }
+ 
++const uint32_t *expandNewRankPtr(void) {
++    return g_exp_rank;
++}
++
+ u_long expandNewCount(void) {
+     return g_exp_n;
+ }
+@@ -762,11 +947,13 @@
+ void expandFreeBuffer(void) {
+     free(g_exp_new);
+     g_exp_new = NULL;
++    free(g_exp_rank);
++    g_exp_rank = NULL;
+     g_exp_cap = 0;
+     g_exp_n = 0;
+ }
+ 
+-int expandRound(const u_long *unexp, uint32_t n,
++int expandRound(const u_long *unexp, const uint32_t *unexp_rank, uint32_t n,
+                 u_long *win, u_long *lose, u_long *uk, u_long *out) {
+     uint32_t i = 0, n_win = 0, n_lose = 0, n_uk = 0;
+     u_long probes0 = g_seen_probes;
+@@ -785,7 +972,7 @@
+     // そのとき array("Q") の buffer_info() は 0 を返すので, NULL を許す
+     // (predCount が n_edges == 0 でやっているのと同じ)
+     if (n == 0) return 0;
+-    if (!unexp || !win || !lose || !uk) return -1;
++    if (!unexp || !unexp_rank || !win || !lose || !uk) return -1;
+     // ⚠️ 前から後ろへ走査する. Python の set.pop() を繰り返した順は集合の反復順で,
+     //    array("Q", 集合) の並びがちょうどそれ. 逆から回すと採番順が変わる
+     for (i = 0; i < n; i++) {
+@@ -799,7 +986,7 @@
+             rc = -2;
+             break;
+         }
+-        nbn = nextBoardSeenNormal(unexp[i], g_exp_new + g_exp_n);
++        nbn = nextBoardSeenNormal(unexp[i], unexp_rank[i], g_exp_new + g_exp_n, g_exp_rank + g_exp_n);
+         // ⚠️ 分岐の順は件数の多い順 (勝ち 140,298,614 / 未知 99,485,568 /
+         //    負け 7,018,985). 記録 #12 と同じ順序で判定する
+         if (nbn == -1) {
+--- a/animal_shogi.h
++++ b/animal_shogi.h
+@@ -154,7 +154,7 @@
+ // ⚠️ 戻り値の規約が nextBoardInvNormal (0=勝ち / -1=負け) と違う.
+ //    「未知だが初見の後続が0個」が起こりうるので, 0 を勝ちには使えない.
+ // out は MAX_ACTION_NUM 要素なければならない
+-int nextBoardSeenNormal(u_long b, u_long *out);
++int nextBoardSeenNormal(u_long b, uint32_t rb, u_long *out, uint32_t *out_rank);  // 腕 carry: 積んだランクを受け取り, 初見の後続のランクも返す
+ 
+ // --------------------------------------------------------------------
+ // 前任リストの計数ソート (記録 #12 で追加)
+@@ -215,7 +215,8 @@
+ //    もう seen 表に入っているので, 同じ入力で呼び直すと全部「既出」になって
+ //    永久に拾えなくなる. 呼び出し側は走行ごと落とすこと.
+ //    expandRound はファイルを1つも書く前に走るので dat/ は無傷で, 再走できる.
+-int expandRound(const u_long *unexp, uint32_t n,
++// 腕 carry: unexp_rank[i] は unexp[i] のランク (待ち行列に一緒に積んだもの)
++int expandRound(const u_long *unexp, const uint32_t *unexp_rank, uint32_t n,
+                 u_long *win, u_long *lose, u_long *uk, u_long *out);
+ 
+ // 直前の expandRound が積んだ初見の後続 (expandNewCount 要素)
+--- a/animal_shogi.py
++++ b/animal_shogi.py
+@@ -59,6 +59,8 @@
+ # 先に入れたものから取り出すので, 何件ずつ取り出しても展開の順は変わらない
+ # (区切り方は queuePush() が決める. forwardInit() が初期局面1つで始める)
+ queue = None
++# 腕 carry (実験 forward_prep): queue と同じ区切りで持つ, 盤面ごとのランクの列 (array("I"))
++queue_rank = None
+ 
+ # 全探索で未知に振り分けた局面を, 展開した順に並べたもの (U). P0 が後退解析の packed に詰める.
+ # #21 までは F2 が unknown###.bin の末尾のファイルを読み直して継ぎ足し, P0 が読んで消していた.
+@@ -186,16 +188,25 @@
+ # ⚠️ -1=キャッチ勝ち / -2=トライ負け / >=0=未知 (初見の後続数). 規約が違う
+ nextBoardSeenNormal = lib.nextBoardSeenNormal
+ nextBoardSeenNormal.restype = c_int32
+-nextBoardSeenNormal.argtypes = (c_uint64, c_uint64_array48)
++nextBoardSeenNormal.argtypes = (c_uint64, c_uint32, c_uint64_array48, POINTER(c_uint32))
+ 
+ # 1ラウンドぶんの展開 (記録 #13). 局面ごとの FFI をラウンドあたり1回にまとめる
+ expandRound = lib.expandRound
+ expandRound.restype = c_int32
+ expandRound.argtypes = (
+-    POINTER(c_uint64), c_uint32,
++    POINTER(c_uint64), POINTER(c_uint32), c_uint32,
+     POINTER(c_uint64), POINTER(c_uint64), POINTER(c_uint64), POINTER(c_uint64),
+ )
+ 
++# 腕 carry (実験 forward_prep): 直前の expandRound が積んだ初見の後続のランク (expandNewPtr と同じ並び)
++expandNewRankPtr = lib.expandNewRankPtr
++expandNewRankPtr.restype = c_void_p
++expandNewRankPtr.argtypes = ()
++
++rankBoard = lib.rankBoard
++rankBoard.restype = c_uint64
++rankBoard.argtypes = (c_uint64,)
++
+ # 直前の expandRound が積んだ初見の後続
+ expandNewPtr = lib.expandNewPtr
+ expandNewPtr.restype = c_void_p
+@@ -368,14 +379,18 @@
+ # 区切らない形 (門番の whole 腕. patches/whole.patch) は J ＝ forward_total ＋ P0 が
+ # 2.48 秒遅かった (F1 と F6 のカーネル時間. 機序は分けていない) ので, 区切りを残した
+ # ⚠️ 門番 gate_22_in_memory の2腕 (chunk / whole) はこの関数だけが違う
+-def queuePush(new) -> None:
++# 腕 carry (実験 forward_prep): ランクの列 new_rank を, 盤面の列と同じ区切りで queue_rank に積む.
++# 盤面の待ち行列の区切り方と並びは変えない
++def queuePush(new, new_rank) -> None:
+     step = BOARD_NUM_MAX
+     start = 0
+     if queue and len(queue[-1]) < step:
+         start = step - len(queue[-1])
+         queue[-1].extend(new[:start])
++        queue_rank[-1].extend(new_rank[:start])
+     for s in range(start, len(new), step):
+         queue.append(new[s:s + step])
++        queue_rank.append(new_rank[s:s + step])
+ 
+ # 全探索の入口 (記録 #22)
+ #
+@@ -384,7 +399,7 @@
+ # unknown000.bin (中身は初期局面1つ) を読んで表に入れるのが, 初期局面が
+ # 発見済み表に入る唯一の経路だった. どちらもファイルごと消えたので, ここで明示的にやる
+ def forwardInit() -> None:
+-    global queue, uk_all, catch_wins, try_loses, tbn_uk, tbn_win, tbn_lose
++    global queue, queue_rank, uk_all, catch_wins, try_loses, tbn_uk, tbn_win, tbn_lose
+     if not os.path.isdir(DIR_PATH):
+         raise RuntimeError("ディレクトリ「%s」を作成してください" % DIR_PATH)
+     # 途中の dat/ から再開しない (CLAUDE.md「途中で落ちたら再走」). 読み戻す経路も持たない
+@@ -401,6 +416,7 @@
+     if seenInsert(INITIAL_BOARD) != 1:
+         raise RuntimeError("初期局面を発見済み表に入れられない")
+     queue = deque([array("Q", [INITIAL_BOARD])])
++    queue_rank = deque([array("I", [rankBoard(INITIAL_BOARD)])])
+     uk_all = array("Q")
+     catch_wins = array("Q")
+     try_loses = array("Q")
+@@ -611,6 +627,7 @@
+     # 待ち行列の先頭を取り出す. 取り出したものは F1 で C に渡したあと手放す
+     _profMark("F0_begin")
+     unexp_boards = queue.popleft()
++    unexp_rank = queue_rank.popleft()
+     _profMark("F0")
+     _prof["n_in"] = n = len(unexp_boards)
+     printLogSub("探索盤面数：{:d}".format(len(unexp_boards)))
+@@ -638,8 +655,11 @@
+     if n > len(_exp_bufs[0]):
+         raise RuntimeError("受け皿に入らない：%d / %d" % (n, len(_exp_bufs[0])))
+     counts = array("Q", bytes(8)) * 5
++    if unexp_rank.itemsize != 4 or len(unexp_rank) != n:
++        raise RuntimeError("ランクの列が盤面の列と揃っていない：%d / %d" % (len(unexp_rank), n))
+     rc = expandRound(
+-        cast(unexp_boards.buffer_info()[0], POINTER(c_uint64)), n,
++        cast(unexp_boards.buffer_info()[0], POINTER(c_uint64)),
++        cast(unexp_rank.buffer_info()[0], POINTER(c_uint32)), n,
+         cast(_exp_bufs[0].buffer_info()[0], POINTER(c_uint64)),
+         cast(_exp_bufs[1].buffer_info()[0], POINTER(c_uint64)),
+         cast(_exp_bufs[2].buffer_info()[0], POINTER(c_uint64)),
+@@ -649,7 +669,7 @@
+     #    どちらもそのラウンドはやり直せない (そこまでの後続はもう表に入っている)
+     if rc != 0:
+         raise RuntimeError("後続を作れない：%d" % rc)
+-    del unexp_boards
++    del unexp_boards, unexp_rank
+     # 写しを作らず, 受け皿の件数ぶんを memoryview で見る (このラウンドのうちに足し終える.
+     # #23 までは件数ぶんのスライス, つまりもう1つの写しを作っていた)
+     win_boards = memoryview(_exp_bufs[0])[:counts[0]]
+@@ -658,11 +678,15 @@
+     # 初見の後続を C のバッファから1回のコピーで受け取る
+     # (要素ごとに読むと 2.5 億個の PyLong を作ることになる. 記録 #1 の罠)
+     new_unexp_boards = array("Q")
++    new_unexp_rank = array("I")
+     _n_new = expandNewCount()
+     if _n_new:
+         new_unexp_boards.frombytes(
+             memoryview((c_uint64 * _n_new).from_address(expandNewPtr())).cast("B")
+         )
++        new_unexp_rank.frombytes(
++            memoryview((c_uint32 * _n_new).from_address(expandNewRankPtr())).cast("B")
++        )
+     _profMark("F1")
+     _prof["n_win"] = len(win_boards)
+     _prof["n_lose"] = len(lose_boards)
+@@ -737,7 +761,7 @@
+         _profMark("F5")
+         return True
+ 
+-    queuePush(new_unexp_boards)
++    queuePush(new_unexp_boards, new_unexp_rank)
+     _profMark("F5")
+ 
+     return False
+--- a/hot_layout.ld
++++ b/hot_layout.ld
+@@ -21,6 +21,7 @@
+     . = ALIGN(64); *(.text.nextBoardInvNormal)
+     . = ALIGN(64); *(.text.indexBuild)
+     . = ALIGN(64); *(.text.nextBoardIndexNormal)
++    . = ALIGN(64); *(.text.nextBoardInvNormalNC)
+     . = ALIGN(64); *(.text.nextBoardSeenNormal)
+     . = ALIGN(64); *(.text.predCount)
+     . = ALIGN(64); *(.text.predScatter)

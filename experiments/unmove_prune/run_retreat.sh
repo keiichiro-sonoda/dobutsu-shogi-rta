@@ -7,7 +7,7 @@
 #   並び: naive pruned pruned naive naive pruned
 #
 # どの本も numactl でノード0に固定する. 1本ごとに, 終わったら全局面の (勝敗, 手数) を dat/ と比べる (bench retreat).
-# 止める条件: 一致の検査が PASS で, A が2マス以上の盤が 0 でなければ回さない (gate.sh).
+# 止める条件: 一致の検査 ((a)〜(d) と, 生成器に通した判定の診断) が通り, A が2マス以上の盤が 0 でなければ回さない (gate.sh).
 #             どちらかの版が dat/ と一致しなかったら, そこで止める (食い違いの内訳はその本のログに出る).
 # 進行は logs/console_retreat.log, 本ごとの段の内訳は logs/retreat_<ラベル>.txt
 # 回す前の負荷は load average と CPU 使用率の合計だけを残す (CLAUDE.md「記録に残さないもの」)

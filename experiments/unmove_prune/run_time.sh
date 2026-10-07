@@ -6,7 +6,7 @@
 # 6つの版 (ncand / nsieve / nvisit = 素朴な版の 1〜3 段階, pcand / psieve / pvisit = 絞った版の 1〜3 段階) を
 # 1本ずつ別のプロセスで測る (.so は1つだけ開く. RTLD_LOCAL). 5周まわし, 周ごとに順番を1つずつずらす.
 # どの本も numactl でノード0に固定する. 版ごとに unknown / try / expand を1周温めてから1周測る (unmove_bench と同じ形).
-# 一致の検査が PASS で, A が2マス以上の盤が 0 でなければ測らない (gate.sh)
+# 一致の検査 ((a)〜(d) と, 生成器に通した判定の診断) が通り, A が2マス以上の盤が 0 でなければ測らない (gate.sh)
 set -euo pipefail
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)

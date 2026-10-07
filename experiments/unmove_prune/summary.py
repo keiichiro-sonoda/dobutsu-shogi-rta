@@ -11,6 +11,7 @@
    - pruned − naive を, 並び (naive pruned pruned naive naive pruned) の隣どうしの組
      (1-2, 4-3, 5-6) で取る
    - 候補の減り (naive − pruned) と, naive がキャッチ局面を理由に捨てた候補の数
+     ＋ 到達しないキャッチ局面の形の候補 (logs/diag.txt。止めたあとに足した照合)
    - 絞った版の候補のうち, 到達しない局面で捨てた割合
 換算 (秒):
    作り替えた後退解析の見積もり = pruned のループ (各本) ＋ B1′ の費用
@@ -90,6 +91,16 @@ def retreat_results() -> dict[int, tuple[str, dict[str, float]]]:
                     dict(zip(FIELDS, map(float, parts[3:]), strict=True)),
                 )
     return res
+
+
+def unreached_catch() -> int:
+    """logs/diag.txt の展開する局面の表で, 捨てた・到達しない・生成器でキャッチ局面 の数."""
+    text = (LOGS / "diag.txt").read_text(encoding="utf-8")
+    part = text[text.index("## 展開する局面") :]
+    for line in part.splitlines():
+        if line.startswith("| 捨てた | 到達しない |"):
+            return int(line.split("|")[3])
+    raise SystemExit("logs/diag.txt に展開する局面の行が無い")
 
 
 def b1x_cost() -> float:
@@ -182,9 +193,11 @@ def main() -> int:
     if by["naive"] and by["pruned"]:
         n, p = by["naive"][0], by["pruned"][0]
         cut = n["candidates"] - p["candidates"]
+        want = n["drop_catch"] + unreached_catch()
         print(
             f"- 候補の減り（naive − pruned）: {cut:,.0f}。naive でキャッチ局面を理由に捨てた候補 "
-            f"{n['drop_catch']:,.0f}（{'一致' if cut == n['drop_catch'] else '不一致'}）。"
+            f"{n['drop_catch']:,.0f} ＋ 到達しないキャッチ局面の形の候補（logs/diag.txt）"
+            f" ＝ {want:,.0f}（{'一致' if cut == want else '不一致'}）。"
             f"pruned でキャッチ局面を理由に捨てた候補 {p['drop_catch']:,.0f}"
         )
         print(

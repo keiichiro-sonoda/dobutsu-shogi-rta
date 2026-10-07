@@ -1,0 +1,5 @@
+# impl/33 の gcc 行: gcc -O2 -fno-semantic-interposition -march=native -ffunction-sections animal_shogi.c -o animal_shogi.so -Wall -fPIC -shared -Wl,-T,hot_layout.ld
+# flip.so: gcc -O2 -fno-semantic-interposition -march=native -ffunction-sections flip.c -o flip.so -Wall -fPIC -shared -Wl,-T,hot_layout.ld
+unmove.c sha256 ae8a580195df / catch.c sha256 0339cfa41aec
+prune.c sha256 0737a9aaec28
+flip.so sha256 60037ba86fe2 / bench sha256 e5be788afc7f

@@ -1,0 +1,128 @@
+=== unmove_flip 生成器の計時 開始 2026-10-07T14:03:01+00:00 ===
+flip.so sha256 60037ba86fe2 / bench sha256 e5be788afc7f
+load average: 2.79, 1.78, 1.26
+CPU 使用率 (全 CPU, 1秒): 2%
+先読み: 絞った版・反転を1回にした版とも, 候補のランクで cls の行を, 残った前任で状態の行を取り寄せる (unmove_bench と同じ)
+THP enabled: always [madvise] never
+--- r1 pcand (14:03:02) ---
+pcand	1	unknown	4030968	449.85	5.4690
+pcand	1	try	284396	533.67	7.3393
+pcand	1	expand	10000000	461.05	5.5915
+--- r1 psieve (14:03:15) ---
+psieve	1	unknown	4030968	665.27	5.0435
+psieve	1	try	284396	733.74	1.4311
+psieve	1	expand	10000000	682.28	4.8052
+--- r1 pvisit (14:03:35) ---
+pvisit	1	unknown	4030968	709.86	5.0435
+pvisit	1	try	284396	785.22	1.4311
+pvisit	1	expand	10000000	727.24	4.8052
+--- r1 fcand (14:03:57) ---
+fcand	1	unknown	4030968	458.95	5.4690
+fcand	1	try	284396	564.51	7.3393
+fcand	1	expand	10000000	475.13	5.5915
+--- r1 fsieve (14:04:10) ---
+fsieve	1	unknown	4030968	676.85	5.0435
+fsieve	1	try	284396	798.56	1.4311
+fsieve	1	expand	10000000	695.13	4.8052
+--- r1 fvisit (14:04:30) ---
+fvisit	1	unknown	4030968	723.06	5.0435
+fvisit	1	try	284396	860.38	1.4311
+fvisit	1	expand	10000000	743.70	4.8052
+--- r2 psieve (14:04:52) ---
+psieve	2	unknown	4030968	665.21	5.0435
+psieve	2	try	284396	745.83	1.4311
+psieve	2	expand	10000000	683.34	4.8052
+--- r2 pvisit (14:05:12) ---
+pvisit	2	unknown	4030968	709.50	5.0435
+pvisit	2	try	284396	791.90	1.4311
+pvisit	2	expand	10000000	726.26	4.8052
+--- r2 fcand (14:05:34) ---
+fcand	2	unknown	4030968	459.34	5.4690
+fcand	2	try	284396	558.05	7.3393
+fcand	2	expand	10000000	473.75	5.5915
+--- r2 fsieve (14:05:47) ---
+fsieve	2	unknown	4030968	676.61	5.0435
+fsieve	2	try	284396	815.11	1.4311
+fsieve	2	expand	10000000	699.20	4.8052
+--- r2 fvisit (14:06:08) ---
+fvisit	2	unknown	4030968	721.45	5.0435
+fvisit	2	try	284396	869.35	1.4311
+fvisit	2	expand	10000000	744.57	4.8052
+--- r2 pcand (14:06:30) ---
+pcand	2	unknown	4030968	447.85	5.4690
+pcand	2	try	284396	551.70	7.3393
+pcand	2	expand	10000000	461.84	5.5915
+--- r3 pvisit (14:06:43) ---
+pvisit	3	unknown	4030968	707.81	5.0435
+pvisit	3	try	284396	793.75	1.4311
+pvisit	3	expand	10000000	726.44	4.8052
+--- r3 fcand (14:07:04) ---
+fcand	3	unknown	4030968	458.73	5.4690
+fcand	3	try	284396	565.72	7.3393
+fcand	3	expand	10000000	473.08	5.5915
+--- r3 fsieve (14:07:18) ---
+fsieve	3	unknown	4030968	676.77	5.0435
+fsieve	3	try	284396	780.82	1.4311
+fsieve	3	expand	10000000	697.13	4.8052
+--- r3 fvisit (14:07:38) ---
+fvisit	3	unknown	4030968	721.53	5.0435
+fvisit	3	try	284396	848.50	1.4311
+fvisit	3	expand	10000000	744.56	4.8052
+--- r3 pcand (14:08:00) ---
+pcand	3	unknown	4030968	451.94	5.4690
+pcand	3	try	284396	536.51	7.3393
+pcand	3	expand	10000000	461.85	5.5915
+--- r3 psieve (14:08:14) ---
+psieve	3	unknown	4030968	666.51	5.0435
+psieve	3	try	284396	739.90	1.4311
+psieve	3	expand	10000000	689.27	4.8052
+--- r4 fcand (14:08:34) ---
+fcand	4	unknown	4030968	465.58	5.4690
+fcand	4	try	284396	572.09	7.3393
+fcand	4	expand	10000000	478.99	5.5915
+--- r4 fsieve (14:08:47) ---
+fsieve	4	unknown	4030968	680.91	5.0435
+fsieve	4	try	284396	803.73	1.4311
+fsieve	4	expand	10000000	700.45	4.8052
+--- r4 fvisit (14:09:08) ---
+fvisit	4	unknown	4030968	728.98	5.0435
+fvisit	4	try	284396	869.63	1.4311
+fvisit	4	expand	10000000	751.95	4.8052
+--- r4 pcand (14:09:30) ---
+pcand	4	unknown	4030968	451.90	5.4690
+pcand	4	try	284396	528.85	7.3393
+pcand	4	expand	10000000	465.60	5.5915
+--- r4 psieve (14:09:43) ---
+psieve	4	unknown	4030968	669.15	5.0435
+psieve	4	try	284396	756.73	1.4311
+psieve	4	expand	10000000	685.66	4.8052
+--- r4 pvisit (14:10:03) ---
+pvisit	4	unknown	4030968	719.54	5.0435
+pvisit	4	try	284396	786.10	1.4311
+pvisit	4	expand	10000000	734.14	4.8052
+--- r5 fsieve (14:10:25) ---
+fsieve	5	unknown	4030968	680.24	5.0435
+fsieve	5	try	284396	798.81	1.4311
+fsieve	5	expand	10000000	698.28	4.8052
+--- r5 fvisit (14:10:45) ---
+fvisit	5	unknown	4030968	725.18	5.0435
+fvisit	5	try	284396	861.00	1.4311
+fvisit	5	expand	10000000	747.52	4.8052
+--- r5 pcand (14:11:08) ---
+pcand	5	unknown	4030968	454.99	5.4690
+pcand	5	try	284396	541.42	7.3393
+pcand	5	expand	10000000	465.32	5.5915
+--- r5 psieve (14:11:21) ---
+psieve	5	unknown	4030968	675.89	5.0435
+psieve	5	try	284396	729.84	1.4311
+psieve	5	expand	10000000	691.50	4.8052
+--- r5 pvisit (14:11:41) ---
+pvisit	5	unknown	4030968	714.94	5.0435
+pvisit	5	try	284396	786.71	1.4311
+pvisit	5	expand	10000000	734.88	4.8052
+--- r5 fcand (14:12:03) ---
+fcand	5	unknown	4030968	464.97	5.4690
+fcand	5	try	284396	557.52	7.3393
+fcand	5	expand	10000000	478.83	5.5915
+thp_fault_fallback の前後差: 0
+=== unmove_flip 生成器の計時 完了 2026-10-07T14:12:17+00:00 ===

@@ -221,7 +221,7 @@ X が1手指して利きを足せるのは、動かした駒（打った駒）1�
 
 ## 結果: 計時
 
-2026-10-07 に回した。上の直しをコミットしてから、ユーザーがキャッシュを落としてメモリを詰め直し（ノード0の 2 MiB 以上の空きブロックが 1.99 GiB しかなかったため）、空きを [`logs/free_before_time.txt`](logs/free_before_time.txt) に残した（ノード0 15.90 GiB）。そのあと生成器の計時（12:00:42 開始、[`logs/console_time.log`](logs/console_time.log)）、試作の後退解析（12:11:19 開始、[`logs/console_retreat.log`](logs/console_retreat.log)）の順。`prune.so` は `4d1a352f9abc`、ベンチ本体は `1de133ba7e43`（診断を足したあとのもの）。回す前の負荷は load average 0.61 / 0.55 / 0.58 と 1.51 / 1.65 / 1.13、CPU 使用率はどちらも 2%。`thp_fault_fallback` の前後差はどちらも 0。周波数の標本の最高周波数は 2,295〜3,500 MHz（計 26 回）。集計は [`logs/summary.txt`](logs/summary.txt)。
+2026-10-07 に回した。上の直しをコミットしてから、ユーザーがキャッシュを落としてメモリを詰め直し（ノード0の 2 MiB 以上の空きブロックが 1.99 GiB しかなかったため。※この値はそのとき画面で読んだだけでファイルに残さず、あとから会話の記録から [`logs/free_before_drop.txt`](logs/free_before_drop.txt) に書き写した。測り直しはできない）、空きを [`logs/free_before_time.txt`](logs/free_before_time.txt) に残した（ノード0 15.90 GiB）。そのあと生成器の計時（12:00:42 開始、[`logs/console_time.log`](logs/console_time.log)）、試作の後退解析（12:11:19 開始、[`logs/console_retreat.log`](logs/console_retreat.log)）の順。`prune.so` は `4d1a352f9abc`、ベンチ本体は `1de133ba7e43`（診断を足したあとのもの）。回す前の負荷は load average 0.61 / 0.55 / 0.58 と 1.51 / 1.65 / 1.13、CPU 使用率はどちらも 2%。`thp_fault_fallback` の前後差はどちらも 0。周波数の標本の最高周波数は 2,295〜3,500 MHz（計 26 回）。集計は [`logs/summary.txt`](logs/summary.txt)。
 
 ### 生成器だけ（`expand` の列、ns/局面、5周の中央値と範囲。未知・トライ負けの列は [`logs/summary.txt`](logs/summary.txt)）
 

@@ -1,0 +1,109 @@
+--- a/animal_shogi.py
++++ b/animal_shogi.py
+@@ -428,6 +428,42 @@
+                 huge = int(line.split()[1])
+     return rss, huge, _pc() - t
+ 
++# 実験 perf_34: 段の境界で perf の数えを止めたり動かしたりする (perf stat / perf record の --control fifo:).
++# 段ごとに別の perf が数える (F1 は起動した perf, U_loop は -p で付けた perf). 呼び出し側が段ごとに2つの FIFO を
++# 作って開いておき, パスを PERF_CTL_<段> / PERF_ACK_<段> で渡す (番号を受け継がせると perf record が閉じる).
++# パスが無い段では何もしない (perf を付けない本は何も渡さない).
++# 書くのは "enable" / "disable" の1行で, perf の "ack" を受け取るまで待つ (数えの境界を揃えるため)
++_PERF_FDS = {
++    s: (os.open(os.environ["PERF_CTL_" + s], os.O_WRONLY), os.open(os.environ["PERF_ACK_" + s], os.O_RDONLY))
++    for s in ("F1", "U_loop") if "PERF_CTL_" + s in os.environ
++}
++
++def _perfCtl(stage: str, cmd: str) -> None:
++    fds = _PERF_FDS.get(stage)
++    if fds is None:
++        return
++    os.write(fds[0], (cmd + "\n").encode())
++    got = b""
++    while b"ack" not in got:
++        chunk = os.read(fds[1], 16)
++        if not chunk:
++            raise RuntimeError("perf の ack が来ない")
++        got += chunk
++
++# 実験 perf_34: PERF_DUMP_DIR があれば, F1 の各ラウンドの入力と U_loop の各段のフロンティアから,
++# 真ん中の連続した 4,096 局面 (足りなければ全部) を書き出す (ベンチの入力. 並びは本物のまま).
++# 書き出す本は段の秒を比べない (perf を付けた本とも付けない本とも別に回す)
++_PERF_DUMP = os.environ.get("PERF_DUMP_DIR")
++_PERF_DUMP_N = 4096
++
++def _perfDump(name: str, a, total: int) -> None:
++    k = min(_PERF_DUMP_N, len(a))
++    lo = (len(a) - k) // 2
++    with open(os.path.join(_PERF_DUMP, name + ".bin"), "wb") as f:
++        f.write(memoryview(a)[lo:lo + k].cast("B"))
++    with open(os.path.join(_PERF_DUMP, "index.tsv"), "a") as f:
++        f.write("%s\t%d\t%d\n" % (name, total, k))
++
+ def _profMark(name: str) -> None:
+     """区分の境界. 時刻と RSS と高水位とページフォルトを記録する (1ラウンドに十数回だけ)
+ 
+@@ -558,6 +594,8 @@
+     unexp_rank = queue_rank.popleft()
+     _profMark("F0")
+     _prof["n_in"] = n = len(unexp_boards)
++    if _PERF_DUMP:
++        _perfDump("f1_%03d" % _prof_round, unexp_boards, n)
+     printLogSub("探索盤面数：{:d}".format(len(unexp_boards)))
+ 
+     # 次の状態を計算し, 末端であれば勝ちか負けに振り分ける
+@@ -570,6 +608,7 @@
+     _gen0 = seenProbes()
+     _rehash0 = seenRehashes()
+     _profMark("F1_begin")
++    _perfCtl("F1", "enable")
+     # 記録 #24: 入力の写し (#23 までの arr) をやめ, 待ち行列の塊のバッファをそのまま渡す.
+     # C は入力を読むだけで, 取り出した塊はもう待ち行列に入っていない
+     # ⚠️ array("Q") が8バイトである保証は処理系依存 (#12 が array("I") でやったのと同じ)
+@@ -615,6 +654,7 @@
+         new_unexp_rank.frombytes(
+             memoryview((c_uint32 * _n_new).from_address(expandNewRankPtr())).cast("B")
+         )
++    _perfCtl("F1", "disable")
+     _profMark("F1")
+     _prof["n_win"] = len(win_boards)
+     _prof["n_lose"] = len(lose_boards)
+@@ -939,6 +979,7 @@
+     n_zero = prepZeroCount()
+     _profMark("U_init")
+     _prof["smaps_init"] = _smapsHuge()
++    _perfCtl("U_loop", "enable")
+ 
+     # 手数 nd の段は, 手数 nd − 1 で決まった局面 (フロンティア) から前任を作る. 最初のフロンティアはトライ負け
+     front_ptr = cast(try_loses.buffer_info()[0], POINTER(c_uint64)) if len(try_loses) else None
+@@ -946,6 +987,7 @@
+     cursor = 0
+     depth = 0
+     n_cand = n_kept = 0
++    n_front = 0  # 実験 perf_34: 展開した局面 (フロンティア) の延べ数
+     for _ in range(LOOP_MAX):
+         t1 = time.time()
+         printLogSub("#" * 100)
+@@ -954,6 +996,9 @@
+         if nd >= 254:
+             raise RuntimeError("手数が dtm に入らない：%d" % nd)
+         start = cursor
++        n_front += front_n
++        if _PERF_DUMP and front_n:
++            _perfDump("u_%03d" % nd, try_loses if nd == 1 else found_buf[front_lo:front_lo + front_n], front_n)
+         rc = unmoveStep(
+             front_ptr, front_n, depth % 2, nd,
+             cast(found_base + 8 * cursor, POINTER(c_uint64)), n_uk - cursor, step_out,
+@@ -985,9 +1030,12 @@
+             break
+         del wl
+         front_ptr = cast(found_base + 8 * start, POINTER(c_uint64))
++        front_lo = start
+         front_n = cursor - start
+         depth = nd
+     printLogMain("前任の候補：%d (手数が未定で残ったもの %d)" % (n_cand, n_kept))
++    _perfCtl("U_loop", "disable")
++    printLogMain("展開した局面 (perf_34)：%d" % n_front)
+     _profMark("U_loop")
+ 
+     # 最後まで未知だった盤面 (＝引き分け) を成果物として書き出す. 未知局面の列の順に拾う

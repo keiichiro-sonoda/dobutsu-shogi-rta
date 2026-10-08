@@ -13,8 +13,11 @@
 - #33: dat/ の md5 一覧の sha256 が results/33_hot_layout/bytecompare.txt の #33 の値と同じ
   (一覧の作り方は bytecompare.txt と同じ: ./<名前> を C ロケールの順に並べた md5sum の出力)
 - #34: results/34_unmove/ には並びに依る dat/ の値 (md5 一覧) が残っていない。代わりに,
-  dat/ のファイルの更新時刻が, 本走の開始 (env.txt) から 開始 ＋ 経過時間 (time.txt) の間に
-  収まることを見る (本走のあとで書き換わっていない)。md5 一覧の sha256 はこの先のために出しておく
+  dat/ のファイルの更新時刻が, 本走の計時の間に収まることを見る (本走のあとで書き換わっていない)。
+  tools/run.sh は env.txt の started を書いてからビルドし, そのあと /usr/bin/time で計時を始める。
+  だから計時の始まりは, そのとき開かれる stdout.txt (本走は何も書かないので, 更新時刻が
+  開いた時刻) とし,
+  終わりは 始まり ＋ 経過時間 (time.txt) とする。md5 一覧の sha256 はこの先のために出しておく
 どれかが合わなければ終了コード 1。
 """
 
@@ -97,16 +100,22 @@ def main() -> int:
     tm = (ROOT / "results/34_unmove/time.txt").read_text(encoding="utf-8")
     m = re.search(r"Elapsed \(wall clock\) time \(h:mm:ss or m:ss\): (?:(\d+):)?(\d+):([\d.]+)", tm)
     elapsed = int(m.group(1) or 0) * 3600 + int(m.group(2)) * 60 + float(m.group(3))
-    end = start + dt.timedelta(seconds=elapsed)
+    out = run34 / "stdout.txt"
+    if out.stat().st_size:
+        raise SystemExit("stdout.txt が空でない (更新時刻を計時の始まりに使えない)")
+    t0 = dt.datetime.fromtimestamp(out.stat().st_mtime, dt.UTC)
+    end = t0 + dt.timedelta(seconds=elapsed)
+    t_time = dt.datetime.fromtimestamp((run34 / "time.txt").stat().st_mtime, dt.UTC)
     mt = [dt.datetime.fromtimestamp(p.stat().st_mtime, dt.UTC) for p in (run34 / "dat").iterdir()]
-    # started は秒で切ってあり, time.txt の経過は bash の起動から測る。両端に 1 秒の余裕を見る
-    inside = start - dt.timedelta(seconds=1) <= min(mt) and max(mt) <= end + dt.timedelta(seconds=1)
+    # time.txt の経過は 0.01 秒単位。終わりに 1 秒の余裕を見る
+    inside = start <= t0 <= min(mt) and max(mt) <= end + dt.timedelta(seconds=1)
     ok &= inside
+    print(f"  env.txt の started: {start.isoformat()}")
+    print(f"  計時の始まり (stdout.txt を開いた時刻): {t0.isoformat()}")
+    print(f"  計時の終わり (始まり ＋ 経過 {elapsed:.2f} 秒): {end.isoformat()}")
+    print(f"  参考: time.txt の更新時刻: {t_time.isoformat()}")
     print(f"  dat/ の更新時刻: {min(mt).isoformat()} 〜 {max(mt).isoformat()}")
-    print(
-        f"  本走: {start.isoformat()} 〜 {end.isoformat()} (開始 ＋ 経過 {elapsed:.2f} 秒): "
-        f"{'収まる' if inside else '収まらない'}"
-    )
+    print(f"  dat/ の更新時刻が計時の間に: {'収まる' if inside else '収まらない'}")
     print()
     print(f"判定: {'本走の dat/ と照らせた' if ok else '照らせない'}")
     return 0 if ok else 1

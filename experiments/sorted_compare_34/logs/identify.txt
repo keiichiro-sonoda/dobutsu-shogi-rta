@@ -1,0 +1,32 @@
+== #33: 20261004-091929_33_hot_layout と results/33_hot_layout/
+  生ログ env.txt: 一致
+  生ログ time.txt: 一致
+  生ログ vmstat.tsv: 一致
+  生ログ hugefree.txt: 一致
+  生ログ freq.log: 一致
+  生ログ kaiseki_log/forward.tsv: 一致
+  生ログ kaiseki_log/forward_summary.tsv: 一致
+  生ログ kaiseki_log/retreat_summary.tsv: 一致
+  dat/: 213 ファイル / 1974425336 バイト (sizecheck.txt は 213 / 1974425336): 一致
+  dat/ の md5 一覧の sha256: f18f3075ba25f13987c520fe98cba074a5916c08ead02eb4719af2a87141b488
+  results/33_hot_layout/bytecompare.txt の #33: f18f3075ba25f13987c520fe98cba074a5916c08ead02eb4719af2a87141b488: 一致
+
+== #34: 20261008-050345_34_unmove と results/34_unmove/
+  生ログ env.txt: 一致
+  生ログ time.txt: 一致
+  生ログ vmstat.tsv: 一致
+  生ログ hugefree.txt: 一致
+  生ログ freq.log: 一致
+  生ログ kaiseki_log/forward.tsv: 一致
+  生ログ kaiseki_log/forward_summary.tsv: 一致
+  生ログ kaiseki_log/retreat_summary.tsv: 一致
+  dat/: 213 ファイル / 1974425336 バイト (sizecheck.txt は 213 / 1974425336): 一致
+  dat/ の md5 一覧の sha256: 851de9569efc5fde408bc52b79a96fc96130302b4a9bb8f00866c6e6fb57430b
+  env.txt の started: 2026-10-08T05:03:45+00:00
+  計時の始まり (stdout.txt を開いた時刻): 2026-10-08T05:03:46.160161+00:00
+  計時の終わり (始まり ＋ 経過 124.67 秒): 2026-10-08T05:05:50.830161+00:00
+  参考: time.txt の更新時刻: 2026-10-08T05:05:50.835085+00:00
+  dat/ の更新時刻: 2026-10-08T05:04:47.980629+00:00 〜 2026-10-08T05:05:50.711086+00:00
+  dat/ の更新時刻が計時の間に: 収まる
+
+判定: 本走の dat/ と照らせた

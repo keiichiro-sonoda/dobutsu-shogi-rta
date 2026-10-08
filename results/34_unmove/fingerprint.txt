@@ -1,0 +1,10 @@
+# 記録 #34 (impl/34_unmove) の成果物の照合
+# python3 tools/fingerprint_dat.py <#34 の dat/> --against oracle/fingerprint.tsv
+#
+# #34 は後退解析の採番順が変わり, 後退解析の側のファイルの中の並びが #33 と違う (bytecompare.txt).
+# だから答えは, 手数別174行 (verify.txt) と, ファイルの名前と件数 (bytecompare.txt) と, この指紋で見る.
+#
+# 指紋は深さごとの (件数, 総和 mod 2^64, XOR)。異なる集合でも同じ指紋になりうるので、
+# PASS は集合の完全一致を証明しない。
+PASS: 176 項目の指紋が一致 (oracle/fingerprint.tsv と照合) (集合の完全一致を証明するものではない)
+  照合した局面数の合計: 246,803,167

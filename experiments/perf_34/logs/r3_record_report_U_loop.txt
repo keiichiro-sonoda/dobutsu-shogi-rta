@@ -1,0 +1,8 @@
+    53.92%  animal_shogi.so                          [.] unmoveCandidates
+    35.81%  animal_shogi.so                          [.] unmoveStep
+     7.33%  animal_shogi.so                          [.] invBoard
+     0.69%  libc.so.6                                [.] __memmove_avx_unaligned_erms_rtm
+     0.54%  [unknown]                                [k] 0x(番地は伏せた)
+     0.22%  [unknown]                                [k] 0x(番地は伏せた)
+
+

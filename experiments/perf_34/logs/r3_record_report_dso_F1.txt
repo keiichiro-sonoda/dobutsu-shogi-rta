@@ -1,0 +1,5 @@
+    96.80%  animal_shogi.so                        
+     2.48%  [unknown]                              
+     0.69%  libc.so.6                              
+
+

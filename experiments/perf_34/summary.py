@@ -127,7 +127,9 @@ def report(label: str, stage: str) -> dict[str, float]:
     out: dict[str, float] = {}
     for line in (LOGS / f"{label}_report_{stage}.txt").read_text(encoding="utf-8").splitlines():
         if m := REPORT.match(line):
-            out[f"{m.group(2)} {m.group(4)}"] = float(m.group(1))
+            # カーネルの番地はログで伏せてあり, 同じ名前になる行は足し合わせる
+            key = f"{m.group(2)} {m.group(4)}"
+            out[key] = out.get(key, 0.0) + float(m.group(1))
     return out
 
 
@@ -165,6 +167,51 @@ def bench() -> None:
         rnd = [r for r in rows if r["mode"] == mode and r["input"] == "random"]
         ns_r = [float(r["ns_per_pos"]) for r in rnd]
         print(f"| {stage} | random | {mid(ns_r, '.1f')} | | {float(rnd[0]['outs_per_pos']):.3f} |")
+
+
+def bench_cycles() -> None:
+    """run_bench_cycles.sh (回したあとで足した) の集計。
+
+    プロセス全体のユーザー側のサイクルと命令から, 1局面だけのファイルで測った固定の分
+    (logs/bench_cycles_overhead.tsv の中央値) を引き, 2 × 局面数 (温める周と測る周) で割る。
+    order はラウンド (段) ごとの値に, そのラウンド (段) の局面数で重みを付けて平均する。
+    """
+    path = LOGS / "bench_cycles.tsv"
+    if not path.exists():
+        return
+    with path.open(encoding="utf-8") as f:
+        rows = list(csv.DictReader(f, delimiter="\t"))
+    with (LOGS / "bench_cycles_overhead.tsv").open(encoding="utf-8") as f:
+        oh_rows = list(csv.DictReader(f, delimiter="\t"))
+    total: dict[str, int] = {}
+    for line in (LOGS / "blocks_index.tsv").read_text(encoding="utf-8").splitlines():
+        name, n, _ = line.split("\t")
+        total[name] = int(n)
+    print()
+    print("サイクルと命令（ユーザー側。固定の分を引いて, 1局面あたり。3周の中央値と範囲）:")
+    print()
+    print("| 段 | 入力 | cycles / 局面 | instructions / 局面 | 固定の分（cycles / instructions） |")
+    print("|---|---|---|---|---|")
+    for mode, stage in (("fwd", "F1"), ("unmove", "U_loop")):
+        oh = [r for r in oh_rows if r["mode"] == mode]
+        oc = statistics.median(float(r["cycles_u"]) for r in oh)
+        oi = statistics.median(float(r["instructions_u"]) for r in oh)
+        for inp in ("order", "random"):
+            cs: list[float] = []
+            ins: list[float] = []
+            for rep in sorted({r["rep"] for r in rows}):
+                rs = [
+                    r for r in rows if r["rep"] == rep and r["mode"] == mode and r["input"] == inp
+                ]
+                w = [total[r["file"][:-4]] if inp == "order" else 1 for r in rs]
+                c = [(float(r["cycles_u"]) - oc) / (2 * int(r["n"])) for r in rs]
+                i = [(float(r["instructions_u"]) - oi) / (2 * int(r["n"])) for r in rs]
+                cs.append(sum(a * b for a, b in zip(c, w, strict=True)) / sum(w))
+                ins.append(sum(a * b for a, b in zip(i, w, strict=True)) / sum(w))
+            print(
+                f"| {stage} | {inp} | {mid(cs, '.1f')} | {mid(ins, '.1f')} "
+                f"| {oc:,.0f} / {oi:,.0f} |"
+            )
 
 
 def main() -> int:
@@ -252,6 +299,7 @@ def main() -> int:
     print("## perf を使わない照らし合わせ")
     print()
     bench()
+    bench_cycles()
     return 0
 
 

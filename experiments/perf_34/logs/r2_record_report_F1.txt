@@ -1,0 +1,9 @@
+    54.69%  animal_shogi.so   [.] nextBoardInvNormalNC
+    38.60%  animal_shogi.so   [.] nextBoardSeenNormal
+     2.49%  animal_shogi.so   [.] expandRound
+     0.94%  animal_shogi.so   [.] invBoard
+     0.61%  libc.so.6         [.] __memmove_avx_unaligned_erms_rtm
+     0.56%  [unknown]         [k] 0x(番地は伏せた)
+     0.53%  [unknown]         [k] 0x(番地は伏せた)
+
+

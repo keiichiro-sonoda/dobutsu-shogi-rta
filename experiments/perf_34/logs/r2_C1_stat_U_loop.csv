@@ -1,0 +1,7 @@
+# started on Thu Oct  8 15:35:47 2026
+
+188581761301,,cycles,56143966535,100.00,,
+310530567668,,instructions,56143966535,100.00,1.65,insn per cycle
+347008285,,mem_load_uops_retired.l1_miss,56143966535,100.00,,
+100616955,,mem_load_uops_retired.l2_miss,56143966535,100.00,,
+7600710,,mem_load_uops_retired.l3_miss,56143966535,100.00,,

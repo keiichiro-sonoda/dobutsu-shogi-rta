@@ -1,0 +1,10 @@
+# 帰属の本の標本の間引き (perf report --stats の抜き出し). kernel.perf_event_max_sample_rate = 25000
+attr_base_r1:  THROTTLE events: 156 ( 3.7%); UNTHROTTLE events: 155 ( 3.6%); SAMPLE events: 3940 (92.2%); SAMPLE events: 3940;
+attr_base_r2:  THROTTLE events: 156 ( 3.6%); UNTHROTTLE events: 155 ( 3.6%); SAMPLE events: 3944 (92.2%); SAMPLE events: 3944;
+attr_base_r3:  THROTTLE events: 154 ( 3.6%); UNTHROTTLE events: 153 ( 3.6%); SAMPLE events: 3897 (92.2%); SAMPLE events: 3897;
+attr_bb_nibble_r1:  THROTTLE events: 117 ( 3.6%); UNTHROTTLE events: 116 ( 3.6%); SAMPLE events: 2972 (92.1%); SAMPLE events: 2972;
+attr_bb_nibble_r2:  THROTTLE events: 121 ( 3.6%); UNTHROTTLE events: 120 ( 3.6%); SAMPLE events: 3072 (92.1%); SAMPLE events: 3072;
+attr_bb_nibble_r3:  THROTTLE events: 121 ( 3.6%); UNTHROTTLE events: 120 ( 3.6%); SAMPLE events: 3071 (92.1%); SAMPLE events: 3071;
+attr_bb_pext_r1:  THROTTLE events: 121 ( 3.6%); UNTHROTTLE events: 120 ( 3.6%); SAMPLE events: 3071 (92.1%); SAMPLE events: 3071;
+attr_bb_pext_r2:  THROTTLE events: 125 ( 3.6%); UNTHROTTLE events: 124 ( 3.6%); SAMPLE events: 3177 (92.2%); SAMPLE events: 3177;
+attr_bb_pext_r3:  THROTTLE events: 121 ( 3.6%); UNTHROTTLE events: 121 ( 3.6%); SAMPLE events: 3078 (92.1%); SAMPLE events: 3078;

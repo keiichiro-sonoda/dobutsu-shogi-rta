@@ -14,8 +14,8 @@
   (perf_34 の T1 の cycles の中央値 × 局面数 ÷ perf_branch_34 の base の F1 の秒).
   見込みであって効果量ではない
 - 束ごとの帰属 (logs/attr_<腕>_r<回>.tsv): 予測ミスの標本 (周期 211) を, base は perf_branch_34 の
-  categories.tsv, bb_* は categories_<腕>.tsv で束ねる.
-  1局面あたり ＝ 標本 × 211 ÷ (2 × order のブロックの局面数)
+  categories.tsv, bb_* は categories_<腕>.tsv で束ねる. 標本は間引かれたので割合だけを使い,
+  1局面あたり ＝ 束の割合 × その腕のベンチの order の予測ミス (回したあとで決めた)
 """
 
 from __future__ import annotations
@@ -34,7 +34,6 @@ ARMS = ("base", "bb_nibble", "bb_pext")
 INPUTS = ("order", "random", "catch", "other")
 EVS = ("cycles_u", "instructions_u", "br_inst_u", "br_misp_u")
 N_F1 = 246_803_167
-ATTR_PERIOD = 211
 
 
 def mid(xs: list[float], fmt: str) -> str:
@@ -192,35 +191,44 @@ def main() -> int:
         print(f"- bb_pext − bb_nibble: 範囲 {min(c):+.1f}〜{max(c):+.1f} → {v}")
     print()
 
-    total, _ = weights()
-    n_order = sum(
-        total[r["file"][:-4]]
-        for r in rows
-        if r["rep"] == "1" and r["arm"] == "base" and r["input"] == "order"
-    )
-    # 帰属の本は order の 74 ブロックを1プロセスで回す (温める周と測る周で2回ずつ)
-    blocks_n = 0
-    for r in rows:
-        if r["rep"] == "1" and r["arm"] == "base" and r["input"] == "order":
-            blocks_n += int(r["n"])
-    n_proc = 2 * blocks_n
-    print(
-        f"## 束ごとの帰属（予測ミスの標本 × {ATTR_PERIOD} ÷ ベンチで回した局面 {n_proc:,}。"
-        "3回の中央値と範囲）"
-    )
+    # キャッチの先行判定をこの上に足したときに消しうる分の上限: キャッチ局面1つあたりの予測ミス
+    # (catch 入力, 7周の中央値) × キャッチ局面の数 (perf_branch_34 の base の forward.tsv の
+    # n_win の合計) × 15〜20 サイクル
+    with (P34B / "logs" / "base_forward.tsv").open(encoding="utf-8") as fh:
+        n_catch = sum(int(r["n_win"]) for r in csv.DictReader(fh, delimiter="\t"))
+    print(f"### キャッチ局面で生成器が出している予測ミス（キャッチ局面 {n_catch:,}）")
+    print()
+    for a in arms:
+        cm = statistics.median(pp[(r, a, "catch")]["br_misp_u"] for r in reps)
+        cc = statistics.median(pp[(r, a, "catch")]["cycles_u"] for r in reps)
+        print(
+            f"- {a}: {cm:.2f} / 局面 × {n_catch:,} ＝ {cm * n_catch / 1e9:.3f}×10^9。"
+            f"1回 15〜20 サイクルで {cm * n_catch * 15 / (f * 1e9):.2f}〜"
+            f"{cm * n_catch * 20 / (f * 1e9):.2f} 秒（予測ミスを全部消せた場合の上限）。"
+            f"キャッチ局面の cycles は {cc:.1f} / 局面 ＝ {cc * n_catch / (f * 1e9):.2f} 秒"
+        )
+    print()
+
+    # 帰属: 標本の割合だけを使う. 周期 211 では標本が毎秒 25,000 の上限
+    # (kernel.perf_event_max_sample_rate) に当たって間引かれた
+    # (perf report --stats の THROTTLE) ので,
+    # 標本 × 211 は予測ミスの数にならない. 1局面あたりは「束の割合 × その腕のベンチの order の
+    # 予測ミス (7周の中央値)」で出す (回したあとで決めた)
+    print("## 束ごとの帰属（予測ミスの標本の割合。3回の中央値と範囲）")
     print()
     print(
-        f"（order の重み付きの局面数の合計は {n_order:,}。"
-        "帰属は重みを付けずにブロックを並べて回した値）"
+        "1局面あたりは、割合 × その腕のベンチの order の予測ミス（7周の中央値）。"
+        "標本は間引かれたので、標本の数からは出さない"
     )
     print()
     for a in arms:
         cats = categories(a)
+        misp_order = statistics.median(pp[(r, a, "order")]["br_misp_u"] for r in reps)
         per: dict[str, list[float]] = defaultdict(lambda: [0.0, 0.0, 0.0])
         tot = []
-        for i, r in enumerate(("r1", "r2", "r3")):
+        for i in range(3):
             t = 0
-            for row in table(LOGS / f"attr_{a}_r{r[1]}.tsv"):
+            for row in table(LOGS / f"attr_{a}_r{i + 1}.tsv"):
                 n = int(row["samples"])
                 t += n
                 if row["where"] != "animal_shogi.so":
@@ -231,13 +239,14 @@ def main() -> int:
                     b = cats.get(int(row["line"]), "対応表に無い行")
                 per[b][i] += n
             tot.append(t)
-        print(f"### {a}（予測ミス / 局面 {mid([t * ATTR_PERIOD / n_proc for t in tot], '.2f')}）")
+        samples = ", ".join(f"{x:,}" for x in tot)
+        print(f"### {a}（標本 {samples}。order の予測ミス {misp_order:.2f} / 局面）")
         print()
         print("| 束 | 割合 | 予測ミス / 局面 |")
         print("|---|---|---|")
         for b in sorted(per, key=lambda k: -statistics.median(per[k])):
             sh = [per[b][i] / tot[i] for i in range(3)]
-            pm = [per[b][i] * ATTR_PERIOD / n_proc for i in range(3)]
+            pm = [x * misp_order for x in sh]
             print(f"| {b} | {mid(sh, '.1%')} | {mid(pm, '.2f')} |")
         print()
     return 0

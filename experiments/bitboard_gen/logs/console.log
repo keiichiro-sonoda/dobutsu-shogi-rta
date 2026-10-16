@@ -1,0 +1,44 @@
+=== bitboard_gen 開始 2026-10-16T17:00:55+00:00 ===
+perf version 6.8.12
+kernel.perf_event_paranoid = 1
+--- 回す前の負荷 ---
+load average: 0.91, 1.02, 0.98
+CPU 使用率 (全 CPU, 1秒): 1%
+=== 開始 build 2026-10-16T17:00:56+00:00 ===
+base (so sha256 572517006344, -g の .text は一致, 警告 0)
+base: bench.so sha256 4c3d695e3ff1 / bench sha256 426e09faeb0d
+bb_nibble (so sha256 3b37ebdc6230, -g の .text は一致, 警告 0)
+bb_nibble: bench.so sha256 839835c469f4 / bench sha256 426e09faeb0d
+bb_pext (so sha256 4b36189f99d0, -g の .text は一致, 警告 0)
+bb_pext: bench.so sha256 a331e2a121b6 / bench sha256 426e09faeb0d
+base の bench.so は perf_branch_34 のものとバイト一致
+入力: #34 本走の dat/ の 213 ファイル
+=== 開始 verify_bb_nibble 2026-10-16T17:01:12+00:00 ===
+局面 246803167 (キャッチ 140298614 / トライ負け 7018985 / 未知 99485568) / 不一致 0
+verify_bb_nibble exit=0
+=== 完了 verify_bb_nibble 2026-10-16T17:02:14+00:00 ===
+=== 開始 verify_bb_pext 2026-10-16T17:02:14+00:00 ===
+局面 246803167 (キャッチ 140298614 / トライ負け 7018985 / 未知 99485568) / 不一致 0
+verify_bb_pext exit=0
+=== 完了 verify_bb_pext 2026-10-16T17:03:13+00:00 ===
+=== 開始 bench 2026-10-16T17:03:13+00:00 ===
+周 1 完了 2026-10-16T17:03:43+00:00
+周 2 完了 2026-10-16T17:04:13+00:00
+周 3 完了 2026-10-16T17:04:43+00:00
+周 4 完了 2026-10-16T17:05:13+00:00
+周 5 完了 2026-10-16T17:05:42+00:00
+周 6 完了 2026-10-16T17:06:12+00:00
+周 7 完了 2026-10-16T17:06:42+00:00
+=== 完了 bench 2026-10-16T17:06:42+00:00 ===
+=== 開始 attr 2026-10-16T17:06:42+00:00 ===
+attr base r1: # samples	3940
+attr bb_nibble r1: # samples	2972
+attr bb_pext r1: # samples	3071
+attr base r2: # samples	3944
+attr bb_nibble r2: # samples	3072
+attr bb_pext r2: # samples	3177
+attr base r3: # samples	3897
+attr bb_nibble r3: # samples	3071
+attr bb_pext r3: # samples	3078
+=== 完了 attr 2026-10-16T17:06:45+00:00 ===
+=== bitboard_gen 完了 2026-10-16T17:06:45+00:00 ===

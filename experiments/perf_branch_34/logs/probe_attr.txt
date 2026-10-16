@@ -1,0 +1,48 @@
+# 標本の帰属の確かめ (2026-10-16T10:41:16+00:00)
+perf version 6.8.12
+kernel.perf_event_paranoid = 1
+cpu/caps/max_precise = 3
+cpu/caps/branches (LBR の深さ) = 16
+# attr の分岐のまわり (objdump)
+1209:	test   %edx,%edx
+120b:	jle    125c <probe_target+0x24>
+1211:	test   %rsi,%rsi
+1214:	je     1250 <probe_target+0x18>
+122b:	test   $0x1,%rsi
+0000000000001232 <probe_jz>:
+1232:	je     1238 <probe_target>
+0000000000001234 <probe_next>:
+1234:	add    $0x1,%rax
+0000000000001238 <probe_target>:
+1238:	add    $0x1,%rcx
+123c:	cmp    %r8,%rcx
+123f:	jne    1228 <work+0x28>
+1241:	add    $0x1,%r9d
+1245:	cmp    %edx,%r9d
+1248:	jne    1220 <work+0x20>
+
+## perf record -e br_misp_retired.all_branches_pebs:up -c 10007
+事象 br_misp_retired.all_branches_pebs:up: 標本 9775
+  次の命令 (probe_next): 5196 (53.2%)
+  飛び先 (probe_target): 4579 (46.8%)
+branch_of() が probe_jz に対応づけた割合: 0.0%
+
+## perf record -e br_misp_retired.all_branches_pebs:upp -c 10007
+事象 br_misp_retired.all_branches_pebs:upp: 標本 9774
+  融合した直前の比較: 5124 (52.4%)
+  分岐そのもの (probe_jz): 4650 (47.6%)
+branch_of() が probe_jz に対応づけた割合: 100.0%
+
+## perf record -e br_inst_retired.all_branches_pebs:upp -c 100003
+事象 br_inst_retired.all_branches_pebs:upp: 標本 3932
+  ほか (jne @0x123f): 3421 (87.0%)
+  融合した直前の比較: 256 (6.5%)
+  分岐そのもの (probe_jz): 254 (6.5%)
+  ほか (jne @0x1248): 1 (0.0%)
+branch_of() が probe_jz に対応づけた割合: 13.0%
+
+## perf record -j any,u -e cycles:u -c 100003 (LBR)
+LBR: 記録 354928 / 組み立てた区間 332728
+probe_jz: 取られた 118299 (うち外れ 61753) / 取られなかった 111453 / 計 229752
+ループの戻り (0x123f): 計 236531
+probe_jz の計 ÷ ループの戻りの計: 0.971

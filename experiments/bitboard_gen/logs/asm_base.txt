@@ -1,0 +1,30 @@
+# base: nextBoardInvNormalNC の機械語 (-g の .so。.text は -g なしと一致)
+命令 374 / tzcnt 1 / pext 0 / 条件分岐 37
+-Wall -Wextra の警告: 0
+条件分岐の行 (数 / 行 / 文):
+  3	100	if (col_A <= col_C) return b;
+  1	616	for (int sq = 0; sq < 12; sq++) {
+  2	622	for (int src = 0; src < 48; src += 4) {
+  1	623	if (!(koma = getKoma(b, src))) {  ← 今の分岐の形 ['getKoma(b, src))']
+  1	625	} else if (koma == CHICK2) {  ← 今の分岐の形 ['(koma == CHICK2)']
+  1	626	if (src % 16 == 0) continue;  ← 今の分岐の形 ['% 16 ==']
+  1	628	if ((dst_koma = getKoma(b, dst))) {  ← 今の分岐の形 ['if ((dst_koma']
+  1	629	if (dst_koma & 0b1000) continue;  ← 今の分岐の形 ['& 0b1000']
+  1	630	if (dst_koma == LION1) return 0;
+  1	633	nb ^= (b >> own_p) & 0b11 ? (u_long)0b11 << own_p : (u_long)0b01 << own_p;
+  1	643	} else if (koma == LION1) {  ← 今の分岐の形 ['(koma == LION1)']
+  5	646	switch (koma) {  ← 今の分岐の形 ['switch']
+  1	655	for (i = 0; i < moves_num; i++) {
+  1	657	if (dst < 0 || 44 < dst) continue;  ← 今の分岐の形 ['dst < 0']
+  2	659	if (src_mod16 == 0 && dst_mod16 == 12) continue;  ← 今の分岐の形 ['_mod16 ==']
+  2	660	if (src_mod16 == 12 && dst_mod16 == 0) continue;  ← 今の分岐の形 ['_mod16 ==']
+  1	661	if ((dst_koma = getKoma(b, dst))) {  ← 今の分岐の形 ['if ((dst_koma']
+  1	662	if (dst_koma & 0b1000) continue;  ← 今の分岐の形 ['& 0b1000']
+  1	663	if (dst_koma == LION1) return 0;
+  1	666	nb ^= (b >> own_p) & 0b11 ? (u_long)0b11 << own_p : (u_long)0b01 << own_p;
+  2	670	if (koma == LION2) c = (att1 >> (dst / 4)) & 1u;
+  1	677	if (try_flag) return -1;
+  1	679	for (i = 0; i < 3; i++) {
+  1	682	if (!own_num) continue;
+  2	685	for (j = 0; j < emp_num; j++) {
+  1	692	}

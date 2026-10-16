@@ -1,0 +1,32 @@
+--- trial_lbr の前のノード0: 2 MiB 以上の空きブロック 22.43 GiB (しきい値 16) ---
+=== 開始 trial_lbr (lbr: perf_branch_34 (-g の so sha256 fd9707511891, -g なし 572517006344 = #34 本走, .text.hot_layout と .text は一致)) 2026-10-16T11:03:27+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 trial_lbr 2026-10-16T11:05:30+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:03.42
+	Maximum resident set size (kbytes): 3555296
+	Minor (reclaiming a frame) page faults: 1470021
+全探索の所要時間：63.8233 秒 / 後退解析の所要時間：59.2020 秒
+F1 # entries	1547745
+F1 # ranges	1439561
+U_loop # entries	1482880
+U_loop # ranges	1379541
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+1. 全探索の側のファイル 31 個: #33 本走とバイト一致しないもの 0 個 []
+2. ファイル 213 個 (#33 本走は 213 個). 名前の集合: 同じ / 件数の違うファイル 0 個 []
+3. 指紋: 照合した局面数の合計: 246,803,167 (終了コード 0)
+参考: 後退解析の側のファイル 182 個のうち, #33 本走とバイトまで同じもの 1 個
+答えの検査: PASS
+--- 件数の列を #34 本走と照合 ---
+74 ラウンド（#34 は 74）/ 件数の列 一致
+--- 参考: dat/ の md5 一覧の sha256 (#34 本走は 851de9569efc. 判定には使わない) ---
+md5_list_sha256 851de9569efc5fde408bc52b79a96fc96130302b4a9bb8f00866c6e6fb57430b
+=== 完了 trial_lbr 2026-10-16T11:07:15+00:00 ===
+exit=0

@@ -1,0 +1,230 @@
+=== perf_branch_34 開始 2026-10-16T11:07:27+00:00 ===
+--- perf と設定 ---
+perf version 6.8.12
+kernel.perf_event_paranoid = 1
+kernel.nmi_watchdog = 1
+--- 回す前の負荷 ---
+load average: 1.15, 1.70, 1.38
+CPU 使用率 (全 CPU, 1秒): 1%
+--- 回す前のノード0のメモリ (/proc/buddyinfo と meminfo) ---
+Node 0, zone      DMA      0      0      0      0      0      0      0      0      1      1      2 
+Node 0, zone    DMA32    529    383    261    184    126     68     43     23     15     22    759 
+Node 0, zone   Normal   3836   6184   5496   3561   2392   1186   3099   2429   1788   1392   4280 
+Node 0 MemFree:        28056288 kB
+Node 0 FilePages:       1380216 kB
+--- base の前のノード0: 2 MiB 以上の空きブロック 22.46 GiB (しきい値 16) ---
+=== 開始 base (base: perf_branch_34 (-g の so sha256 5799faf493f8, -g なし 572517006344 = #34 本走, .text.hot_layout と .text は一致)) 2026-10-16T11:07:30+00:00 ===
+=== 終了 base 2026-10-16T11:09:31+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:01.06
+	Maximum resident set size (kbytes): 3555284
+	Minor (reclaiming a frame) page faults: 1467661
+全探索の所要時間：62.1424 秒 / 後退解析の所要時間：58.7858 秒
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+1. 全探索の側のファイル 31 個: #33 本走とバイト一致しないもの 0 個 []
+2. ファイル 213 個 (#33 本走は 213 個). 名前の集合: 同じ / 件数の違うファイル 0 個 []
+3. 指紋: 照合した局面数の合計: 246,803,167 (終了コード 0)
+参考: 後退解析の側のファイル 182 個のうち, #33 本走とバイトまで同じもの 1 個
+答えの検査: PASS
+--- 件数の列を #34 本走と照合 ---
+74 ラウンド（#34 は 74）/ 件数の列 一致
+--- 参考: dat/ の md5 一覧の sha256 (#34 本走は 851de9569efc. 判定には使わない) ---
+md5_list_sha256 851de9569efc5fde408bc52b79a96fc96130302b4a9bb8f00866c6e6fb57430b
+=== 完了 base 2026-10-16T11:10:30+00:00 ===
+--- r1_pebs の前のノード0: 2 MiB 以上の空きブロック 22.39 GiB (しきい値 16) ---
+=== 開始 r1_pebs (pebs: perf_branch_34 (-g の so sha256 c69d756639c5, -g なし 572517006344 = #34 本走, .text.hot_layout と .text は一致)) 2026-10-16T11:10:32+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r1_pebs 2026-10-16T11:12:37+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:04.27
+	Maximum resident set size (kbytes): 3555884
+	Minor (reclaiming a frame) page faults: 1469827
+全探索の所要時間：64.4047 秒 / 後退解析の所要時間：59.5255 秒
+F1 # samples	299872
+U_loop # samples	271172
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+1. 全探索の側のファイル 31 個: #33 本走とバイト一致しないもの 0 個 []
+2. ファイル 213 個 (#33 本走は 213 個). 名前の集合: 同じ / 件数の違うファイル 0 個 []
+3. 指紋: 照合した局面数の合計: 246,803,167 (終了コード 0)
+参考: 後退解析の側のファイル 182 個のうち, #33 本走とバイトまで同じもの 1 個
+答えの検査: PASS
+--- 件数の列を #34 本走と照合 ---
+74 ラウンド（#34 は 74）/ 件数の列 一致
+--- 参考: dat/ の md5 一覧の sha256 (#34 本走は 851de9569efc. 判定には使わない) ---
+md5_list_sha256 851de9569efc5fde408bc52b79a96fc96130302b4a9bb8f00866c6e6fb57430b
+=== 完了 r1_pebs 2026-10-16T11:13:36+00:00 ===
+--- r1_lbr の前のノード0: 2 MiB 以上の空きブロック 22.34 GiB (しきい値 16) ---
+=== 開始 r1_lbr (lbr: perf_branch_34 (-g の so sha256 96bf324d75f3, -g なし 572517006344 = #34 本走, .text.hot_layout と .text は一致)) 2026-10-16T11:13:38+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r1_lbr 2026-10-16T11:15:43+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:04.41
+	Maximum resident set size (kbytes): 3555384
+	Minor (reclaiming a frame) page faults: 1469928
+全探索の所要時間：64.4103 秒 / 後退解析の所要時間：59.6870 秒
+F1 # entries	1546155
+F1 # ranges	1437807
+U_loop # entries	1485776
+U_loop # ranges	1382119
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+1. 全探索の側のファイル 31 個: #33 本走とバイト一致しないもの 0 個 []
+2. ファイル 213 個 (#33 本走は 213 個). 名前の集合: 同じ / 件数の違うファイル 0 個 []
+3. 指紋: 照合した局面数の合計: 246,803,167 (終了コード 0)
+参考: 後退解析の側のファイル 182 個のうち, #33 本走とバイトまで同じもの 1 個
+答えの検査: PASS
+--- 件数の列を #34 本走と照合 ---
+74 ラウンド（#34 は 74）/ 件数の列 一致
+--- 参考: dat/ の md5 一覧の sha256 (#34 本走は 851de9569efc. 判定には使わない) ---
+md5_list_sha256 851de9569efc5fde408bc52b79a96fc96130302b4a9bb8f00866c6e6fb57430b
+=== 完了 r1_lbr 2026-10-16T11:17:22+00:00 ===
+--- r2_lbr の前のノード0: 2 MiB 以上の空きブロック 22.30 GiB (しきい値 16) ---
+=== 開始 r2_lbr (lbr: perf_branch_34 (-g の so sha256 64bd2d00b8ab, -g なし 572517006344 = #34 本走, .text.hot_layout と .text は一致)) 2026-10-16T11:17:24+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r2_lbr 2026-10-16T11:19:28+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:03.94
+	Maximum resident set size (kbytes): 3555484
+	Minor (reclaiming a frame) page faults: 1470042
+全探索の所要時間：64.0736 秒 / 後退解析の所要時間：59.5622 秒
+F1 # entries	1543920
+F1 # ranges	1436022
+U_loop # entries	1480352
+U_loop # ranges	1377322
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+1. 全探索の側のファイル 31 個: #33 本走とバイト一致しないもの 0 個 []
+2. ファイル 213 個 (#33 本走は 213 個). 名前の集合: 同じ / 件数の違うファイル 0 個 []
+3. 指紋: 照合した局面数の合計: 246,803,167 (終了コード 0)
+参考: 後退解析の側のファイル 182 個のうち, #33 本走とバイトまで同じもの 1 個
+答えの検査: PASS
+--- 件数の列を #34 本走と照合 ---
+74 ラウンド（#34 は 74）/ 件数の列 一致
+--- 参考: dat/ の md5 一覧の sha256 (#34 本走は 851de9569efc. 判定には使わない) ---
+md5_list_sha256 851de9569efc5fde408bc52b79a96fc96130302b4a9bb8f00866c6e6fb57430b
+=== 完了 r2_lbr 2026-10-16T11:21:08+00:00 ===
+--- r2_pebs の前のノード0: 2 MiB 以上の空きブロック 22.26 GiB (しきい値 16) ---
+=== 開始 r2_pebs (pebs: perf_branch_34 (-g の so sha256 a8626837a57f, -g なし 572517006344 = #34 本走, .text.hot_layout と .text は一致)) 2026-10-16T11:21:10+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r2_pebs 2026-10-16T11:23:15+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:05.53
+	Maximum resident set size (kbytes): 3555232
+	Minor (reclaiming a frame) page faults: 1469673
+全探索の所要時間：65.0623 秒 / 後退解析の所要時間：60.1238 秒
+F1 # samples	300044
+U_loop # samples	270180
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+1. 全探索の側のファイル 31 個: #33 本走とバイト一致しないもの 0 個 []
+2. ファイル 213 個 (#33 本走は 213 個). 名前の集合: 同じ / 件数の違うファイル 0 個 []
+3. 指紋: 照合した局面数の合計: 246,803,167 (終了コード 0)
+参考: 後退解析の側のファイル 182 個のうち, #33 本走とバイトまで同じもの 1 個
+答えの検査: PASS
+--- 件数の列を #34 本走と照合 ---
+74 ラウンド（#34 は 74）/ 件数の列 一致
+--- 参考: dat/ の md5 一覧の sha256 (#34 本走は 851de9569efc. 判定には使わない) ---
+md5_list_sha256 851de9569efc5fde408bc52b79a96fc96130302b4a9bb8f00866c6e6fb57430b
+=== 完了 r2_pebs 2026-10-16T11:24:18+00:00 ===
+--- r3_pebs の前のノード0: 2 MiB 以上の空きブロック 22.24 GiB (しきい値 16) ---
+=== 開始 r3_pebs (pebs: perf_branch_34 (-g の so sha256 7caa0b9b0c90, -g なし 572517006344 = #34 本走, .text.hot_layout と .text は一致)) 2026-10-16T11:24:20+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r3_pebs 2026-10-16T11:26:24+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:04.54
+	Maximum resident set size (kbytes): 3555540
+	Minor (reclaiming a frame) page faults: 1469857
+全探索の所要時間：64.4201 秒 / 後退解析の所要時間：59.7735 秒
+F1 # samples	300010
+U_loop # samples	270368
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+1. 全探索の側のファイル 31 個: #33 本走とバイト一致しないもの 0 個 []
+2. ファイル 213 個 (#33 本走は 213 個). 名前の集合: 同じ / 件数の違うファイル 0 個 []
+3. 指紋: 照合した局面数の合計: 246,803,167 (終了コード 0)
+参考: 後退解析の側のファイル 182 個のうち, #33 本走とバイトまで同じもの 1 個
+答えの検査: PASS
+--- 件数の列を #34 本走と照合 ---
+74 ラウンド（#34 は 74）/ 件数の列 一致
+--- 参考: dat/ の md5 一覧の sha256 (#34 本走は 851de9569efc. 判定には使わない) ---
+md5_list_sha256 851de9569efc5fde408bc52b79a96fc96130302b4a9bb8f00866c6e6fb57430b
+=== 完了 r3_pebs 2026-10-16T11:27:26+00:00 ===
+--- r3_lbr の前のノード0: 2 MiB 以上の空きブロック 22.22 GiB (しきい値 16) ---
+=== 開始 r3_lbr (lbr: perf_branch_34 (-g の so sha256 46463e0a7aa4, -g なし 572517006344 = #34 本走, .text.hot_layout と .text は一致)) 2026-10-16T11:27:28+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r3_lbr 2026-10-16T11:29:32+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:03.59
+	Maximum resident set size (kbytes): 3554972
+	Minor (reclaiming a frame) page faults: 1470043
+全探索の所要時間：63.8490 秒 / 後退解析の所要時間：59.4502 秒
+F1 # entries	1549529
+F1 # ranges	1441267
+U_loop # entries	1486912
+U_loop # ranges	1383337
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+1. 全探索の側のファイル 31 個: #33 本走とバイト一致しないもの 0 個 []
+2. ファイル 213 個 (#33 本走は 213 個). 名前の集合: 同じ / 件数の違うファイル 0 個 []
+3. 指紋: 照合した局面数の合計: 246,803,167 (終了コード 0)
+参考: 後退解析の側のファイル 182 個のうち, #33 本走とバイトまで同じもの 1 個
+答えの検査: PASS
+--- 件数の列を #34 本走と照合 ---
+74 ラウンド（#34 は 74）/ 件数の列 一致
+--- 参考: dat/ の md5 一覧の sha256 (#34 本走は 851de9569efc. 判定には使わない) ---
+md5_list_sha256 851de9569efc5fde408bc52b79a96fc96130302b4a9bb8f00866c6e6fb57430b
+=== 完了 r3_lbr 2026-10-16T11:31:15+00:00 ===
+=== 開始 bench 2026-10-16T11:31:15+00:00 ===
+# impl/34 の gcc 行: gcc -O2 -fno-semantic-interposition -march=native -ffunction-sections animal_shogi.c -o animal_shogi.so -Wall -fPIC -shared -Wl,-T,hot_layout.ld
+# bench.so: gcc -O2 -fno-semantic-interposition -march=native -ffunction-sections glue.c -o bench.so -Wall -fPIC -shared -Wl,-T,hot_layout.ld
+bench.so sha256 4c3d695e3ff1 / bench sha256 426e09faeb0d
+ブロック 74 個 / 局面 269694 / キャッチ局面 152874 (56.7%)
+周 1 完了 2026-10-16T11:31:34+00:00
+周 2 完了 2026-10-16T11:31:51+00:00
+周 3 完了 2026-10-16T11:32:08+00:00
+=== 完了 bench 2026-10-16T11:32:08+00:00 ===
+=== perf_branch_34 完了 2026-10-16T11:32:08+00:00 ===

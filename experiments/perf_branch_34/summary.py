@@ -311,7 +311,10 @@ def main() -> int:
 
         # キャッチの return 0 の行
         if st == "F1":
-            catch_lines = {ln for ln, (b, _) in cats.items() if b == "キャッチ"}
+            seen_lines = {v[2] for v in info.values()}
+            catch_lines = {
+                ln for ln, (b, _) in cats.items() if b == "キャッチ" and ln in seen_lines
+            }
             cs = [
                 sum(v for k, v in misp[r].items() if k in info and info[k][2] in catch_lines)
                 / totals[r]
@@ -394,6 +397,28 @@ def bench() -> None:
             f"予測ミスの差 × 15〜20 サイクルが cycles の差に占める割合 "
             f"{mid(ex15, '.0%')}〜{mid(ex20, '.0%')}"
         )
+    # キャッチの先行判定が消しうる量の上限: キャッチ局面1つあたりの (生成器だけの) 予測ミス
+    # × キャッチ局面の数. キャッチ局面の数は base の forward.tsv の n_win の合計
+    # (F1 で勝ちに振り分けた局面 ＝ キャッチ局面)
+    with (LOGS / "base_forward.tsv").open(encoding="utf-8") as f:
+        n_catch = sum(int(r["n_win"]) for r in csv.DictReader(f, delimiter="\t"))
+    n_f1 = positions("base")["F1"]
+    freq_f1 = p34_per_pos("F1", "T1", "cycles") * n_f1 / stage_sec("base")["F1"]
+    cm = res[("F1", "catch")]["br_misp_u"]
+    rm = [x * n_catch for x in cm]
+    real = [
+        sum(int(r["samples"]) for r in table(LOGS / f"{rp}_pebs_F1_misp.tsv")) * PERIOD
+        for rp in REPS
+    ]
+    print(
+        f"- キャッチ局面 {n_catch:,}（F1 の {n_catch / n_f1:.1%}）× 生成器だけの予測ミス "
+        f"{mid(cm, '.2f')} ＝ {mid([x / 1e9 for x in rm], '.3f')}×10^9"
+        f"（F1 の予測ミスの推定 {statistics.median(real) / 1e9:.3f}×10^9 の "
+        f"{statistics.median(rm) / statistics.median(real):.1%}）。"
+        f"1回 15〜20 サイクルで {statistics.median(rm) * 15 / freq_f1:.2f}〜"
+        f"{statistics.median(rm) * 20 / freq_f1:.2f} 秒"
+        "（全部消せた場合の上限。先行判定そのものの分岐は数えていない）"
+    )
     k = sum(v[1] for v in split.values())
     n = sum(v[0] for v in split.values())
     c, ot = res[("F1", "catch")], res[("F1", "other")]

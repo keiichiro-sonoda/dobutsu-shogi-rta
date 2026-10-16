@@ -1,0 +1,11 @@
+rep	input	mode	file	n	cycles_u	instructions_u	br_misp_u	br_inst_u
+1	one	fwd	one_fwd.bin	1	2752627	5787981	11473	624769
+1	one	unmove	one_unmove.bin	1	2715843	5799749	11768	626560
+2	one	fwd	one_fwd.bin	1	2740488	5788047	11297	624786
+2	one	unmove	one_unmove.bin	1	2719260	5799870	11821	626589
+3	one	fwd	one_fwd.bin	1	2743141	5787979	11420	624772
+3	one	unmove	one_unmove.bin	1	2744943	5799844	11762	626579
+4	one	fwd	one_fwd.bin	1	2746053	5787995	11511	624771
+4	one	unmove	one_unmove.bin	1	2780044	5799868	11829	626587
+5	one	fwd	one_fwd.bin	1	2724052	5787979	11098	624768
+5	one	unmove	one_unmove.bin	1	2758539	5799845	11884	626580

@@ -1,0 +1,193 @@
+--- a/animal_shogi.c
++++ b/animal_shogi.c
+@@ -906,6 +906,55 @@
+ static uint16_t g_xatt[16][12];
+ static int g_xatt_ready = 0;
+ 
++// ビットボード型の表 (実験 unmove_gen の bb_unmove). マス s はビット s (各4ビットの最下位) に置く.
++//   g_usrc[k][d/4]    X の駒 k がマス d にいるとき, 駒を動かした手を戻した元のマス s の集合 (成りを戻す候補は含めない)
++//   g_upromo[k][d/4]  にわとりが端の行にいるときの「ひよこが成った」を戻す元のマス d + 4 (ほかは空)
++//   g_uatk[k][L]      X の駒 k が置かれると LION1 のマス L に利くマス s の集合 (g_xatt を引き直したもの)
++static u_long g_usrc[16][12];
++static u_long g_upromo[16][12];
++static u_long g_uatk[16][12];
++
++// 戻せる元のマスの表を作る. 今までの unmovePiece の判定 (s = d - moves[i], 盤の外,
++// 端の回り込み2条件, ひよこの特別扱い) をそのまま全通り回す. 生成器にインライン展開させない
++static __attribute__((noinline, cold)) void unmoveSrcTableBuild(void) {
++    for (int k = 0; k < 16; k++)
++        for (int d = 0; d < 48; d += 4) {
++            int d16 = d % 16;
++            u_long src = 0, promo = 0;
++            if (k == CHICK2) {
++                if (d16 == 4 || d16 == 8) src |= (u_long)1 << (d + 4);
++            } else {
++                const int *moves = NULL;
++                int moves_num = 0;
++                switch (k) {
++                    case GIRAFFE2: moves = GIRAFFE_MOVE; moves_num = 4; break;
++                    case ELEPHANT2: moves = ELEPHANT_MOVE; moves_num = 4; break;
++                    case LION2: moves = LION_MOVE; moves_num = 8; break;
++                    case CHICKEN2: moves = CHICKEN2_MOVE; moves_num = 6; break;
++                    default: break;
++                }
++                for (int i = 0; i < moves_num; i++) {
++                    int s = d - moves[i];
++                    if (s < 0 || 44 < s) continue;
++                    int s16 = s % 16;
++                    if (s16 == 0 && d16 == 12) continue;
++                    if (s16 == 12 && d16 == 0) continue;
++                    src |= (u_long)1 << s;
++                }
++                if (k == CHICKEN2 && d16 == 0) promo |= (u_long)1 << (d + 4);
++            }
++            g_usrc[k][d / 4] = src;
++            g_upromo[k][d / 4] = promo;
++        }
++    for (int k = 0; k < 16; k++)
++        for (int L = 0; L < 12; L++) {
++            u_long m = 0;
++            for (int sq = 0; sq < 12; sq++)
++                if ((g_xatt[k][sq] >> L) & 1) m |= (u_long)1 << (4 * sq);
++            g_uatk[k][L] = m;
++        }
++}
++
+ static void unmoveTableBuild(void) {
+     static const int *const tables[4] = {GIRAFFE_MOVE, ELEPHANT_MOVE, LION_MOVE, CHICKEN2_MOVE};
+     static const int sizes[4] = {4, 4, 8, 6};
+@@ -924,6 +973,7 @@
+             }
+         if (s16 != 0) g_xatt[CHICK2][s / 4] |= (uint16_t)(1u << ((s - 4) / 4));
+     }
++    unmoveSrcTableBuild();
+     g_xatt_ready = 1;
+ }
+ 
+@@ -940,67 +990,50 @@
+     return n + 1;
+ }
+ 
+-// nb のマス d の X の駒の手を全部戻す (戻した先から LION1 (マス L) に利く戻し方は作らない)
+-static inline __attribute__((always_inline)) int unmovePiece(u_long nb, int d, int L, u_long *out, int n) {
++// 取った駒を戻す: 取った駒は直前に指した側の持ち駒 (bit 54〜59) に入っている.
++// ひよことにわとりはどちらも bit 54 に入る. 取ったあとの数が 1 なら 0 に, 2 なら 1 に戻す
++static inline __attribute__((always_inline)) int unmoveCaptures(u_long b0, int d, u_long *out, int n) {
++    for (int t = 0; t < 4; t++) {
++        int c = UNMOVE_CAPTURED[t];
++        int own_p = c == CHICKEN1 ? 54 : 52 + c * 2;
++        u_long cnt = (b0 >> own_p) & 0b11;
++        if (!cnt) continue;
++        u_long b1 = (b0 ^ ((cnt == 2 ? (u_long)0b11 : (u_long)0b01) << own_p)) | ((u_long)c << d);
++        n = unmoveEmit(b1, out, n);
++    }
++    return n;
++}
++
++// 打った手を戻せる駒 (ひよこ・きりん・ぞう) の集合 (ビット k)
++#define UNMOVE_DROP_KOMA ((1u << CHICK2) | (1u << GIRAFFE2) | (1u << ELEPHANT2))
++
++// nb のマス d の X の駒の手を全部戻す (戻した先から LION1 (マス L) に利く戻し方は作らない).
++// emp は nb の空きマスの集合 (ビット s). 元のマスの候補 ＝ 表 ∧ 空きマス ∧ ¬(戻すと L に利くマス).
++// 候補の並びは今までと同じ: 打った手 → 元のマスを番号の大きい順 (移動量の表が昇順で s = d - moves[i] なので)
++// → 成りを戻す候補 (s = d + 4). 元のマスごとに「取っていない版 → 取った駒の4種類」
++static inline __attribute__((always_inline)) int unmovePiece(u_long nb, u_long emp, int d, int L, u_long *out,
++                                                              int n) {
+     u_long k = getKoma(nb, d);
+     u_long base = delKoma(nb, d);
+-    int d16 = d % 16;
+     // 持ち駒を打った (ひよこ・きりん・ぞう). 打ったあとの数が 0 なら 1 に, 1 なら 2 に戻す
+-    if (k == CHICK2 || k == GIRAFFE2 || k == ELEPHANT2) {
+-        int own_p = 54 + (int)(k - CHICK2) * 2;
+-        u_long c = (nb >> own_p) & 0b11;
+-        if (c < 2) n = unmoveEmit(base ^ ((c ? (u_long)0b11 : (u_long)0b01) << own_p), out, n);
+-    }
+-    // 駒を動かした. (元の駒, 元のマス) を並べる
+-    int srcs[10], k0s[10], ns = 0;
+-    if (k == CHICK2) {
+-        // 成らない前進: 行き先が端 (d16 == 0) でなく, 元のマスが同じ列にある (d16 != 12)
+-        if (d16 == 4 || d16 == 8) {
+-            srcs[ns] = d + 4;
+-            k0s[ns++] = CHICK2;
+-        }
+-    } else {
+-        const int *moves = NULL;
+-        int moves_num = 0;
+-        switch (k) {
+-            case GIRAFFE2: moves = GIRAFFE_MOVE; moves_num = 4; break;
+-            case ELEPHANT2: moves = ELEPHANT_MOVE; moves_num = 4; break;
+-            case LION2: moves = LION_MOVE; moves_num = 8; break;
+-            case CHICKEN2: moves = CHICKEN2_MOVE; moves_num = 6; break;
+-            default: break;
+-        }
+-        for (int i = 0; i < moves_num; i++) {
+-            int s = d - moves[i];
+-            if (s < 0 || 44 < s) continue;
+-            int s16 = s % 16;
+-            // いまの生成器が捨てている手 (列をまたいで端から端へ回り込む手) は戻さない
+-            if (s16 == 0 && d16 == 12) continue;
+-            if (s16 == 12 && d16 == 0) continue;
+-            srcs[ns] = s;
+-            k0s[ns++] = (int)k;
+-        }
+-        // にわとりが端の行にいれば, ひよこが1つ前のマスから進んで成った手もありうる
+-        if (k == CHICKEN2 && d16 == 0) {
+-            srcs[ns] = d + 4;
+-            k0s[ns++] = CHICK2;
+-        }
++    int own_p = 54 + (int)(k - CHICK2) * 2;
++    u_long c = (nb >> own_p) & 0b11;
++    if (((UNMOVE_DROP_KOMA >> k) & 1) && c < 2)
++        n = unmoveEmit(base ^ ((c ? (u_long)0b11 : (u_long)0b01) << own_p), out, n);
++    // 駒を動かした. 元のマスを番号の大きい順に取り出す
++    u_long src = g_usrc[k][d / 4] & emp & ~g_uatk[k][L];
++    while (src) {
++        int s = 63 - __builtin_clzll(src);
++        src ^= (u_long)1 << s;
++        u_long b0 = base | (k << s);
++        n = unmoveEmit(b0, out, n);
++        n = unmoveCaptures(b0, d, out, n);
+     }
+-    for (int j = 0; j < ns; j++) {
+-        int s = srcs[j];
+-        if (getKoma(nb, s)) continue;                    // 元のマスは空いていなければならない
+-        if ((g_xatt[k0s[j]][s / 4] >> L) & 1) continue;  // 戻した先から LION1 に利く: 前任はキャッチ局面
+-        u_long b0 = base | ((u_long)k0s[j] << s);
++    // にわとりが端の行にいれば, ひよこが1つ前のマスから進んで成った手もありうる
++    if (g_upromo[k][d / 4] & emp & ~g_uatk[CHICK2][L]) {
++        u_long b0 = base | ((u_long)CHICK2 << (d + 4));
+         n = unmoveEmit(b0, out, n);
+-        // 駒を取った: 取った駒は直前に指した側の持ち駒 (bit 54〜59) に入っている.
+-        // ひよことにわとりはどちらも bit 54 に入る. 取ったあとの数が 1 なら 0 に, 2 なら 1 に戻す
+-        for (int t = 0; t < 4; t++) {
+-            int c = UNMOVE_CAPTURED[t];
+-            int own_p = c == CHICKEN1 ? 54 : 52 + c * 2;
+-            u_long cnt = (b0 >> own_p) & 0b11;
+-            if (!cnt) continue;
+-            u_long b1 = (b0 ^ ((cnt == 2 ? (u_long)0b11 : (u_long)0b01) << own_p)) | ((u_long)c << d);
+-            n = unmoveEmit(b1, out, n);
+-        }
++        n = unmoveCaptures(b0, d, out, n);
+     }
+     return n;
+ }
+@@ -1012,10 +1045,15 @@
+     int asz = __builtin_popcount(a);
+     // 局面と駒の単位: A が2マス以上なら前任は無い. 1マスなら, そのマスの駒だけを戻す
+     if (asz >= 2) return n;
+-    if (asz == 1) return unmovePiece(nb, 4 * __builtin_ctz(a), L, out, n);
+-    for (int d = 0; d < 48; d += 4) {
+-        if (!(getKoma(nb, d) & 0b1000)) continue;
+-        n = unmovePiece(nb, d, L, out, n);
++    u_long occ = (nb | nb >> 1 | nb >> 2 | nb >> 3) & 0x111111111111UL;
++    u_long emp = ~occ & 0x111111111111UL;
++    if (asz == 1) return unmovePiece(nb, emp, 4 * __builtin_ctz(a), L, out, n);
++    // X の駒 (9〜13. 持ち主のビット 0b1000) のマスを番号の小さい順に取り出す
++    u_long xs = (nb >> 3) & 0x111111111111UL;
++    while (xs) {
++        int d = __builtin_ctzll(xs);
++        xs &= xs - 1;
++        n = unmovePiece(nb, emp, d, L, out, n);
+     }
+     return n;
+ }

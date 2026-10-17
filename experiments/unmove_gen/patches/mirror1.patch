@@ -1,0 +1,100 @@
+--- a/animal_shogi.c
++++ b/animal_shogi.c
+@@ -932,16 +932,27 @@
+     return ((b >> 48) << 48) | ((b & 0xffff) << 32) | (b & 0xffff0000UL) | ((b >> 32) & 0xffff);
+ }
+ 
+-// 戻した盤 b' から p を作り, 正規形なら out に足す
+-static inline __attribute__((always_inline)) int unmoveEmit(u_long bp, u_long *out, int n) {
++// 戻した盤 b' から p を作って out に足す.
++// nrm が偽 (q が左右対称) なら, 正規形のものだけを足す (今までと同じ).
++// nrm が真 (q が左右対称でない. 実験 unmove_gen の mirror1) なら, 正規形 N(p) にして足し, p が左右対称なら2回足す.
++// q だけから戻すので, 鏡像の q から戻した分 (q から戻した候補の鏡像) を N(p) で代わりに数える.
++// p が左右対称なら, q と鏡像の q から戻した2つが同じ p になるので2回 (辺の本数を今までと同じにする)
++static inline __attribute__((always_inline)) int unmoveEmit(u_long bp, u_long *out, int n, int nrm) {
+     u_long p = invBoard(bp);
+-    if (normalBoard(p) != p) return n;
+-    out[n] = p;
+-    return n + 1;
++    if (!nrm) {
++        if (normalBoard(p) != p) return n;
++        out[n] = p;
++        return n + 1;
++    }
++    u_long np = normalBoard(p);
++    out[n] = np;
++    out[n + 1] = np;
++    return n + 1 + (((p >> 32) & 0xffff) == (p & 0xffff));
+ }
+ 
+ // nb のマス d の X の駒の手を全部戻す (戻した先から LION1 (マス L) に利く戻し方は作らない)
+-static inline __attribute__((always_inline)) int unmovePiece(u_long nb, int d, int L, u_long *out, int n) {
++static inline __attribute__((always_inline)) int unmovePiece(u_long nb, int d, int L, u_long *out, int n,
++                                                              int nrm) {
+     u_long k = getKoma(nb, d);
+     u_long base = delKoma(nb, d);
+     int d16 = d % 16;
+@@ -949,7 +960,7 @@
+     if (k == CHICK2 || k == GIRAFFE2 || k == ELEPHANT2) {
+         int own_p = 54 + (int)(k - CHICK2) * 2;
+         u_long c = (nb >> own_p) & 0b11;
+-        if (c < 2) n = unmoveEmit(base ^ ((c ? (u_long)0b11 : (u_long)0b01) << own_p), out, n);
++        if (c < 2) n = unmoveEmit(base ^ ((c ? (u_long)0b11 : (u_long)0b01) << own_p), out, n, nrm);
+     }
+     // 駒を動かした. (元の駒, 元のマス) を並べる
+     int srcs[10], k0s[10], ns = 0;
+@@ -990,7 +1001,7 @@
+         if (getKoma(nb, s)) continue;                    // 元のマスは空いていなければならない
+         if ((g_xatt[k0s[j]][s / 4] >> L) & 1) continue;  // 戻した先から LION1 に利く: 前任はキャッチ局面
+         u_long b0 = base | ((u_long)k0s[j] << s);
+-        n = unmoveEmit(b0, out, n);
++        n = unmoveEmit(b0, out, n, nrm);
+         // 駒を取った: 取った駒は直前に指した側の持ち駒 (bit 54〜59) に入っている.
+         // ひよことにわとりはどちらも bit 54 に入る. 取ったあとの数が 1 なら 0 に, 2 なら 1 に戻す
+         for (int t = 0; t < 4; t++) {
+@@ -999,36 +1010,36 @@
+             u_long cnt = (b0 >> own_p) & 0b11;
+             if (!cnt) continue;
+             u_long b1 = (b0 ^ ((cnt == 2 ? (u_long)0b11 : (u_long)0b01) << own_p)) | ((u_long)c << d);
+-            n = unmoveEmit(b1, out, n);
++            n = unmoveEmit(b1, out, n, nrm);
+         }
+     }
+     return n;
+ }
+ 
+-static inline __attribute__((always_inline)) int unmoveRaw(u_long nb, u_long *out, int n) {
++static inline __attribute__((always_inline)) int unmoveRaw(u_long nb, u_long *out, int n, int nrm) {
+     int L = rankFindKoma(nb & 0xffffffffffffUL, LION1);
+     unsigned a = 0;
+     for (int sq = 0; sq < 12; sq++) a |= ((g_xatt[getKoma(nb, 4 * sq)][sq] >> L) & 1u) << sq;
+     int asz = __builtin_popcount(a);
+     // 局面と駒の単位: A が2マス以上なら前任は無い. 1マスなら, そのマスの駒だけを戻す
+     if (asz >= 2) return n;
+-    if (asz == 1) return unmovePiece(nb, 4 * __builtin_ctz(a), L, out, n);
++    if (asz == 1) return unmovePiece(nb, 4 * __builtin_ctz(a), L, out, n, nrm);
+     for (int d = 0; d < 48; d += 4) {
+         if (!(getKoma(nb, d) & 0b1000)) continue;
+-        n = unmovePiece(nb, d, L, out, n);
++        n = unmovePiece(nb, d, L, out, n, nrm);
+     }
+     return n;
+ }
+ 
+ #define UNMOVE_MAX 1024
+ 
+-// q の前任の候補 (正規形. キャッチ局面になるものは作らない). 到達しない局面も混ざる
++// q の前任の候補 (正規形. キャッチ局面になるものは作らない). 到達しない局面も混ざる.
++// 手を指した直後の盤は q か鏡像の q だが, 鏡像の q から戻した候補は q から戻した候補の鏡像なので,
++// q だけから戻して正規形にする (実験 unmove_gen の mirror1). q が左右対称なら今までと同じ (q だけから戻し, 正規形だけ)
+ int unmoveCandidates(u_long q, u_long *out) {
+     unmoveTableBuild();
+-    int n = unmoveRaw(q, out, 0);
+-    u_long m = unmoveMirror(q);
+-    if (m != q) n = unmoveRaw(m, out, n);
+-    return n;
++    if (unmoveMirror(q) == q) return unmoveRaw(q, out, 0, 0);
++    return unmoveRaw(q, out, 0, 1);
+ }
+ 
+ // 初期化: 全探索の配列から手数の配列を作り, 配列をその場で残りの数に読み替える.

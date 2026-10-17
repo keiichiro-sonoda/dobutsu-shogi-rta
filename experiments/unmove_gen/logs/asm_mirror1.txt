@@ -1,0 +1,29 @@
+# mirror1: unmoveCandidates の機械語 (-g の .so。.text は -g なしと一致)
+命令 956 / tzcnt 3 / lzcnt 0 / 条件分岐 121
+-Wall -Wextra の警告: 0
+条件分岐の行 (数 / 行 / 文):
+  12	100	if (col_A <= col_C) return b;
+  1	913	if (g_xatt_ready) return;
+  6	943	if (normalBoard(p) != p) return n;
+  4	960	if (k == CHICK2 || k == GIRAFFE2 || k == ELEPHANT2) {  ← 今の分岐の形 ['k == CHICK2']
+  4	963	if (c < 2) n = unmoveEmit(base ^ ((c ? (u_long)0b11 : (u_long)0b01) << own_p), out, n, nrm);
+  4	967	if (k == CHICK2) {  ← 今の分岐の形 ['k == CHICK2']
+  4	969	if (d16 == 4 || d16 == 8) {  ← 今の分岐の形 ['d16 ==']
+  16	976	switch (k) {  ← 今の分岐の形 ['switch']
+  4	983	for (int i = 0; i < moves_num; i++) {  ← 今の分岐の形 ['moves_num']
+  4	985	if (s < 0 || 44 < s) continue;  ← 今の分岐の形 ['s < 0']
+  8	988	if (s16 == 0 && d16 == 12) continue;  ← 今の分岐の形 ['s16 ==', 'd16 ==']
+  8	989	if (s16 == 12 && d16 == 0) continue;  ← 今の分岐の形 ['s16 ==', 'd16 ==']
+  8	994	if (k == CHICKEN2 && d16 == 0) {  ← 今の分岐の形 ['d16 ==', 'k == CHICKEN2']
+  9	999	for (int j = 0; j < ns; j++) {
+  4	1001	if (getKoma(nb, s)) continue;                    // 元のマスは空いていなければならない  ← 今の分岐の形 ['getKoma(nb, s)']
+  4	1002	if ((g_xatt[k0s[j]][s / 4] >> L) & 1) continue;  // 戻した先から LION1 に利く: 前任はキャッチ局面  ← 今の分岐の形 ['k0s[j]']
+  4	1007	for (int t = 0; t < 4; t++) {
+  4	1011	if (!cnt) continue;
+  2	1022	for (int sq = 0; sq < 12; sq++) a |= ((g_xatt[getKoma(nb, 4 * sq)][sq] >> L) & 1u) << sq;
+  2	1025	if (asz >= 2) return n;
+  2	1026	if (asz == 1) return unmovePiece(nb, 4 * __builtin_ctz(a), L, out, n, nrm);
+  3	1027	for (int d = 0; d < 48; d += 4) {
+  2	1028	if (!(getKoma(nb, d) & 0b1000)) continue;  ← 今の分岐の形 ['& 0b1000']
+  1	1041	if (unmoveMirror(q) == q) return unmoveRaw(q, out, 0, 0);
+  1	1043	}

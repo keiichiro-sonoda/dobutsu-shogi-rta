@@ -1,0 +1,10 @@
+# 2026-10-17T14:57:14+00:00 の空きメモリ (free_snapshot.sh before_launch)
+2 MiB 以上の空きブロック: node0 17.92 / node1 19.47 / 合計 37.39 GiB (門番はノード0で 16 GiB 以上)
+Node 0, zone      DMA      0      0      0      0      0      0      0      0      1      1      2 
+Node 0, zone    DMA32    529    385    262    185    125     68     43     23     15     22    759 
+Node 0, zone   Normal  85664  58077  30648  18520  11412   4549   3163   2174    799    352   3639 
+Node 1, zone   Normal  47420  69881  22040  12734   6785   3289   2998   1708    676    251   4859 
+Node 0 MemFree:        24805996 kB
+Node 0 FilePages:       3456588 kB
+Node 1 MemFree:        25116416 kB
+Node 1 FilePages:       3274568 kB

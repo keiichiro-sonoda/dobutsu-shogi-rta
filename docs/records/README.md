@@ -44,5 +44,6 @@ frontmatter の2か所にある。読み物としては記録表、機械可読�
 | [#32](32-inline-rank.md) | [`impl/32_inline_rank/`](../../impl/32_inline_rank/) |
 | [#33](33-hot-layout.md) | [`impl/33_hot_layout/`](../../impl/33_hot_layout/) |
 | [#34](34-unmove.md) | [`impl/34_unmove/`](../../impl/34_unmove/) |
+| [#35](35-bitboard.md) | [`impl/35_bitboard/`](../../impl/35_bitboard/) |
 
 試行をまたぐ話は [`../measurement-noise.md`](../measurement-noise.md) にある。

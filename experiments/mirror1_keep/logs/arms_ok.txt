@@ -1,0 +1,3 @@
+base
+mirror1
+mirror1_keep

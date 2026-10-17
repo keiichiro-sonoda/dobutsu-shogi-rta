@@ -1,0 +1,18 @@
+# impl_35_bitboard: nextBoardInvNormalNC の機械語 (-g の .so。.text は -g なしと一致)
+命令 297 / tzcnt 5 / pext 0 / 条件分岐 19
+-Wall -Wextra の警告: 0
+条件分岐の行 (数 / 行 / 文):
+  2	100	if (col_A <= col_C) return b;
+  1	650	for (int sq = 0; sq < 12; sq++) {
+  2	663	while (x) {
+  2	668	while (t) {
+  2	672	if (dst_koma == LION1) return 0;
+  1	676	nb ^= ((b >> own_p) & 0b11 ? (u_long)0b11 << own_p : (u_long)0b01 << own_p) & -(u_long)(dst_koma != 
+  1	679	c = koma == LION2 ? (int)((att1 >> (dst / 4)) & 1u) : (atkL & ~(1u << (dst / 4))) != 0;
+  1	684	if (try_flag) return -1;
+  2	686	while (x) {
+  1	691	for (i = 0; i < 3; i++) {
+  1	694	if (!own_num) continue;
+  2	697	for (j = 0; j < emp_num; j++) {
+  1	704	}
+判定: 通過

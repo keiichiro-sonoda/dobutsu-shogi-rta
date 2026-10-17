@@ -41,7 +41,7 @@
 ## 判定の量（回す前に決めた）
 
 - **主: 完走の秒**（`/usr/bin/time -v` の Elapsed）の `new − old`。平均の差と Welch の 95% 区間（[`stop_rule.py`](stop_rule.py)。比較は1対1の1本）
-- 並べて出す（判定には使わない。[`summary.py`](summary.py)）: 全探索の合計・F1・F1 のユーザー時間とカーネル時間・F5・F6、後退解析の段の合計（`retreat_total`）と `U_init`・`U_loop`
+- 並べて出す（判定には使わない。[`summary.py`](summary.py)）: 全探索の合計・F1・F1 のユーザー時間とカーネル時間・F5・F6、後退解析の合計と `U_init`・`U_loop`
   （ユーザー時間とカーネル時間）・`U_draw`・`U_uk`、ユーザー時間・カーネル時間・minor fault・ピーク RSS
 
 ## 記録にするかの取り決め（回す前に決めた）

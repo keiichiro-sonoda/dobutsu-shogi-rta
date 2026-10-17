@@ -1,0 +1,164 @@
+--- a/animal_shogi.c
++++ b/animal_shogi.c
+@@ -982,24 +982,55 @@
+     return ((b >> 48) << 48) | ((b & 0xffff) << 32) | (b & 0xffff0000UL) | ((b >> 32) & 0xffff);
+ }
+ 
+-// 戻した盤 b' から p を作り, 正規形なら out に足す
+-static inline __attribute__((always_inline)) int unmoveEmit(u_long bp, u_long *out, int n) {
++// 鏡像の q から戻していたときの後半の候補を, 並べ直すまで溜めておく (実験 mirror1_keep)
++#define UNMOVE_LATE_MAX 1024
++typedef struct {
++    u_long c[UNMOVE_LATE_MAX];
++    int key[UNMOVE_LATE_MAX];
++    int n;
++} UnmoveLate;
++
++// マス a (番地) を左右に反転したマスの番号 (0〜11). 列 a / 16 を 2 − 列にする
++static inline int unmoveMirrorSq(int a) {
++    int sq = a >> 2;
++    return sq + 8 - 8 * (sq >> 2);
++}
++
++// 戻した盤 b' から p を作って足す.
++// late が NULL (q が左右対称) なら, 正規形のものだけを out に足す (今までと同じ).
++// late があれば (q が左右対称でない): 正規形の p は out に足す (鏡像の q から戻していたときの前半と同じ並び).
++// 正規形でない p の鏡像と, 左右対称な p の2回目は, 鏡像の q から戻したときに出ていた候補なので,
++// 鏡像の q の走査順の鍵 key と一緒に late に溜め, あとで鍵の順に並べて後ろに足す
++static inline __attribute__((always_inline)) int unmoveEmit(u_long bp, u_long *out, int n, UnmoveLate *late,
++                                                             int key) {
+     u_long p = invBoard(bp);
+-    if (normalBoard(p) != p) return n;
+-    out[n] = p;
+-    return n + 1;
++    if (!late) {
++        if (normalBoard(p) != p) return n;
++        out[n] = p;
++        return n + 1;
++    }
++    u_long m = unmoveMirror(p);
++    if (normalBoard(p) == p) {
++        out[n++] = p;
++        if (m != p) return n;
++        m = p;
++    }
++    late->c[late->n] = m;
++    late->key[late->n++] = key;
++    return n;
+ }
+ 
+ // 取った駒を戻す: 取った駒は直前に指した側の持ち駒 (bit 54〜59) に入っている.
+ // ひよことにわとりはどちらも bit 54 に入る. 取ったあとの数が 1 なら 0 に, 2 なら 1 に戻す
+-static inline __attribute__((always_inline)) int unmoveCaptures(u_long b0, int d, u_long *out, int n) {
++static inline __attribute__((always_inline)) int unmoveCaptures(u_long b0, int d, u_long *out, int n,
++                                                                 UnmoveLate *late, int key) {
+     for (int t = 0; t < 4; t++) {
+         int c = UNMOVE_CAPTURED[t];
+         int own_p = c == CHICKEN1 ? 54 : 52 + c * 2;
+         u_long cnt = (b0 >> own_p) & 0b11;
+         if (!cnt) continue;
+         u_long b1 = (b0 ^ ((cnt == 2 ? (u_long)0b11 : (u_long)0b01) << own_p)) | ((u_long)c << d);
+-        n = unmoveEmit(b1, out, n);
++        n = unmoveEmit(b1, out, n, late, key + 1 + t);
+     }
+     return n;
+ }
+@@ -1010,35 +1041,40 @@
+ // nb のマス d の X の駒の手を全部戻す (戻した先から LION1 (マス L) に利く戻し方は作らない).
+ // emp は nb の空きマスの集合 (ビット s). 元のマスの候補 ＝ 表 ∧ 空きマス ∧ ¬(戻すと L に利くマス).
+ // 候補の並びは今までと同じ: 打った手 → 元のマスを番号の大きい順 (移動量の表が昇順で s = d - moves[i] なので)
+-// → 成りを戻す候補 (s = d + 4). 元のマスごとに「取っていない版 → 取った駒の4種類」
++// → 成りを戻す候補 (s = d + 4). 元のマスごとに「取っていない版 → 取った駒の4種類」.
++// 鏡像の q の走査順の鍵 (late があるときだけ使う): 鏡像の q では, この駒は反転したマス d' にいて,
++// d' の番号の小さい順 → 打った手 (0) → 元のマスを反転したマス s' の番号の大きい順 (1〜12) → 成りを戻す候補 (13)
++// → 取っていない版 (0) と取った駒の4種類 (1〜4) の順に出ていた. 鍵 ＝ (d' × 14 ＋ 枠) × 5 ＋ 取った駒
+ static inline __attribute__((always_inline)) int unmovePiece(u_long nb, u_long emp, int d, int L, u_long *out,
+-                                                              int n) {
++                                                              int n, UnmoveLate *late) {
++    int kd = unmoveMirrorSq(d) * 14;
+     u_long k = getKoma(nb, d);
+     u_long base = delKoma(nb, d);
+     // 持ち駒を打った (ひよこ・きりん・ぞう). 打ったあとの数が 0 なら 1 に, 1 なら 2 に戻す
+     int own_p = 54 + (int)(k - CHICK2) * 2;
+     u_long c = (nb >> own_p) & 0b11;
+     if (((UNMOVE_DROP_KOMA >> k) & 1) && c < 2)
+-        n = unmoveEmit(base ^ ((c ? (u_long)0b11 : (u_long)0b01) << own_p), out, n);
++        n = unmoveEmit(base ^ ((c ? (u_long)0b11 : (u_long)0b01) << own_p), out, n, late, kd * 5);
+     // 駒を動かした. 元のマスを番号の大きい順に取り出す
+     u_long src = g_usrc[k][d / 4] & emp & ~g_uatk[k][L];
+     while (src) {
+         int s = 63 - __builtin_clzll(src);
+         src ^= (u_long)1 << s;
+         u_long b0 = base | (k << s);
+-        n = unmoveEmit(b0, out, n);
+-        n = unmoveCaptures(b0, d, out, n);
++        int key = (kd + 12 - unmoveMirrorSq(s)) * 5;
++        n = unmoveEmit(b0, out, n, late, key);
++        n = unmoveCaptures(b0, d, out, n, late, key);
+     }
+     // にわとりが端の行にいれば, ひよこが1つ前のマスから進んで成った手もありうる
+     if (g_upromo[k][d / 4] & emp & ~g_uatk[CHICK2][L]) {
+         u_long b0 = base | ((u_long)CHICK2 << (d + 4));
+-        n = unmoveEmit(b0, out, n);
+-        n = unmoveCaptures(b0, d, out, n);
++        n = unmoveEmit(b0, out, n, late, (kd + 13) * 5);
++        n = unmoveCaptures(b0, d, out, n, late, (kd + 13) * 5);
+     }
+     return n;
+ }
+ 
+-static inline __attribute__((always_inline)) int unmoveRaw(u_long nb, u_long *out, int n) {
++static inline __attribute__((always_inline)) int unmoveRaw(u_long nb, u_long *out, int n, UnmoveLate *late) {
+     int L = rankFindKoma(nb & 0xffffffffffffUL, LION1);
+     unsigned a = 0;
+     for (int sq = 0; sq < 12; sq++) a |= ((g_xatt[getKoma(nb, 4 * sq)][sq] >> L) & 1u) << sq;
+@@ -1047,25 +1083,43 @@
+     if (asz >= 2) return n;
+     u_long occ = (nb | nb >> 1 | nb >> 2 | nb >> 3) & 0x111111111111UL;
+     u_long emp = ~occ & 0x111111111111UL;
+-    if (asz == 1) return unmovePiece(nb, emp, 4 * __builtin_ctz(a), L, out, n);
++    if (asz == 1) return unmovePiece(nb, emp, 4 * __builtin_ctz(a), L, out, n, late);
+     // X の駒 (9〜13. 持ち主のビット 0b1000) のマスを番号の小さい順に取り出す
+     u_long xs = (nb >> 3) & 0x111111111111UL;
+     while (xs) {
+         int d = __builtin_ctzll(xs);
+         xs &= xs - 1;
+-        n = unmovePiece(nb, emp, d, L, out, n);
++        n = unmovePiece(nb, emp, d, L, out, n, late);
+     }
+     return n;
+ }
+ 
+ #define UNMOVE_MAX 1024
+ 
+-// q の前任の候補 (正規形. キャッチ局面になるものは作らない). 到達しない局面も混ざる
++// q の前任の候補 (正規形. キャッチ局面になるものは作らない). 到達しない局面も混ざる.
++// q だけから戻し, 鏡像の q から戻していた分は q から戻した候補の鏡像で代わりに出す (実験 mirror1_keep).
++// 候補の並びは, 鏡像の q からも戻していたときと同じ: q から戻した正規形の候補を走査順に出し,
++// 鏡像の q から戻していた分は鍵 (鏡像の q の走査順) の順に並べ直してから後ろに足す
+ int unmoveCandidates(u_long q, u_long *out) {
+     unmoveTableBuild();
+-    int n = unmoveRaw(q, out, 0);
+-    u_long m = unmoveMirror(q);
+-    if (m != q) n = unmoveRaw(m, out, n);
++    if (unmoveMirror(q) == q) return unmoveRaw(q, out, 0, NULL);
++    UnmoveLate late;
++    late.n = 0;
++    int n = unmoveRaw(q, out, 0, &late);
++    // 挿入ソート (溜めた候補は局面あたり数個)
++    for (int i = 1; i < late.n; i++) {
++        int key = late.key[i];
++        u_long c = late.c[i];
++        int j = i - 1;
++        while (j >= 0 && late.key[j] > key) {
++            late.key[j + 1] = late.key[j];
++            late.c[j + 1] = late.c[j];
++            j--;
++        }
++        late.key[j + 1] = key;
++        late.c[j + 1] = c;
++    }
++    for (int i = 0; i < late.n; i++) out[n++] = late.c[i];
+     return n;
+ }
+ 

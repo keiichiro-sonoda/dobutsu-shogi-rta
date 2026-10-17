@@ -1,0 +1,18 @@
+# 記録 #35 (impl/35_bitboard) の成果物との照合 (バイト単位)
+# diff -rq <#35 の dat/> <#36 の dat/>  と  md5sum 一覧 (LC_ALL=C sort) の sha256
+#   cd <dat>; find . -type f -print0 | LC_ALL=C sort -z | xargs -0 md5sum | sha256sum
+#   (dat/ の中へ cd せず, 同じ値を外から出した. experiments/gate_36_bb_unmove/lib.sh の md5_list_sha)
+#
+# #36 は後退解析の逆向きの生成器を書き換えたが, 前任の候補の列は並びまで #35 と同じ
+# (experiments/unmove_gen が到達可能な全局面で確かめた). 全探索は変わらず, 後退解析が局面を決める順も
+# 変わらないので, dat/ は全探索の側も後退解析の側も #35 とバイト一致する.
+#
+# ⚠️ #35 本走の dat/ は runs/ にあり git に入っていない. その md5 一覧の sha256 は,
+#    results/35_bitboard/bytecompare.txt の #35 の値 (851de9569efc…. #34 本走とも同じ) と同じ.
+#
+files:        #35 213 / #36 213
+bytes:        #35 1974425336 / #36 1974425336
+md5_list_sha256: #35 851de9569efc5fde408bc52b79a96fc96130302b4a9bb8f00866c6e6fb57430b
+                 #36 851de9569efc5fde408bc52b79a96fc96130302b4a9bb8f00866c6e6fb57430b
+diff -rq:     exit=0 (0 行)
+md5 list:     一致

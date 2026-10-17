@@ -139,6 +139,7 @@ python3 tools/fingerprint_dat.py <dat> --against oracle/fingerprint.tsv  # 固�
 | 33 | `impl/33_hot_layout/` | 1スレッド | **0:02:14** | **238.66×** | 2026-10-04 | [ログ](results/33_hot_layout/) [ノート](docs/records/33-hot-layout.md) 熱い関数12個を `.text` の前の専用の区画に並べ、ほかの関数を変えても動かないようにした（C は #32 とバイト同一。`gcc` 行の2つとリンカースクリプトだけ）。目的は速さではなく、以後の門番がレバーの効果だけを測れるようにすること。詰め物の検査で、#32 の作り方では熱い関数が動き、#33 では1つも動かない。[門番](experiments/gate_33_hot_layout/)で **F1 −0.40 s（区間 −0.63〜−0.17）、P2 −0.52 s（区間 −0.74〜−0.29）**、ほかの段は差なし。全探索 0:00:55 / 残り 0:01:19（後退解析）。**`dat/` は #32 と全213ファイルがバイト一致**（[出力](results/33_hot_layout/bytecompare.txt)） |
 | 34 | `impl/34_unmove/` | 1スレッド | **0:02:04** | **257.73×** | 2026-10-08 | [ログ](results/34_unmove/) [ノート](docs/records/34-unmove.md) 後退解析を「一手前を直接作る」作りに替えた。全探索が展開した局面ごとに種類とキャッチ抜きの数をランクを添字にした 1 バイトの配列に書き、後退解析は決まった局面から手を1つ戻して前任をその場で作る（作る前に絞る版）。**P0・P1（索引 8 GiB）・P2・P4・174段ループが無くなった**。[門番](experiments/gate_34_unmove/)で **完走 −11.21 s（区間 −11.78〜−10.64）**（全探索 +7.78 s、後退解析 −18.95 s）、**ピーク RSS 14.88 → 3.69 GB**。全探索 0:01:04 / 残り 0:01:00（後退解析）。後退解析の採番順が変わったので、`dat/` は**ファイルの名前と件数が #33 と全213ファイルで同じ**・オラクル・指紋で見た（全探索の側の31ファイルはバイト一致。[出力](results/34_unmove/bytecompare.txt)） |
 | 35 | `impl/35_bitboard/` | 1スレッド | **0:01:54** | **281.75×** | 2026-10-17 | [ログ](results/35_bitboard/) [ノート](docs/records/35-bitboard.md) 全探索の生成器をビットボード型にした（マスの集合をビットで持ち、表引きで行き先の集合を作って `ctz` で取り出す。実験 [`bitboard_gen`](experiments/bitboard_gen/) の `bb_nibble`）。後続の列は並びまで #34 と同じ。[門番](experiments/gate_35_bitboard/)で **完走 −10.26 s（区間 −10.73〜−9.79）**、ほぼ全部 F1 のユーザー時間（−10.25 s）で、後退解析は ＋0.00 s。全探索 0:00:53 / 残り 0:01:00（後退解析）。**`dat/` は #34 と全213ファイルでバイト一致**（[出力](results/35_bitboard/bytecompare.txt)） |
+| 36 | `impl/36_bb_unmove/` | 1スレッド | **0:01:40** | **320.25×** | 2026-10-17 | [ログ](results/36_bb_unmove/) [ノート](docs/records/36-bb-unmove.md) 後退解析の逆向きの生成器をビットボード型にした（元のマスの候補を「表 ∧ 空きマス ∧ ¬利くマス」のビット集合で出し、番号の大きい順に `lzcnt` で取り出す。実験 [`unmove_gen`](experiments/unmove_gen/) の `bb_unmove`）。前任の候補の列は並びまで #35 と同じ。[門番](experiments/gate_36_bb_unmove/)で **完走 −14.98 s（区間 −15.38〜−14.58）**、ほぼ全部 `U_loop` のユーザー時間（−14.93 s）で、全探索は −0.17 s。全探索 0:00:54 / 残り 0:00:46（後退解析）。**`dat/` は #35 と全213ファイルでバイト一致**（[出力](results/36_bb_unmove/bytecompare.txt)） |
 
 各試行の分析は [`docs/records/`](docs/records/) に1本ずつ置いてある
 （[索引](docs/records/README.md)）。
@@ -185,17 +186,18 @@ Python が集合演算とファイル分割を担当し、C が指し手生成�
 
 ## 次の標的
 
-段ごとの大きい順は **`U_loop` 後退解析のループ 56.7 s（49.7%）、F1 展開 48.1 s（42.2%）**、
-F6 2.4 s、`U_draw` 引き分けを拾う 1.8 s、`U_init` 後退解析の初期化 1.7 s、F0＋F2＋F5 2.1 s
-（[`forward_summary.tsv`](results/35_bitboard/forward_summary.tsv) と
-[`retreat_summary.tsv`](results/35_bitboard/retreat_summary.tsv)）。
-#35 で F1 の生成器をビットボード型にした。**残っているのは全部 C の中**で、
-`U_loop` の逆向きの生成器と F1 の生成器が2本の柱。
+段ごとの大きい順は **F1 展開 48.6 s（48.4%）、`U_loop` 後退解析のループ 42.3 s（42.1%）**、
+F6 2.4 s、`U_init` 後退解析の初期化 1.8 s、`U_draw` 引き分けを拾う 1.8 s、F0＋F2＋F5 2.2 s
+（[`forward_summary.tsv`](results/36_bb_unmove/forward_summary.tsv) と
+[`retreat_summary.tsv`](results/36_bb_unmove/retreat_summary.tsv)）。
+#36 で `U_loop` の逆向きの生成器もビットボード型にした。**残っているのは全部 C の中**で、
+F1 の生成器と `U_loop` の逆向きの生成器が2本の柱。
 
 残っているレバー（中身と実測は [`docs/levers.md`](docs/levers.md) のレバー表）:
 
-- 逆向きの生成器をビットボード型にする
-- 生成器に残った分岐（三項演算2つと `normalBoard`）を条件で選ぶ形にする
+- 逆向きの生成器で鏡像の側から戻すのをやめる（`mirror1` を #36 の上で作り直す）
+- 生成器に残った分岐を減らす（全探索の三項演算2つと `normalBoard`、
+  逆向きの打てるか・持ち駒・正規形）
 - 後退解析のループの到達しない候補を減らす
 - 逆向きの生成器で盤の反転を1回にする（実験では遅くなった。理由を分けてから）
 - 引き分けを拾う区間で未知局面のランクを持っておく

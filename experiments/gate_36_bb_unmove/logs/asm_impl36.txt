@@ -1,0 +1,19 @@
+# impl/36_bb_unmove の .so (sha256 の先頭 c7106b9e0aaf) に experiments/unmove_gen/check_asm.py を当てた
+# bb_unmove: unmoveCandidates の機械語 (-g の .so。.text は -g なしと一致)
+命令 1093 / tzcnt 6 / lzcnt 4 / 条件分岐 88
+-Wall -Wextra の警告: 0
+条件分岐の行 (数 / 行 / 文):
+  20	100	if (col_A <= col_C) return b;
+  1	962	if (g_xatt_ready) return;
+  20	988	if (normalBoard(p) != p) return n;
+  8	996	for (int t = 0; t < 4; t++) {
+  8	1000	if (!cnt) continue;
+  8	1021	if (((UNMOVE_DROP_KOMA >> k) & 1) && c < 2)
+  8	1025	while (src) {
+  4	1033	if (g_upromo[k][d / 4] & emp & ~g_uatk[CHICK2][L]) {
+  2	1044	for (int sq = 0; sq < 12; sq++) a |= ((g_xatt[getKoma(nb, 4 * sq)][sq] >> L) & 1u) << sq;
+  2	1047	if (asz >= 2) return n;
+  2	1050	if (asz == 1) return unmovePiece(nb, emp, 4 * __builtin_ctz(a), L, out, n);
+  4	1053	while (xs) {
+  1	1068	if (m != q) n = unmoveRaw(m, out, n);
+判定: 通過

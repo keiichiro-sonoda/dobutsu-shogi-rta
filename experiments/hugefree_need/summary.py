@@ -21,6 +21,7 @@ F0〜F6 の秒を順に積む. AnonHugePages が初めて 0.95 GiB を超えた�
   超えたら, free の最大で同じ計算をする。
   止める: 新しい基準が 16 GiB 以上 / 消費量が本ごとに大きく違う (5本の「その本の消費量」の最大が最小の2倍を超える。
   その本の消費量は, pin はノード0, free は両ノードの合計)。
+最後の「回したあとで足した表」(走ったノードの 2 MiB 未満の空きと消費量の和) は, 止める条件に掛かったあとで足した。
 """
 
 from __future__ import annotations
@@ -49,6 +50,24 @@ def heads(path: pathlib.Path) -> list[tuple[float, float, float]]:
         for ln in path.read_text(encoding="utf-8").splitlines()
         if ln.startswith("#") and (m := HEAD.search(ln))
     ]
+
+
+def small_free(path: pathlib.Path) -> dict[str, float]:
+    """ファイルの最初の /proc/buddyinfo の写しから, ノードごとの 2 MiB 未満 (order 0〜8) の空き (GiB)。
+    回したあとで足した (基準の決め方には使わない)。"""
+    out: dict[str, float] = {}
+    seen: set[tuple[str, str]] = set()
+    for ln in path.read_text(encoding="utf-8").splitlines():
+        c = ln.split()
+        if not c or c[0] != "Node":
+            continue
+        key = (c[1].rstrip(","), c[3])
+        if key in seen:  # 2つめの写し (dat/ を消したあと) は読まない
+            break
+        seen.add(key)
+        kib = sum(int(n) * 4 * 2**o for o, n in enumerate(c[4:]) if o < 9)
+        out[key[0]] = out.get(key[0], 0.0) + kib / 1048576
+    return out
 
 
 def tsv(path: pathlib.Path) -> dict[str, float]:
@@ -202,6 +221,16 @@ def main() -> int:
         a = r["after_clean"]
         print(f"- {r['label']} のあと: ノード0 {a[0]:.2f} GiB（門番の判定） → {'走れる' if a[0] >= new else '**走れない**'} / "
               f"両ノードの合計 {a[2]:.2f} GiB（tools/run.sh の判定） → {'走れる' if a[2] >= new else '**走れない**'}")  # fmt: skip
+    print()
+    print("### 回したあとで足した表: 走ったノードの 2 MiB 未満の空き（走る前）と消費量の和（基準の決め方には使わない）")
+    print()
+    print("| 本 | 走ったノード | 2 MiB 未満の空き（走る前） | 2 MiB 以上の消費量 | 和 |")
+    print("|---|---|---|---|---|")
+    for r in rows:
+        node = "0" if r["use"]["node0"] >= r["use"]["node1"] else "1"
+        small = small_free(LOGS / f"{r['label']}_before.txt")[node]
+        use = r["use"][f"node{node}"]
+        print(f"| {r['label']} | {node} | {small:.2f} | {use:.2f} | {small + use:.2f} |")
     print()
     print("=> 止める: " + "; ".join(stop) if stop else f"=> 止める条件に掛からない: 新しい基準は {new} GiB")
     return 1 if stop else 0

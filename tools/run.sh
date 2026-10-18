@@ -65,9 +65,12 @@ fi
 # #21 以降の巨大ページの利得は, 走り始めるときに 2 MiB 以上のまとまった空きが残っていることを
 # 前提にしている. 断片化していると頼んでも付かない (実験 lever_scan_2 の1回目は
 # thp_fault_fallback 909, P1 7.35 → 10.86 秒). /proc/buddyinfo の order 9 以上 (2 MiB 以上) の
-# 空きブロックを両ノードで足し, HUGEFREE_MIN_GIB (既定 16) に満たなければ計測を始めずに止める.
-# 16 GiB は, 同時に要る巨大ページの最大 (後退解析の索引 8 GiB. 全探索の発見済み表は
-# 作り直しの瞬間に 2 + 4 GiB) に余裕を見た値.
+# 空きブロックを両ノードで足し, HUGEFREE_MIN_GIB (既定 8) に満たなければ計測を始めずに止める.
+# 8 GiB は, impl/38_precheck の完走1本が空きブロックを使う量 (全部の大きさの空きの減り. 巨大ページ 1.59 GiB と,
+# ほかの確保と dat/ のページキャッシュ) の最大 5.25 GiB を 1.5 倍して切り上げた値 (実験 experiments/hugefree_need2.
+# 2 MiB 未満の空きが無くても足りる側の量). #23〜#38 は 16 GiB だった (#23 の後退解析の索引 8 GiB と,
+# 発見済み表を作り直す瞬間の 2 + 4 GiB を見込んだ値. 索引は #34 で, 作り直しは #30 で無くなっていた).
+# 大きな表や配列を足す・替えたら, その実験の手順で測り直す.
 # ⚠️ キャッシュを落とす操作 (root が要る) はここではやらない. 足りなければ何をすべきかを出して止める.
 #    落としたらその記録を CACHE_DROP に入れて起動し直す (計測を始める前なので, 引き直しにはならない).
 #    判定は走る前だけ. 走ってから遅かったので落として走り直す, はしない (遅い本を捨てて引き直すのと同じ).
@@ -87,7 +90,7 @@ hugefree_gib() {
         END { if (seen) printf "%.2f", kib / 1048576; else printf "-" }' /proc/buddyinfo 2>/dev/null \
         || printf -- "-"
 }
-HUGEFREE_MIN_GIB="${HUGEFREE_MIN_GIB:-16}"
+HUGEFREE_MIN_GIB="${HUGEFREE_MIN_GIB:-8}"
 HUGEFREE_LINE=""
 while read -r node; do
     HUGEFREE_LINE+="node${node} $(hugefree_gib "$node") / "

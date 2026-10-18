@@ -111,9 +111,10 @@ def test_run_sh_checks_the_hugepage_free_memory_before_measuring() -> None:
 
     記録 #23 から。判定は走る前だけ。走ってから遅かったのでキャッシュを落として走り直すのは、
     遅い本を捨てて引き直すのと同じなので、run.sh の中には走ったあとの判定を置かない。
+    既定は 8 GiB (#23〜#38 は 16 GiB。実験 hugefree_need2 で測り直した)。
     """
     script = run_sh()
-    assert shell_default("HUGEFREE_MIN_GIB") == "${HUGEFREE_MIN_GIB:-16}"
+    assert shell_default("HUGEFREE_MIN_GIB") == "${HUGEFREE_MIN_GIB:-8}"
     assert "/proc/buddyinfo" in script
     check = script.index("巨大ページのための空きが足りない")
     assert check < script.index('mkdir -p "$WORK"'), "作業ディレクトリを作ってから確かめている"

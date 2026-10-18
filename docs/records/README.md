@@ -47,5 +47,6 @@ frontmatter の2か所にある。読み物としては記録表、機械可読�
 | [#35](35-bitboard.md) | [`impl/35_bitboard/`](../../impl/35_bitboard/) |
 | [#36](36-bb-unmove.md) | [`impl/36_bb_unmove/`](../../impl/36_bb_unmove/) |
 | [#37](37-mirror1.md) | [`impl/37_mirror1/`](../../impl/37_mirror1/) |
+| [#38](38-precheck.md) | [`impl/38_precheck/`](../../impl/38_precheck/) |
 
 試行をまたぐ話は [`../measurement-noise.md`](../measurement-noise.md) にある。

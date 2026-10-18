@@ -1,0 +1,18 @@
+# 記録 #37 (impl/37_mirror1) の成果物との照合 (バイト単位)
+# diff -rq <#37 の dat/> <#38 の dat/>  と  md5sum 一覧 (LC_ALL=C sort) の sha256
+#   cd <dat>; find . -type f -print0 | LC_ALL=C sort -z | xargs -0 md5sum | sha256sum
+#   (dat/ の中へ cd せず, 同じ値を外から出した. experiments/gate_38_precheck/check_answer.py の md5_list_sha)
+#
+# #38 は全探索の生成器にキャッチの先行判定を入れたが, 戻り値・後続の列 (並びまで)・キャッチ抜きの数は #37 と同じ
+# (experiments/f1_select_catch が到達可能な全局面で確かめた). 全探索の待ち行列も, 後退解析が局面を決める順も
+# 変わらないので, dat/ は全探索の側も後退解析の側も #37 とバイト一致する.
+#
+# ⚠️ #37 本走の dat/ は runs/ にあり git に入っていない. その md5 一覧の sha256 は,
+#    results/37_mirror1/bytecompare.txt の最後の行の値 (a982b554596c…) と同じ.
+#
+files:        #37 213 / #38 213
+bytes:        #37 1974425336 / #38 1974425336
+md5_list_sha256: #37 a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce
+                 #38 a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce
+diff -rq:     exit=0 (0 行)
+md5 list:     一致

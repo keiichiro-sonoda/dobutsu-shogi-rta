@@ -141,6 +141,7 @@ python3 tools/fingerprint_dat.py <dat> --against oracle/fingerprint.tsv  # 固�
 | 35 | `impl/35_bitboard/` | 1スレッド | **0:01:54** | **281.75×** | 2026-10-17 | [ログ](results/35_bitboard/) [ノート](docs/records/35-bitboard.md) 全探索の生成器をビットボード型にした（マスの集合をビットで持ち、表引きで行き先の集合を作って `ctz` で取り出す。実験 [`bitboard_gen`](experiments/bitboard_gen/) の `bb_nibble`）。後続の列は並びまで #34 と同じ。[門番](experiments/gate_35_bitboard/)で **完走 −10.26 s（区間 −10.73〜−9.79）**、ほぼ全部 F1 のユーザー時間（−10.25 s）で、後退解析は ＋0.00 s。全探索 0:00:53 / 残り 0:01:00（後退解析）。**`dat/` は #34 と全213ファイルでバイト一致**（[出力](results/35_bitboard/bytecompare.txt)） |
 | 36 | `impl/36_bb_unmove/` | 1スレッド | **0:01:40** | **320.25×** | 2026-10-17 | [ログ](results/36_bb_unmove/) [ノート](docs/records/36-bb-unmove.md) 後退解析の逆向きの生成器をビットボード型にした（元のマスの候補を「表 ∧ 空きマス ∧ ¬利くマス」のビット集合で出し、番号の大きい順に `lzcnt` で取り出す。実験 [`unmove_gen`](experiments/unmove_gen/) の `bb_unmove`）。前任の候補の列は並びまで #35 と同じ。[門番](experiments/gate_36_bb_unmove/)で **完走 −14.98 s（区間 −15.38〜−14.58）**、ほぼ全部 `U_loop` のユーザー時間（−14.93 s）で、全探索は −0.17 s。全探索 0:00:54 / 残り 0:00:46（後退解析）。**`dat/` は #35 と全213ファイルでバイト一致**（[出力](results/36_bb_unmove/bytecompare.txt)） |
 | 37 | `impl/37_mirror1/` | 1スレッド | **0:01:29** | **357.73×** | 2026-10-17 | [ログ](results/37_mirror1/) [ノート](docs/records/37-mirror1.md) 逆向きの生成器で鏡像の側から手を戻すのをやめ、q だけから戻して正規化した（q が対称でなければ対称な候補を2回出す。実験 [`mirror1_keep`](experiments/mirror1_keep/) の `mirror1`）。前任の候補の多重集合は #36 と同じで、並びは変わる。[門番](experiments/gate_37_mirror1/)で **完走 −9.97 s（区間 −10.47〜−9.47）**、ほぼ全部 `U_loop` のユーザー時間（−9.76 s）。全探索 0:00:53 / 残り 0:00:36（後退解析）。後退解析の側の `dat/` は並びが #36 と違い、**手数ごとに束ねた 176 束が #36 と一致**（[出力](results/37_mirror1/bytecompare.txt)） |
+| 38 | `impl/38_precheck/` | 1スレッド | **0:01:25** | **374.92×** | 2026-10-18 | [ログ](results/38_precheck/) [ノート](docs/records/38-precheck.md) 全探索の生成器にキャッチの先行判定を入れた（反転の直後に、`g_dst` を裏返した表と駒の種類ごとのマスの集合の AND を5つ並べて「相手のライオンを取れるか」だけを決め、取れれば後続を作らずに返す。実験 [`f1_select_catch`](experiments/f1_select_catch/) の `precheck`）。後続の列は並びまで #37 と同じ。[門番](experiments/gate_38_precheck/)で **完走 −4.23 s（区間 −4.83〜−3.63）**、ほぼ全部 F1 のユーザー時間（−4.18 s）で、生成器だけのベンチの換算（−7.49 s）の 56%。全探索 0:00:49 / 残り 0:00:36（後退解析）。**`dat/` は #37 と全213ファイルでバイト一致**（[出力](results/38_precheck/bytecompare.txt)） |
 
 各試行の分析は [`docs/records/`](docs/records/) に1本ずつ置いてある
 （[索引](docs/records/README.md)）。
@@ -187,21 +188,21 @@ Python が集合演算とファイル分割を担当し、C が指し手生成�
 
 ## 次の標的
 
-段ごとの大きい順は **F1 展開 48.0 s（53.4%）、`U_loop` 後退解析のループ 32.4 s（36.0%）**、
+段ごとの大きい順は **F1 展開 44.0 s（51.3%）、`U_loop` 後退解析のループ 32.3 s（37.6%）**、
 F6 2.4 s、`U_init` 後退解析の初期化 1.8 s、`U_draw` 引き分けを拾う 1.8 s、F0＋F2＋F5 2.2 s
-（[`forward_summary.tsv`](results/37_mirror1/forward_summary.tsv) と
-[`retreat_summary.tsv`](results/37_mirror1/retreat_summary.tsv)）。
-#37 で逆向きの生成器の仕事を半分にし、F1 がはっきり一番大きい段になった。
+（[`forward_summary.tsv`](results/38_precheck/forward_summary.tsv) と
+[`retreat_summary.tsv`](results/38_precheck/retreat_summary.tsv)）。
+#38 で F1 の生成器にキャッチの先行判定を入れた（F1 48.0 → 44.0 s）。
 **残っているのは全部 C の中**で、F1 の生成器と `U_loop` の逆向きの生成器が2本の柱。
 
 残っているレバー（中身と実測は [`docs/levers.md`](docs/levers.md) のレバー表）:
 
-- 生成器に残った分岐を減らす（全探索の三項演算2つと `normalBoard`、
-  逆向きの打てるか・持ち駒・正規形）
+- 生成器に残った分岐を減らす（全探索の三項演算2つと `normalBoard` は #38 の上でベンチを
+  測り直してから、逆向きの打てるか・持ち駒・正規形）
+- 生成器のビット集合を取り出すループの抜け（F1 の生成器に残った予測ミスの最大）
 - 後退解析のループの到達しない候補を減らす
 - 逆向きの生成器で盤の反転を1回にする（実験では遅くなった。理由を分けてから）
 - 引き分けを拾う区間で未知局面のランクを持っておく
-- キャッチの先行判定
 - malloc の mmap のしきい値
 - 待ち行列の塊の大きさ
 

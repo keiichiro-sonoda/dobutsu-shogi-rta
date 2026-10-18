@@ -47,9 +47,12 @@ repos:
         pass_filenames: false
         always_run: true
 
+      # コミットのときは、変わったファイルに関係する重いテストだけを回す (軽いテストは毎回全部).
+      # 凍結した実装どうしの比較は、実装もテストも変わらなければ何度回しても同じなので.
+      # 選び方は tools/select_tests.py. make check と CI は全部回す
       - id: pytest
-        name: pytest (オラクル整合 / baseline 凍結 / verify_log)
-        entry: uv run pytest -q
+        name: pytest (変わったものに関係するテスト。tools/select_tests.py)
+        entry: uv run python tools/select_tests.py --staged --run -- -q
         language: system
         pass_filenames: false
         always_run: true

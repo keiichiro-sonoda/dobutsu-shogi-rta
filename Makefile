@@ -14,7 +14,7 @@ LABEL ?= $(notdir $(patsubst %/,%,$(IMPL)))
 
 .DEFAULT_GOAL := help
 
-.PHONY: help setup fmt lint lint-sh type doc test cov check publish-check prereg-check hooks measure clean
+.PHONY: help setup fmt lint lint-sh type doc test test-staged cov check publish-check prereg-check hooks measure clean
 
 help:  ## このヘルプを出す
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) \
@@ -42,6 +42,9 @@ doc:  ## 文書を検査する (doc_lint / noise_table)
 
 test:  ## テストを走らせる (pytest)
 	$(UV) run pytest
+
+test-staged:  ## git に足した変更に関係するテストだけを回す (コミットのときと同じ選び方)
+	$(UV) run python tools/select_tests.py --staged --run -- -q
 
 cov:  ## カバレッジ付きでテストし HTML レポートも出す
 	$(UV) run pytest --cov --cov-report=term-missing --cov-report=html

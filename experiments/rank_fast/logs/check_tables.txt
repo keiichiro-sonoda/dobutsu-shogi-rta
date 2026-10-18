@@ -1,0 +1,31 @@
+=== 開始 check_tables 2026-10-18T15:51:05+00:00 ===
+# rank.so sha256 a1c69d5f26e0 / bench.so sha256 dd26c973f5a7
+# rank_bench: fwd	thr	269694	1032701	1032701	97	100171997	00605a44584d7ec4
+番地	命令	.so の表に当たった標本の内訳	.so の外の標本	静的に決めた記号	一致
+3629	andn 0x360(%r11,%rax,8),%rsi,%rsi	g_reach:1	0	g_reach	○
+3646	andn 0x3c0(%r11,%rax,8),%rdx,%rdx	g_reach:1	0	g_reach	○
+37b0	mov 0x10(%rsp),%r8	-	3	?	○
+6783	mov 0x8f4(%rsp),%edx	-	2	?	○
+6794	mov 0x8f8(%rsp),%r8d	-	3	?	○
+67a2	mov 0x8fc(%rsp),%r9d	-	2	?	○
+7eb2	mov (%r10),%rax	-	88	?	○
+7f49	movzbl 0x10(%r9),%ecx	g_rank_lion:69	65	g_rank_lion	○
+7f4e	and 0x8(%r9),%rdx	g_rank_lion:57	61	g_rank_lion	○
+7f76	movzbl 0x11(%r9),%edx	g_rank_lion:56	65	g_rank_lion	○
+7fab	movzwl (%rbx,%rdx,2),%edx	g_rank_pair:4	5	g_rank_pair	○
+7fb6	movzbl (%r14,%rsi,1),%esi	g_rank_code:3	4	g_rank_code	○
+7fc7	movzwl (%rbx,%rdx,2),%edx	g_rank_pair:5	4	g_rank_pair	○
+7fd6	mov (%r15,%rdx,4),%edx	g_rank_half:1133	1150	g_rank_half	○
+7fde	movzwl (%rbx,%rsi,2),%esi	g_rank_pair:11	6	g_rank_pair	○
+7ff6	movzbl (%r14,%rcx,1),%ecx	g_rank_code:3	4	g_rank_code	○
+7fff	movzwl (%rbx,%rsi,2),%esi	g_rank_pair:3	8	g_rank_pair	○
+8012	mov (%r15,%rsi,4),%edi	g_rank_half:928	948	g_rank_half	○
+803a	mov (%rcx,%r8,4),%ecx	g_rank_hand:131	136	g_rank_hand	○
+803e	and $0x3,%esi	-	1	-	判定しない
+8041	add (%r9),%rsi	g_rank_lion:24	21	g_rank_lion	○
+804b	add (%r9,%r8,8),%rsi	g_rank_split:233	243	g_rank_split	○
+8056	mov (%r9,%r8,4),%r8d	g_rank_rmul:133	139	g_rank_rmul	○
+8099	add %rax,%rdx	-	1	-	判定しない
+809c	mov (%rsp),%rax	-	6	?	○
+# 命令 25 / 食い違い 0
+=== 完了 check_tables 2026-10-18T15:51:06+00:00 (exit=0) ===

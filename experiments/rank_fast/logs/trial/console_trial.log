@@ -1,0 +1,36 @@
+--- trial/t1 の前のノード0: 2 MiB 以上の空きブロック 16.86 GiB (しきい値 8) ---
+=== 開始 trial/t1 (r38: impl/38_precheck (so sha256 a712601ee2c9, py sha256 06cd838c803a, -g の .text は一致)) 2026-10-18T15:39:24+00:00 ===
+python3 pid を取った. U_loop と U_draw の perf を付ける
+=== 終了 trial/t1 2026-10-18T15:40:54+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:30.42
+	Maximum resident set size (kbytes): 3610924
+	Minor (reclaiming a frame) page faults: 2729168
+F1：46.2511 秒
+U_loop：33.5141 秒
+U_draw：1.8745 秒
+# samples	cycles:pp	69316
+# samples	mem_load_uops_retired.l1_miss:pp	115359
+# samples	mem_load_uops_retired.l2_hit:pp	111852
+event	where	chain	line	table	samples
+# samples	cycles:pp	52829
+# samples	mem_load_uops_retired.l1_miss:pp	115326
+# samples	mem_load_uops_retired.l2_hit:pp	90163
+event	where	chain	line	table	samples
+# samples	cycles:pp	10158
+# samples	mem_load_uops_retired.l1_miss:pp	2226
+# samples	mem_load_uops_retired.l2_hit:pp	1700
+event	where	chain	line	table	samples
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #38 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #38 本走と照合 ---
+74 ラウンド（#38 は 74）/ 件数の列 一致
+=== 完了 trial/t1 2026-10-18T15:41:02+00:00 ===

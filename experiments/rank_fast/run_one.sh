@@ -1,16 +1,18 @@
 #!/bin/bash
 # 実験 rank_fast の段1: 空の dat/ から完走を1本, F1・U_loop・U_draw の3つの区間を perf record で取る (記録試行ではない)
 #
-#   run_one.sh <ラベル>
+#   run_one.sh <l1|l2> <ラベル>
 #
 # experiments/perf_34/run_one.sh の record の本の作り (F1 は起動した perf, U_loop は python に -p で付けた perf) に,
 # U_draw を数える3つ目の perf (これも -p で付ける) を足したもの. 3つとも -D -1 (止めた状態で始める) と --control fifo: で,
 # 腕のパッチ (perf_34 の perf_ctl.patch と patches/u_draw_ctl.patch) が区間の境界で enable / disable を送る.
-# 取るのは3つのイベントで, どれも pp (PEBS) と -d (ロードの番地). 周期は素数で, イベントごとに cpu/…,period=…/ で書く
-# (experiments/perf_38 の試しの本で, -c を並べる書き方だと cycles の番地が全部カーネルに付いた):
-#   cycles                             F1・U_loop 2000003, U_draw 400009
-#   mem_load_uops_retired.l1_miss      F1・U_loop 2003,    U_draw 20011
-#   mem_load_uops_retired.l2_hit       F1・U_loop 2003,    U_draw 20011
+# 取るのは2つのイベントで, どちらも pp (PEBS) と -d (ロードの番地). 周期は素数で, イベントごとに cpu/…,period=…/ で書く
+# (experiments/perf_38 の試しの本で, -c を並べる書き方だと cycles の番地が全部カーネルに付いた). 周期は3区間で同じ:
+#   l1   cycles (2000003) と mem_load_uops_retired.l1_miss (20011)
+#   l2   cycles (2000003) と mem_load_uops_retired.l2_hit (20011)
+# 登録のときは3つを1本で取る形 (ロードの周期 2003) だったが, 本番の前の試しで, PEBS のイベントを2つ以上並べると
+# ロードの標本の数が本ごとに大きく揺れ, perf stat の数と合わなかった (README の「本番の前の試しで直したこと」).
+# 2つまでにして周期を 20011 にすると, 標本の数 × 周期が perf stat の数と合った
 # 解析は numactl --cpunodebind=0 --membind=0 で固定する. perf 自身は固定しない.
 #
 # 走る前に, ノード0の 2 MiB 以上の空きブロックが HUGEFREE_MIN_GIB (既定 8) 以上あるかを見て
@@ -27,16 +29,18 @@ ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 # shellcheck source-path=SCRIPTDIR source=lib.sh
 source "$HERE/lib.sh"
-LABEL="${1:?ラベルを指定すること}"
+KIND="${1:?種類を指定すること (l1|l2)}"
+LABEL="${2:?ラベルを指定すること}"
 W="$ROOT/runs/rank_fast/$LABEL"
 NUMA=(numactl --cpunodebind=0 --membind=0)
 HUGEFREE_MIN_GIB="${HUGEFREE_MIN_GIB:-8}"
 L="$HERE/logs/$LABEL"
 
-EV_BIG=(-e "cpu/cycles,period=2000003/pp" -e "cpu/mem_load_uops_retired.l1_miss,period=2003/pp"
-    -e "cpu/mem_load_uops_retired.l2_hit,period=2003/pp")
-EV_DRAW=(-e "cpu/cycles,period=400009/pp" -e "cpu/mem_load_uops_retired.l1_miss,period=20011/pp"
-    -e "cpu/mem_load_uops_retired.l2_hit,period=20011/pp")
+case "$KIND" in
+    l1) EV=(-e "cpu/cycles,period=2000003/pp" -e "cpu/mem_load_uops_retired.l1_miss,period=20011/pp") ;;
+    l2) EV=(-e "cpu/cycles,period=2000003/pp" -e "cpu/mem_load_uops_retired.l2_hit,period=20011/pp") ;;
+    *) echo "種類は l1 / l2: $KIND" >&2; exit 2 ;;
+esac
 
 command -v numactl > /dev/null || { echo "numactl が無い" >&2; exit 2; }
 command -v perf > /dev/null || { echo "perf が無い" >&2; exit 2; }
@@ -64,7 +68,7 @@ fi
 
 mkdir -p "$W/dat" "$W/kaiseki_log"
 BUILD=$("$HERE/build_arm.sh" "$W")
-echo "=== 開始 $LABEL ($BUILD) $(date --iso-8601=seconds) ==="
+echo "=== 開始 $LABEL ($KIND: $BUILD) $(date --iso-8601=seconds) ==="
 
 freq_header > "$W/freq.log"
 sample_hw >> "$W/freq.log" 2>/dev/null &
@@ -75,9 +79,9 @@ trap 'kill "$SPID" 2>/dev/null || true' EXIT
 # 区間ごとの FIFO. このシェルが読み書き両方で開いておく (perf と python が片側だけで開いても止まらないように)
 mkfifo "$W/ctl_F1" "$W/ack_F1" "$W/ctl_U" "$W/ack_U" "$W/ctl_D" "$W/ack_D"
 exec 20<>"$W/ctl_F1" 21<>"$W/ack_F1" 22<>"$W/ctl_U" 23<>"$W/ack_U" 24<>"$W/ctl_D" 25<>"$W/ack_D"
-PA=(perf record -q -d -o "$W/rec_F1.data" "${EV_BIG[@]}" -D -1 "--control=fifo:$W/ctl_F1,$W/ack_F1" --)
-PB=(perf record -q -d -o "$W/rec_U_loop.data" "${EV_BIG[@]}" -D -1 "--control=fifo:$W/ctl_U,$W/ack_U")
-PC=(perf record -q -d -o "$W/rec_U_draw.data" "${EV_DRAW[@]}" -D -1 "--control=fifo:$W/ctl_D,$W/ack_D")
+PA=(perf record -q -d -o "$W/rec_F1.data" "${EV[@]}" -D -1 "--control=fifo:$W/ctl_F1,$W/ack_F1" --)
+PB=(perf record -q -d -o "$W/rec_U_loop.data" "${EV[@]}" -D -1 "--control=fifo:$W/ctl_U,$W/ack_U")
+PC=(perf record -q -d -o "$W/rec_U_draw.data" "${EV[@]}" -D -1 "--control=fifo:$W/ctl_D,$W/ack_D")
 
 set +e
 (cd "$W" && PERF_CTL_F1="$W/ctl_F1" PERF_ACK_F1="$W/ack_F1" \

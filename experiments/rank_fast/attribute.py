@@ -9,9 +9,11 @@ experiments/perf_38/attribute.py を広げたもの。違いは2つ:
   1. 外側と一番内側の関数だけでなく, インライン展開の鎖を全部残す。rankFindKoma は rankOf の中の
      ほかに unmoveRaw とキャッチの先行判定でも展開されるので, 一番内側と外側の関数だけでは
      rankOf の中かを決められない
-  2. ロードの標本 (perf record -d の番地) を, .so の中の静的な表 (nm の記号) に寄せる。
-     .so を読み込んだ先頭は, 標本の命令の番地 − その命令のリンク時の番地 (perf_branch_34 の
-     branches.py の resolve) で出す。.so の外 (巨大ページの配列・スタック・Python) は「-」
+  2. ロードの標本を, その命令が読む .so の中の静的な表 (nm の記号) に寄せる (table の列)。
+     登録のときは perf record -d のデータの番地で寄せるつもりだったが, この CPU と perf では
+     mem_load_uops_retired の標本の番地が 0xfeb800xx のような値ばかりで使えなかった (本番の前の試し。README)。
+     そこで命令の側から決める (tables.py。決め方は check_tables.py が perf mem の番地と照らした)。
+     表に決まらないロード (スタック・入力の列・巨大ページの配列) は「?」, cycles の標本は「-」
 標本の番地は -g なしの .so の逆アセンブルでリンク時の番地に直し, -g の .so (.text の中身と
 番地が同じ。build_arm.sh が確かめる) の addr2line -i で鎖と行に寄せる。animal_shogi.so の外の
 標本は dso の名前 (パスを除く) ごとに, カーネルは「[kernel]」にまとめる (番地は残さない)。
@@ -31,6 +33,7 @@ from collections import Counter
 HERE = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent / "perf_branch_34"))
 from branches import disasm, resolve  # noqa: E402
+from tables import table_of_load  # noqa: E402
 
 SAMPLE = re.compile(r"^\s*(\S+?):\s+([0-9a-f]+)\s+([0-9a-f]+)\s+(\S+)\s+\((.*)\)\s*$")
 # cpu/<イベント>,period=<周期>/<修飾> の形のイベント名を <イベント>:<修飾> にそろえる
@@ -91,7 +94,6 @@ def table_of(starts: list[int], ends: list[tuple[int, str]], a: int) -> str:
 def main(argv: list[str]) -> int:
     so, gso = argv[1], argv[2]
     d = disasm(so)
-    starts, ends = data_symbols(so)
     hit: Counter[tuple[str, int, str]] = Counter()
     other: Counter[tuple[str, str]] = Counter()
     total: Counter[str] = Counter()
@@ -99,9 +101,7 @@ def main(argv: list[str]) -> int:
         m = SAMPLE.match(line)
         if not m:
             continue
-        ev, daddr, ip, symoff, dso = (
-            event_name(m.group(1)), int(m.group(2), 16), int(m.group(3), 16), m.group(4), m.group(5)
-        )
+        ev, symoff, dso = event_name(m.group(1)), m.group(4), m.group(5)
         total[ev] += 1
         base = dso.rsplit("/", 1)[-1]
         if base == "animal_shogi.so":
@@ -109,9 +109,7 @@ def main(argv: list[str]) -> int:
             if a is None:
                 other[(ev, "animal_shogi.so?")] += 1
                 continue
-            tbl = "-"
-            if not ev.startswith("cycles") and daddr:
-                tbl = table_of(starts, ends, daddr - (ip - a))
+            tbl = "-" if ev.startswith("cycles") else table_of_load(d, a)
             hit[(ev, a, tbl)] += 1
         elif "kernel" in base or base.startswith("[") or symoff.startswith("0xffffffff"):
             other[(ev, "[kernel]")] += 1

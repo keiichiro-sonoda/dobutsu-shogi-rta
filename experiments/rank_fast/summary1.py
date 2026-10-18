@@ -20,16 +20,17 @@ from collections import Counter, defaultdict
 
 HERE = pathlib.Path(__file__).resolve().parent
 LOGS = HERE / "logs"
-RUNS = ("r1", "r2", "r3")
+# 3回 × 2種類 (l1: cycles と L1 の外れ, l2: cycles と L2 で当たったロード). cycles は6本とも, ロードは種類の3本
+RUNS = ("r1_l1", "r1_l2", "r2_l2", "r2_l1", "r3_l1", "r3_l2")
 STAGES = ("F1", "U_loop", "U_draw")
-# run_one.sh の周期 (区間ごと)
+# run_one.sh の周期 (3区間で同じ)
 CYC = "cycles:pp"
 L1 = "mem_load_uops_retired.l1_miss:pp"
 L2H = "mem_load_uops_retired.l2_hit:pp"
 PERIOD = {
-    "F1": {CYC: 2000003, L1: 2003, L2H: 2003},
-    "U_loop": {CYC: 2000003, L1: 2003, L2H: 2003},
-    "U_draw": {CYC: 400009, L1: 20011, L2H: 20011},
+    "F1": {CYC: 2000003, L1: 20011, L2H: 20011},
+    "U_loop": {CYC: 2000003, L1: 20011, L2H: 20011},
+    "U_draw": {CYC: 2000003, L1: 20011, L2H: 20011},
 }
 
 # rankOf の中の区分 (一番内側の関数, 行) → 区分.
@@ -131,11 +132,12 @@ def counts(label: str) -> dict[str, dict[str, float]]:
 
 def stage1(out: list[str]) -> dict[str, dict[str, list[float]]]:
     w = out.append
-    w("## 完走 3 本の検査")
+    w("## 完走 6 本の検査")
     w("")
     con = (LOGS / "console_stage1.log").read_text(encoding="utf-8")
-    done = len(re.findall(r"^=== 完了 r\d", con, re.M))
-    w(f"- 開始 {con.count('=== 開始 r')} 本 / 完了 {done} 本")
+    began = len(re.findall(r"^=== 開始 r\d_l\d \(", con, re.M))
+    done = len(re.findall(r"^=== 完了 r\d_l\d ", con, re.M))
+    w(f"- 開始 {began} 本 / 完了 {done} 本")
     for lb in RUNS:
         ans = (LOGS / f"{lb}_answer.txt").read_text(encoding="utf-8").strip().splitlines()[-1]
         w(f"- {lb}: {ans}")
@@ -180,6 +182,8 @@ def stage1(out: list[str]) -> dict[str, dict[str, list[float]]]:
             for k in CATS:
                 cat_rows[k].append(cats[k] / cyc_samples * cyc_total / c["calls"])
             for ev, dst in ((L1, tbl_l1), (L2H, tbl_l2h)):
+                if ev not in total:
+                    continue
                 tb: Counter[str] = Counter()
                 for e, _wh, ch, _, t, n in rows:
                     if e == ev and in_rank(ch):
@@ -193,7 +197,7 @@ def stage1(out: list[str]) -> dict[str, dict[str, list[float]]]:
         w(f"- 区間の秒 {med(res[st]['stage_sec'])}、局面 {npos:,}、"
           f"rankOf の呼び出し {ncall:,}（{ncall / npos:.3f} / 局面）")
         w("")
-        w("| | 3本の中央値（範囲） |")
+        w("| | 中央値（範囲）。cycles は6本、ロードは種類ごとの3本 |")
         w("|---|---|")
         w(f"| rankOf の標本の割合 | {pct(res[st]['share'])} |")
         w(f"| rankOf の秒（割合 × 区間の秒） | {med3(res[st]['sec'])} |")
@@ -263,7 +267,7 @@ def rankbench(out: list[str], real: dict[str, dict[str, list[float]]]) -> None:
         w("")
         w(f"- chain − thr: {med([a - b for a, b in zip(chain, thr, strict=True)])}、"
           f"thr − small: {med([a - b for a, b in zip(thr, small, strict=True)])}")
-        w(f"- 本物の {st} の rankOf {rc:.1f} cycles / 呼び出し（3本の中央値）を3つに分ける"
+        w(f"- 本物の {st} の rankOf {rc:.1f} cycles / 呼び出し（6本の中央値）を3つに分ける"
           "（README の「主因の決め方」）:")
         ts, tt = statistics.median(small), statistics.median(thr)
         w(f"  - 計算（small）: {ts:.1f}")

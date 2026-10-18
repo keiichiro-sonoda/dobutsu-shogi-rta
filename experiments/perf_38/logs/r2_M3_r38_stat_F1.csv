@@ -1,0 +1,7 @@
+# started on Sun Oct 18 12:38:41 2026
+
+147948939766,,cycles,43966632978,100.00,,
+292697239442,,instructions,43966632978,100.00,1.98,insn per cycle
+28862543361,,rs_events.empty_cycles,43966632978,100.00,,
+16401414223,,br_inst_retired.all_branches,43966632978,100.00,,
+2451277714,,cycle_activity.stalls_l2_miss,43966632978,100.00,,

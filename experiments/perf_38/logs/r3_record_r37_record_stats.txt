@@ -1,0 +1,9 @@
+# perf report --stats の THROTTLE / UNTHROTTLE と標本の数 (kernel.perf_event_max_sample_rate = 14000)
+        THROTTLE events:        119  ( 0.1%)
+      UNTHROTTLE events:        119  ( 0.1%)
+          SAMPLE events:      95186  (99.0%)
+    LOST_SAMPLES events:        618  ( 0.6%)
+          SAMPLE events:      81536
+    LOST_SAMPLES events:        309
+          SAMPLE events:      13650
+    LOST_SAMPLES events:        309

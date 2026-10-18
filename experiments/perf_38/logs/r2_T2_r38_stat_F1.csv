@@ -1,0 +1,7 @@
+# started on Sun Oct 18 12:57:17 2026
+
+147739678673,,cycles,43706156142,100.00,,
+292693826143,,instructions,43706156142,100.00,1.98,insn per cycle
+5215381500,,int_misc.recovery_cycles,43706156142,100.00,,
+3042015600,,idq_uops_not_delivered.cycles_0_uops_deliv.core,43706156142,100.00,,
+894495080,,br_misp_retired.all_branches,43706156142,100.00,,

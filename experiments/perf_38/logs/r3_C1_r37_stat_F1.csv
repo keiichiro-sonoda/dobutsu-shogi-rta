@@ -1,0 +1,7 @@
+# started on Sun Oct 18 13:28:13 2026
+
+162224477849,,cycles,48346927444,100.00,,
+337948844589,,instructions,48346927444,100.00,2.08,insn per cycle
+345056498,,mem_load_uops_retired.l1_miss,48346927444,100.00,,
+79675541,,mem_load_uops_retired.l2_miss,48346927444,100.00,,
+3931044,,mem_load_uops_retired.l3_miss,48346927444,100.00,,

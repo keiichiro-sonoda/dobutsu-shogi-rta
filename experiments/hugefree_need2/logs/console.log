@@ -1,0 +1,70 @@
+=== hugefree_need 開始 2026-10-18T09:33:15+00:00 ===
+--- 回す前の負荷 ---
+load average: 1.22, 0.98, 0.75
+CPU 使用率 (全 CPU, 1秒): 2%
+--- p1_pin (pin) の前: 走る前 (p1_pin, pin, 1 本目. 今の基準と比べる量は ノード0 19.02 GiB, 基準 16 GiB) (2026-10-18T09:33:17+00:00). 2 MiB 以上の空きブロック: node0 19.02 / node1 22.34 / 合計 41.36 GiB ---
+=== 開始 p1_pin (pin: impl/38_precheck (so sha256 a712601ee2c9)) 2026-10-18T09:33:17+00:00 ===
+=== 終了 p1_pin 2026-10-18T09:34:45+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:27.85
+	Maximum resident set size (kbytes): 3603560
+--- thp_fault_fallback の前後差: 0 ---
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+ファイル 213 個. md5 一覧の sha256: a982b554596c / #38 本走 a982b554596c => 一致
+答えの検査: PASS
+=== 完了 p1_pin 2026-10-18T09:34:49+00:00 ===
+--- f2_free (free) の前: 走る前 (f2_free, free, 2 本目. 今の基準と比べる量は 両ノードの合計 41.00 GiB, 基準 16 GiB) (2026-10-18T09:34:50+00:00). 2 MiB 以上の空きブロック: node0 18.66 / node1 22.33 / 合計 41.00 GiB ---
+=== 開始 f2_free (free: impl/38_precheck (so sha256 a712601ee2c9)) 2026-10-18T09:34:50+00:00 ===
+=== 終了 f2_free 2026-10-18T09:36:19+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:28.10
+	Maximum resident set size (kbytes): 3603400
+--- thp_fault_fallback の前後差: 0 ---
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+ファイル 213 個. md5 一覧の sha256: a982b554596c / #38 本走 a982b554596c => 一致
+答えの検査: PASS
+=== 完了 f2_free 2026-10-18T09:36:23+00:00 ===
+--- p3_pin (pin) の前: 走る前 (p3_pin, pin, 3 本目. 今の基準と比べる量は ノード0 18.46 GiB, 基準 16 GiB) (2026-10-18T09:36:24+00:00). 2 MiB 以上の空きブロック: node0 18.46 / node1 22.34 / 合計 40.80 GiB ---
+=== 開始 p3_pin (pin: impl/38_precheck (so sha256 a712601ee2c9)) 2026-10-18T09:36:24+00:00 ===
+=== 終了 p3_pin 2026-10-18T09:37:52+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:27.58
+	Maximum resident set size (kbytes): 3603424
+--- thp_fault_fallback の前後差: 0 ---
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+ファイル 213 個. md5 一覧の sha256: a982b554596c / #38 本走 a982b554596c => 一致
+答えの検査: PASS
+=== 完了 p3_pin 2026-10-18T09:37:59+00:00 ===
+--- f4_free (free) の前: 走る前 (f4_free, free, 4 本目. 今の基準と比べる量は 両ノードの合計 40.85 GiB, 基準 16 GiB) (2026-10-18T09:38:00+00:00). 2 MiB 以上の空きブロック: node0 18.51 / node1 22.33 / 合計 40.85 GiB ---
+=== 開始 f4_free (free: impl/38_precheck (so sha256 a712601ee2c9)) 2026-10-18T09:38:00+00:00 ===
+=== 終了 f4_free 2026-10-18T09:39:28+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:28.33
+	Maximum resident set size (kbytes): 3603612
+--- thp_fault_fallback の前後差: 0 ---
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+ファイル 213 個. md5 一覧の sha256: a982b554596c / #38 本走 a982b554596c => 一致
+答えの検査: PASS
+=== 完了 f4_free 2026-10-18T09:39:33+00:00 ===
+--- p5_pin (pin) の前: 走る前 (p5_pin, pin, 5 本目. 今の基準と比べる量は ノード0 18.35 GiB, 基準 16 GiB) (2026-10-18T09:39:34+00:00). 2 MiB 以上の空きブロック: node0 18.35 / node1 22.30 / 合計 40.65 GiB ---
+=== 開始 p5_pin (pin: impl/38_precheck (so sha256 a712601ee2c9)) 2026-10-18T09:39:34+00:00 ===
+=== 終了 p5_pin 2026-10-18T09:41:01+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:27.43
+	Maximum resident set size (kbytes): 3603436
+--- thp_fault_fallback の前後差: 0 ---
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+ファイル 213 個. md5 一覧の sha256: a982b554596c / #38 本走 a982b554596c => 一致
+答えの検査: PASS
+=== 完了 p5_pin 2026-10-18T09:41:06+00:00 ===
+=== 全5本 完了 2026-10-18T09:41:06+00:00 ===

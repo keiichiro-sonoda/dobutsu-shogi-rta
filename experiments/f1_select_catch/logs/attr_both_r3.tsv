@@ -1,0 +1,27 @@
+# samples	2371
+where	addr	func	inline	line	samples
+animal_shogi.so	0x3966	nextBoardInvNormalNC	nextBoardInvNormalNC	706	949
+animal_shogi.so	0x36cb	nextBoardInvNormalNC	nextBoardInvNormalNC	681	426
+animal_shogi.so	0x39f3	nextBoardInvNormalNC	nextBoardInvNormalNC	726	237
+animal_shogi.so	0x80b5	benchFwd	benchFwd	21	211
+animal_shogi.so	0x37db	nextBoardInvNormalNC	nextBoardInvNormalNC	706	169
+animal_shogi.so	0x3976	nextBoardInvNormalNC	nextBoardInvNormalNC	699	143
+animal_shogi.so	0x3a47	nextBoardInvNormalNC	nextBoardInvNormalNC	734	118
+animal_shogi.so	0x3b1d	nextBoardInvNormalNC	nextBoardInvNormalNC	737	24
+animal_shogi.so	0x399f	nextBoardInvNormalNC	nextBoardInvNormalNC	724	16
+animal_shogi.so	0x6820	rankTablesBuild	rankTablesBuild	321	7
+animal_shogi.so	0x3a50	nextBoardInvNormalNC	nextBoardInvNormalNC	731	7
+animal_shogi.so	0x682e	rankTablesBuild	rankTablesBuild	321	6
+animal_shogi.so	0x6812	rankTablesBuild	rankTablesBuild	321	3
+animal_shogi.so	0x635f	dstTableBuild	dstTableBuild	631	1
+animal_shogi.so	0x6481	dstTableBuild	dstTableBuild	642	1
+animal_shogi.so	0x68f1	rankTablesBuild	rankTablesBuild	331	1
+animal_shogi.so	0x69ae	rankTablesBuild	rankTablesBuild	340	1
+animal_shogi.so	0x6c92	rankTablesBuild	rankTablesBuild	373	1
+animal_shogi.so	0x7e77	benchFwd	benchFwd	21	1
+animal_shogi.so	0x80d2	benchFwd	benchFwd	19	1
+ld-linux-x86-64.so.2	-	-	-	-	27
+libc.so.6	-	-	-	-	14
+bench	-	-	-	-	4
+numactl	-	-	-	-	2
+libnuma.so.1.0.0	-	-	-	-	1

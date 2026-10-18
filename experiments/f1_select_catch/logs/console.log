@@ -1,0 +1,55 @@
+=== f1_select_catch 開始 2026-10-18T04:50:02+00:00 ===
+perf version 6.8.12
+kernel.perf_event_paranoid = 1
+--- 回す前の負荷 ---
+load average: 0.69, 0.88, 0.68
+CPU 使用率 (全 CPU, 1秒): 1%
+=== 開始 build 2026-10-18T04:50:03+00:00 ===
+base (so sha256 1730c3fdcb0b, -g の .text は一致, 警告 0, 関数の記号は impl/37_mirror1 と同じ 54 個)
+base: bench.so sha256 9ce4496eefc8 / bench sha256 426e09faeb0d
+select (so sha256 59575c200907, -g の .text は一致, 警告 0, 関数の記号は impl/37_mirror1 と同じ 54 個)
+select: bench.so sha256 659f8f546d49 / bench sha256 426e09faeb0d
+precheck (so sha256 a712601ee2c9, -g の .text は一致, 警告 0, 関数の記号は impl/37_mirror1 と同じ 54 個)
+precheck: bench.so sha256 dd26c973f5a7 / bench sha256 426e09faeb0d
+both (so sha256 3bddaaf99a6e, -g の .text は一致, 警告 0, 関数の記号は impl/37_mirror1 と同じ 54 個)
+both: bench.so sha256 e76c111af239 / bench sha256 426e09faeb0d
+=== 完了 build 2026-10-18T04:50:26+00:00 ===
+入力の dat/ の md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce (#37 本走 a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce)
+入力: #37 本走の dat/ の 213 ファイル
+=== 開始 verify_select 2026-10-18T04:50:30+00:00 ===
+局面 246803167 (キャッチ 140298614 / トライ負け 7018985 / 未知 99485568) / 不一致 0
+verify_select exit=0
+=== 完了 verify_select 2026-10-18T04:51:13+00:00 ===
+=== 開始 verify_precheck 2026-10-18T04:51:13+00:00 ===
+局面 246803167 (キャッチ 140298614 / トライ負け 7018985 / 未知 99485568) / 不一致 0
+verify_precheck exit=0
+=== 完了 verify_precheck 2026-10-18T04:51:51+00:00 ===
+=== 開始 verify_both 2026-10-18T04:51:51+00:00 ===
+局面 246803167 (キャッチ 140298614 / トライ負け 7018985 / 未知 99485568) / 不一致 0
+verify_both exit=0
+=== 完了 verify_both 2026-10-18T04:52:29+00:00 ===
+計時する腕: base select precheck both
+=== 開始 bench 2026-10-18T04:52:29+00:00 ===
+周 1 完了 2026-10-18T04:53:09+00:00
+周 2 完了 2026-10-18T04:53:49+00:00
+周 3 完了 2026-10-18T04:54:28+00:00
+周 4 完了 2026-10-18T04:55:08+00:00
+周 5 完了 2026-10-18T04:55:48+00:00
+周 6 完了 2026-10-18T04:56:28+00:00
+周 7 完了 2026-10-18T04:57:08+00:00
+=== 完了 bench 2026-10-18T04:57:08+00:00 ===
+=== 開始 attr 2026-10-18T04:57:08+00:00 ===
+attr base r1: # samples	3027
+attr select r1: # samples	2915
+attr precheck r1: # samples	2440
+attr both r1: # samples	2411
+attr base r2: # samples	2997
+attr select r2: # samples	2912
+attr precheck r2: # samples	2447
+attr both r2: # samples	2419
+attr base r3: # samples	2984
+attr select r3: # samples	2964
+attr precheck r3: # samples	2489
+attr both r3: # samples	2371
+=== 完了 attr 2026-10-18T04:57:11+00:00 ===
+=== f1_select_catch 完了 2026-10-18T04:57:11+00:00 ===

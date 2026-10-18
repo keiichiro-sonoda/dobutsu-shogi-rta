@@ -25,6 +25,13 @@ from aggregate import lines_of  # noqa: E402
 from branches import disasm, resolve  # noqa: E402
 
 SAMPLE = re.compile(r"^\s*(\S+?):\s+([0-9a-f]+)\s+(\S+)\s+\((.*)\)\s*$")
+# cpu/<イベント>,period=<周期>/<修飾> の形のイベント名を <イベント>:<修飾> にそろえる
+PMU = re.compile(r"^cpu/([^,/]+)(?:,[^/]*)?/(\w*)$")
+
+
+def event_name(ev: str) -> str:
+    m = PMU.match(ev)
+    return f"{m.group(1)}:{m.group(2)}" if m else ev
 
 
 def main(argv: list[str]) -> int:
@@ -37,7 +44,7 @@ def main(argv: list[str]) -> int:
         m = SAMPLE.match(line)
         if not m:
             continue
-        ev, symoff, dso = m.group(1), m.group(3), m.group(4)
+        ev, symoff, dso = event_name(m.group(1)), m.group(3), m.group(4)
         total[ev] += 1
         base = dso.rsplit("/", 1)[-1]
         if base == "animal_shogi.so":

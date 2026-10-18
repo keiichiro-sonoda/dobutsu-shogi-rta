@@ -5,7 +5,7 @@
 #
 # 種類:
 #   stat:<組>   perf stat で F1 を数える (EVENTS の組. 多重化しないように3つずつに分けた)
-#   record      perf record で F1 の標本を取る (cycles:pp と mem_load_uops_retired.l3_miss:pp. 周期は素数)
+#   record      perf record で F1 の標本を取る (cycles と mem_load_uops_retired.l3_miss を pp で. 周期は素数)
 #
 # experiments/perf_34/run_one.sh の写しを F1 だけにしたもの. 起動した perf が -D -1 (止めた状態で始める) と
 # --control fifo: で, 腕のパッチ (perf_34 の perf_ctl.patch) が F1 の境界で送る enable / disable を受ける.
@@ -98,8 +98,10 @@ case "$KIND" in
         PA=(perf stat -x, -o "$W/stat_F1.csv" -e "${EVENTS[${KIND#stat:}]}" -D -1 "$CF" --)
         ;;
     record)
-        PA=(perf record -q -o "$W/rec_F1.data" -e cycles:pp -c "$P_CYC" -e mem_load_uops_retired.l3_miss:pp -c "$P_L3"
-            -D -1 "$CF" --)
+        # 周期はイベントごとに cpu/…,period=…/ で書く (-e cycles:pp -c … -e …:pp -c … と並べると, 試しの本で cycles の標本の
+        # 番地が全部カーネルに付いた. logs/trial_1/ と README)
+        PA=(perf record -q -o "$W/rec_F1.data" -e "cpu/cycles,period=$P_CYC/pp"
+            -e "cpu/mem_load_uops_retired.l3_miss,period=$P_L3/pp" -D -1 "$CF" --)
         ;;
 esac
 

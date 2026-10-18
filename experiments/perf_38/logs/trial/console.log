@@ -1,0 +1,47 @@
+=== perf_38 の試し 開始 2026-10-18T12:03:26+00:00 ===
+--- trial_S1_r38 の前のノード0: 2 MiB 以上の空きブロック 18.43 GiB (しきい値 8) ---
+=== 開始 trial_S1_r38 (r38 stat:S1: r38: impl/38_precheck (so sha256 a712601ee2c9, py sha256 1d132e04b6e2, -g の .text は一致)) 2026-10-18T12:03:28+00:00 ===
+=== 終了 trial_S1_r38 2026-10-18T12:04:51+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:23.76
+	Maximum resident set size (kbytes): 3555620
+	Minor (reclaiming a frame) page faults: 1469010
+F1：44.0014 秒
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #37 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #37 本走と照合 ---
+74 ラウンド（#37 は 74）/ 件数の列 一致
+=== 完了 trial_S1_r38 2026-10-18T12:04:56+00:00 ===
+--- trial_record_r38 の前のノード0: 2 MiB 以上の空きブロック 18.35 GiB (しきい値 8) ---
+=== 開始 trial_record_r38 (r38 record: r38: impl/38_precheck (so sha256 a712601ee2c9, py sha256 1d132e04b6e2, -g の .text は一致)) 2026-10-18T12:04:58+00:00 ===
+=== 終了 trial_record_r38 2026-10-18T12:06:24+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:25.92
+	Maximum resident set size (kbytes): 3555176
+	Minor (reclaiming a frame) page faults: 1469472
+F1：45.6129 秒
+# samples	cycles:pp	74050
+# samples	mem_load_uops_retired.l3_miss:pp	9054
+event	where	func	inline	line	samples
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #37 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #37 本走と照合 ---
+74 ラウンド（#37 は 74）/ 件数の列 一致
+=== 完了 trial_record_r38 2026-10-18T12:06:29+00:00 ===
+=== perf_38 の試し 終了 2026-10-18T12:06:29+00:00 ===

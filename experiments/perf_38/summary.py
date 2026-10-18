@@ -166,8 +166,9 @@ def precheck_lines(src: list[str]) -> set[int]:
     return set(range(lo, hi + 1)) if lo and hi else set()
 
 
-def bucket(arm: str, where: str, inline: str, line: str) -> str:
-    """標本の区分。名前と行の文で分ける (インライン展開されたものは一番内側の関数で)。"""
+def bucket(arm: str, where: str, func: str, inline: str, line: str) -> str:
+    """標本の区分。名前と行の文で分ける (インライン展開されたものは一番内側の関数で。
+    ただし外側が生成器なら, 中に展開された下請け (rankFindKoma など) も生成器に入れる)。"""
     if where == "[kernel]":
         return "カーネル"
     if where.startswith(("python", "libpython")):
@@ -181,7 +182,7 @@ def bucket(arm: str, where: str, inline: str, line: str) -> str:
     text = src[ln - 1] if 0 < ln <= len(src) else ""
     if inline == "komaSet" or (inline == "nextBoardInvNormalNC" and ln in PRECHECK[arm]):
         return "生成器: 先行判定"
-    if inline in ("nextBoardInvNormalNC", "normalBoard"):
+    if inline in ("nextBoardInvNormalNC", "normalBoard") or func == "nextBoardInvNormalNC":
         return "生成器: 本体"
     if inline == "invBoard":
         return "生成器: invBoard"
@@ -217,7 +218,7 @@ def record(label: str) -> tuple[dict[str, dict[str, int]], dict[str, int]]:
         rows = csv.DictReader((ln for ln in f if not ln.startswith("#")), delimiter="\t")
         for r in rows:
             n = int(r["samples"])
-            b = bucket(arm, r["where"], r["inline"], r["line"])
+            b = bucket(arm, r["where"], r["func"], r["inline"], r["line"])
             per[r["event"]][b] += n
             tot[r["event"]] += n
     return per, tot

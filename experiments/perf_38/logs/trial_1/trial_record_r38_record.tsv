@@ -1,0 +1,22 @@
+# samples	cycles:pp	72632
+# samples	mem_load_uops_retired.l3_miss:pp	10740
+event	where	func	inline	line	samples
+mem_load_uops_retired.l3_miss:pp	animal_shogi.so	expandRound	expandRound	866	2413
+mem_load_uops_retired.l3_miss:pp	animal_shogi.so	nextBoardSeenNormal	rankOf	408	1087
+mem_load_uops_retired.l3_miss:pp	animal_shogi.so	nextBoardSeenNormal	rankOf	409	937
+mem_load_uops_retired.l3_miss:pp	animal_shogi.so	nextBoardSeenNormal	rankOf	412	21
+mem_load_uops_retired.l3_miss:pp	animal_shogi.so	nextBoardSeenNormal	rankOf	416	11
+mem_load_uops_retired.l3_miss:pp	animal_shogi.so	nextBoardSeenNormal	seenTestAndSet	470	10
+mem_load_uops_retired.l3_miss:pp	animal_shogi.so	nextBoardSeenNormal	rankOf	407	8
+mem_load_uops_retired.l3_miss:pp	animal_shogi.so	nextBoardSeenNormal	rankOf	414	6
+mem_load_uops_retired.l3_miss:pp	animal_shogi.so	nextBoardSeenNormal	rankOf	406	3
+mem_load_uops_retired.l3_miss:pp	animal_shogi.so	nextBoardInvNormalNC	nextBoardInvNormalNC	671	2
+mem_load_uops_retired.l3_miss:pp	animal_shogi.so	nextBoardSeenNormal	zeroPush	596	1
+mem_load_uops_retired.l3_miss:pp	animal_shogi.so	nextBoardInvNormalNC	nextBoardInvNormalNC	680	1
+mem_load_uops_retired.l3_miss:pp	animal_shogi.so	nextBoardInvNormalNC	nextBoardInvNormalNC	697	1
+cycles:pp	[kernel]	-	-	-	72632
+mem_load_uops_retired.l3_miss:pp	libc.so.6	-	-	-	4258
+mem_load_uops_retired.l3_miss:pp	[kernel]	-	-	-	1765
+mem_load_uops_retired.l3_miss:pp	python3.12	-	-	-	183
+mem_load_uops_retired.l3_miss:pp	_ctypes.cpython-312-x86_64-linux-gnu.so	-	-	-	32
+mem_load_uops_retired.l3_miss:pp	libffi.so.8.1.4	-	-	-	1

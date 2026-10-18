@@ -1,0 +1,136 @@
+# 束ね方 (実験 f1_select_catch。回す前に決めた. make_categories.py が作った)
+line	bundle	what
+95	左右の正規化	normalBoard: u_long normalBoard(u_long b) {
+96	左右の正規化	normalBoard: u_long col_A, col_B, col_C;
+97	左右の正規化	normalBoard: col_A = (b >> 32) & 0xffff;
+98	左右の正規化	normalBoard: col_C = b & 0xffff;
+99	左右の正規化	normalBoard: // 入れ替えた数値が元の数値以上の場合
+100	左右の正規化	normalBoard: if (col_A <= col_C) return b;
+101	左右の正規化	normalBoard: col_B = (b >> 16) & 0xffff;
+102	左右の正規化	normalBoard: return ((b >> 48) << 48) | (col_C << 32) | (col_B) << 16 | c
+103	左右の正規化	normalBoard: }
+289	表づくり	rankTablesBuild: static void rankTablesBuild(void) {
+290	表づくり	rankTablesBuild: int a, b, i, s, s0, s1, idx, cls;
+291	表づくり	rankTablesBuild: uint32_t cnt[27];
+292	表づくり	rankTablesBuild: uint64_t board10[27], sigbase[27], handcnt[27], per_class;
+293	表づくり	rankTablesBuild: int16_t sigadd[27][27];
+294	表づくり	rankTablesBuild: uint64_t pairoff[27][27];
+295	表づくり	rankTablesBuild: int8_t lclass[144];
+296	表づくり	rankTablesBuild: if (g_rank_ready) return;
+297	表づくり	rankTablesBuild: memset(g_rank_code, 0xff, sizeof g_rank_code);
+298	表づくり	rankTablesBuild: for (i = 0; i < 9; i++) g_rank_code[RANK_CODE_KOMA[i]] = (ui
+299	表づくり	rankTablesBuild: for (i = 0; i < 256; i++) {
+300	表づくり	rankTablesBuild: int c0 = g_rank_code[i & 15], c1 = g_rank_code[i >> 4];
+301	表づくり	rankTablesBuild: g_rank_pair[i] = (c0 == 0xff || c1 == 0xff) ? 0xffff : (uint
+302	表づくり	rankTablesBuild: }
+303	表づくり	rankTablesBuild: // 5マスの全 9^5 通りを順に見て, 組ごとに出てきた順で順位を振る
+304	表づくり	rankTablesBuild: memset(cnt, 0, sizeof cnt);
+305	表づくり	rankTablesBuild: for (idx = 0; idx < 59049; idx++) {
+306	表づくり	rankTablesBuild: int x = idx, n[4] = {0, 0, 0, 0};
+307	表づくり	rankTablesBuild: for (i = 0; i < 5; i++) {
+308	表づくり	rankTablesBuild: n[RANK_CODE_KIND[x % 9]]++;
+309	表づくり	rankTablesBuild: x /= 9;
+310	表づくり	rankTablesBuild: }
+311	表づくり	rankTablesBuild: if (n[1] > 2 || n[2] > 2 || n[3] > 2) {
+312	表づくり	rankTablesBuild: g_rank_half[idx] = 0xffffffffu;
+313	表づくり	rankTablesBuild: continue;
+314	表づくり	rankTablesBuild: }
+315	表づくり	rankTablesBuild: s = n[1] * 9 + n[2] * 3 + n[3];
+316	表づくり	rankTablesBuild: g_rank_half[idx] = ((uint32_t)s << 16) | cnt[s]++;
+317	表づくり	rankTablesBuild: }
+318	表づくり	rankTablesBuild: memcpy(g_rank_cnt5, cnt, sizeof cnt);
+319	表づくり	rankTablesBuild: // 前後の組を足した組 (種類ごとに 2 を超えたら -1)
+320	表づくり	rankTablesBuild: for (s0 = 0; s0 < 27; s0++)
+321	表づくり	rankTablesBuild: for (s1 = 0; s1 < 27; s1++) {
+322	表づくり	rankTablesBuild: int g = s0 / 9 + s1 / 9, e = s0 / 3 % 3 + s1 / 3 % 3, c = s0
+323	表づくり	rankTablesBuild: sigadd[s0][s1] = (int16_t)((g > 2 || e > 2 || c > 2) ? -1 : 
+324	表づくり	rankTablesBuild: }
+325	表づくり	rankTablesBuild: // 合わせた組ごとに, 前半の組の小さい順に塊を並べる
+326	表づくり	rankTablesBuild: memset(board10, 0, sizeof board10);
+327	表づくり	rankTablesBuild: for (s0 = 0; s0 < 27; s0++)
+328	表づくり	rankTablesBuild: for (s1 = 0; s1 < 27; s1++) {
+329	表づくり	rankTablesBuild: s = sigadd[s0][s1];
+330	表づくり	rankTablesBuild: if (s < 0) continue;
+331	表づくり	rankTablesBuild: pairoff[s0][s1] = board10[s];
+332	表づくり	rankTablesBuild: board10[s] += (uint64_t)cnt[s0] * cnt[s1];
+333	表づくり	rankTablesBuild: }
+334	表づくり	rankTablesBuild: per_class = 0;
+335	表づくり	rankTablesBuild: for (s = 0; s < 27; s++) {
+336	表づくり	rankTablesBuild: handcnt[s] = (uint64_t)(3 - s / 9) * (3 - s / 3 % 3) * (3 - 
+337	表づくり	rankTablesBuild: sigbase[s] = per_class;
+338	表づくり	rankTablesBuild: per_class += board10[s] * handcnt[s];
+339	表づくり	rankTablesBuild: }
+340	表づくり	rankTablesBuild: memset(g_rank_split, 0, sizeof g_rank_split);
+341	表づくり	rankTablesBuild: memset(g_rank_rmul, 0, sizeof g_rank_rmul);
+342	表づくり	rankTablesBuild: memset(g_rank_hand, 0, sizeof g_rank_hand);
+343	表づくり	rankTablesBuild: for (s0 = 0; s0 < 27; s0++)
+344	表づくり	rankTablesBuild: for (s1 = 0; s1 < 27; s1++) {
+345	表づくり	rankTablesBuild: s = sigadd[s0][s1];
+346	表づくり	rankTablesBuild: if (s < 0) continue;
+347	表づくり	rankTablesBuild: g_rank_split[s0][s1] = sigbase[s] + pairoff[s0][s1] * handcn
+348	表づくり	rankTablesBuild: g_rank_rmul[s0][s1] = (uint32_t)(cnt[s1] * handcnt[s]);
+349	表づくり	rankTablesBuild: g_rank_hand[s0][s1] = (uint32_t)handcnt[s] | (uint32_t)(3 - 
+350	表づくり	rankTablesBuild: | (uint32_t)(3 - s / 9) << 12;
+351	表づくり	rankTablesBuild: }
+352	表づくり	rankTablesBuild: // ライオンの組. 走査で先に出てきた側を代表にし, 鏡像の側は盤を反転して代表に寄せる
+353	表づくり	rankTablesBuild: memset(lclass, -1, sizeof lclass);
+354	表づくり	rankTablesBuild: memset(g_rank_lion, 0, sizeof g_rank_lion);
+355	表づくり	rankTablesBuild: cls = 0;
+356	表づくり	rankTablesBuild: for (a = 0; a < 12; a++)
+357	表づくり	rankTablesBuild: for (b = 0; b < 12; b++) {
+358	表づくり	rankTablesBuild: int ma = rankMirrorSquare(a), mb = rankMirrorSquare(b);
+359	表づくり	rankTablesBuild: if (a == b || lclass[a * 12 + b] >= 0) continue;
+360	表づくり	rankTablesBuild: lclass[a * 12 + b] = (int8_t)cls;
+361	表づくり	rankTablesBuild: g_rank_lion[a * 12 + b].mirror = 0;
+362	表づくり	rankTablesBuild: lclass[ma * 12 + mb] = (int8_t)cls;
+363	表づくり	rankTablesBuild: if (ma * 12 + mb != a * 12 + b) g_rank_lion[ma * 12 + mb].mi
+364	表づくり	rankTablesBuild: cls++;
+365	表づくり	rankTablesBuild: }
+366	表づくり	rankTablesBuild: for (i = 0; i < 144; i++) {
+367	表づくり	rankTablesBuild: int l1 = i / 12, l2 = i % 12;
+368	表づくり	rankTablesBuild: if (lclass[i] < 0) continue;
+369	表づくり	rankTablesBuild: if (g_rank_lion[i].mirror) {
+370	表づくり	rankTablesBuild: l1 = rankMirrorSquare(l1);
+371	表づくり	rankTablesBuild: l2 = rankMirrorSquare(l2);
+372	表づくり	rankTablesBuild: }
+373	表づくり	rankTablesBuild: g_rank_lion[i].base = (uint64_t)lclass[i] * per_class;
+374	表づくり	rankTablesBuild: g_rank_lion[i].hi = (uint8_t)(l1 > l2 ? l1 : l2);
+375	表づくり	rankTablesBuild: g_rank_lion[i].lo = (uint8_t)(l1 > l2 ? l2 : l1);
+376	表づくり	rankTablesBuild: }
+377	表づくり	rankTablesBuild: g_rank_range = (uint64_t)cls * per_class;
+378	表づくり	rankTablesBuild: g_rank_ready = 1;
+379	表づくり	rankTablesBuild: }
+609	表づくり	dstTableBuild: __attribute__((constructor)) static void dstTableBuild(void)
+610	表づくり	dstTableBuild: static const int *const tables[4] = {GIRAFFE_MOVE, ELEPHANT_
+611	表づくり	dstTableBuild: static const int sizes[4] = {4, 4, 8, 6};
+612	表づくり	dstTableBuild: static const int owners[4] = {GIRAFFE2, ELEPHANT2, LION2, CH
+613	表づくり	dstTableBuild: for (int src = 0; src < 48; src += 4) {
+614	表づくり	dstTableBuild: int src_mod16 = src % 16;
+615	表づくり	dstTableBuild: for (int t = 0; t < 4; t++)
+616	表づくり	dstTableBuild: for (int i = 0; i < sizes[t]; i++) {
+617	表づくり	dstTableBuild: int dst = src + tables[t][i];
+618	表づくり	dstTableBuild: if (dst < 0 || 44 < dst) continue;
+619	表づくり	dstTableBuild: int dst_mod16 = dst % 16;
+620	表づくり	dstTableBuild: if (src_mod16 == 0 && dst_mod16 == 12) continue;
+621	表づくり	dstTableBuild: if (src_mod16 == 12 && dst_mod16 == 0) continue;
+622	表づくり	dstTableBuild: g_dst[owners[t]][src / 4] |= (u_long)1 << dst;
+623	表づくり	dstTableBuild: }
+624	表づくり	dstTableBuild: if (src % 16 != 0) g_dst[CHICK2][src / 4] |= (u_long)1 << (s
+625	表づくり	dstTableBuild: }
+626	表づくり	dstTableBuild: }
+650	ループの回数	利きの一覧の12マスのループ (今のまま)
+661	トライ・成り	相手のライオンがトライの段にいるか
+663	ループの回数	手番側の駒のマスを取り出すループ
+668	ループの回数	行き先を取り出すループ
+672	キャッチ	行き先が相手のライオン (return 0)
+675	持ち駒の数	取った駒の持ち駒の位置
+676	持ち駒の数	取った駒の種類の持ち駒が既にあるか
+678	トライ・成り	ひよこが端の行に進んだら成る
+679	駒の種類と空き	動かす駒がライオンか (キャッチ抜きの数え方を選ぶ)
+684	トライ・成り	トライが成立していて return -1
+686	ループの回数	空きマスを取り出すループ
+691	ループの回数	持ち駒の3種類のループ
+694	持ち駒の数	その種類の持ち駒が無い
+695	持ち駒の数	打ったあとの持ち駒の数
+697	ループの回数	打つ空きマスのループ
+704	その他	}

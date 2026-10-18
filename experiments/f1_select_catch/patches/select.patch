@@ -1,0 +1,55 @@
+--- a/animal_shogi.c
++++ b/animal_shogi.c
+@@ -102,6 +102,16 @@
+     return ((b >> 48) << 48) | (col_C << 32) | (col_B) << 16 | col_A;
+ }
+ 
++// 実験 f1_select_catch (select): normalBoard と同じ値を, 分岐せずに作る (nextBoardInvNormalNC だけが使う).
++// 入れ替えた盤を先に作り, col_A > col_C のときだけ全ビットが立つマスクで選ぶ.
++// normalBoard そのものは逆向きの生成器も呼ぶので書き換えない
++static inline u_long normalBoardSel(u_long b) {
++    u_long col_A = (b >> 32) & 0xffff, col_B = (b >> 16) & 0xffff, col_C = b & 0xffff;
++    u_long sw = ((b >> 48) << 48) | (col_C << 32) | (col_B << 16) | col_A;
++    u_long m = -(u_long)(col_A > col_C);
++    return b ^ ((b ^ sw) & m);
++}
++
+ // 手番入れ替え, 左右対称を正規化して次の盤面の配列を作成
+ // 冒頭で反転し, 後手目線の手を指す
+ // 記録 #20: moves を宣言で NULL に初期化した. default: 経路 (koma が 1/2/3/5) では
+@@ -664,6 +674,8 @@
+         src = __builtin_ctzll(x);
+         x &= x - 1;
+         koma = getKoma(b, src);
++        // 実験 f1_select_catch (select): 動かす駒がライオンなら全ビットが立つマスク (キャッチ抜きの数え方を選ぶ)
++        unsigned isL = -(unsigned)(koma == LION2);
+         t = g_dst[koma][src / 4] & ~own;
+         while (t) {
+             dst = __builtin_ctzll(t);
+@@ -673,12 +685,14 @@
+             // 取るか動くかは分岐にしない: 空きの行き先を消しても盤は変わらず, 持ち駒の更新は dst_koma != 0 のときだけ掛かる
+             nb = delKomaDouble(b, src, dst);
+             own_p = dst_koma == CHICKEN1 ? 54 : 52 + (int)dst_koma * 2;
+-            nb ^= ((b >> own_p) & 0b11 ? (u_long)0b11 << own_p : (u_long)0b01 << own_p) & -(u_long)(dst_koma != 0);
++            // 実験 f1_select_catch (select): その種類の持ち駒が既にあるか (0 / 1) を値にして, 0b01 / 0b11 を算術で作る
++            nb ^= ((u_long)(1 + 2 * (((b >> own_p) & 0b11) != 0)) << own_p) & -(u_long)(dst_koma != 0);
+             // ひよこが端の行 (dst % 16 == 0) に進んだら成る
+             k2 = koma + (u_long)((koma == CHICK2) & (int)((PROMO >> dst) & 1u)) * (CHICKEN2 - CHICK2);
+-            c = koma == LION2 ? (int)((att1 >> (dst / 4)) & 1u) : (atkL & ~(1u << (dst / 4))) != 0;
++            // 実験 f1_select_catch (select): ライオンの数え方と, ほかの駒の数え方を両方作り, isL で選ぶ
++            c = (int)((((att1 >> (dst / 4)) & 1u) & isL) | ((unsigned)((atkL & ~(1u << (dst / 4))) != 0) & ~isL));
+             nc += !c;
+-            nbs[nbs_p++] = normalBoard(nb | (k2 << dst));
++            nbs[nbs_p++] = normalBoardSel(nb | (k2 << dst));
+         }
+     }
+     if (try_flag) return -1;
+@@ -696,7 +710,7 @@
+         koma = i + 9;
+         for (j = 0; j < emp_num; j++) {
+             nc += !c;
+-            nbs[nbs_p++] = normalBoard(nb | (koma << emp_adrs[j]));
++            nbs[nbs_p++] = normalBoardSel(nb | (koma << emp_adrs[j]));
+         }
+     }
+     *non_catch = nc;

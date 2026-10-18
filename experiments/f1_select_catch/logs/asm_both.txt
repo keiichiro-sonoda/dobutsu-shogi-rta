@@ -1,0 +1,24 @@
+# both: nextBoardInvNormalNC の機械語 (-g の .so。.text は -g なしと一致)
+命令 392 / tzcnt 6 / cmov 7 / set 6 / 条件分岐 16
+-Wall -Wextra の警告: 0
+条件分岐の行 (数 / 行 / 文):
+  1	681	if (hit) return 0;
+  1	686	for (int sq = 0; sq < 12; sq++) {
+  2	699	while (x) {
+  2	706	while (t) {
+  2	710	if (dst_koma == LION1) return 0;
+  1	724	if (try_flag) return -1;
+  2	726	while (x) {
+  1	731	for (i = 0; i < 3; i++) {
+  1	734	if (!own_num) continue;
+  2	737	for (j = 0; j < emp_num; j++) {
+  1	744	}
+狙った3か所 (行の命令の数 / 条件分岐 / cmov / set。インライン展開された命令を行に寄せた数):
+  持ち駒の更新	行 715	命令 11 / 条件分岐 0 / cmov 1 / set 0
+  キャッチ抜きの数を選ぶ	行 719	命令 14 / 条件分岐 0 / cmov 1 / set 1
+  左右の正規化	行 108,109,110,111,112,113	命令 45 / 条件分岐 0 / cmov 2 / set 0
+3か所以外の三項演算 (変えない。条件分岐の数):
+  取った駒の持ち駒の位置	行 713	命令 4 / 条件分岐 0 / cmov 1 / set 0
+  打ったあとの持ち駒の数	行 735	命令 7 / 条件分岐 0 / cmov 1 / set 0
+先行判定 (行 673〜681 と komaSet の本体): 命令 80 / 条件分岐 1 / cmov 0 / set 0
+判定: 通過

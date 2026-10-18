@@ -1,0 +1,57 @@
+--- a/animal_shogi.c
++++ b/animal_shogi.c
+@@ -605,6 +605,9 @@
+ // dst < 0 || 44 < dst と左右の回り込み2条件を当てる. ひよこは src % 16 == 0 なら動けず, でなければ src - 4.
+ // .so を読み込んだときに1回作る (生成器に「表があるか」の分岐を足さない. ctypes の CDLL でも dlopen でも走る)
+ static u_long g_dst[16][12];
++// 実験 f1_select_catch (precheck): 表 g_reach[駒][マス L] は, 手番側の駒 (CHICK2〜CHICKEN2) が L へ動ける元のマスの集合
++// (マス s をビット 4s に置く). g_dst を裏返して作る (s から L へ動ける ⟺ L ∈ g_dst[駒][s]). dstTableBuild の最後で1回作る
++static u_long g_reach[16][12];
+ 
+ __attribute__((constructor)) static void dstTableBuild(void) {
+     static const int *const tables[4] = {GIRAFFE_MOVE, ELEPHANT_MOVE, LION_MOVE, CHICKEN2_MOVE};
+@@ -623,13 +626,26 @@
+             }
+         if (src % 16 != 0) g_dst[CHICK2][src / 4] |= (u_long)1 << (src - 4);
+     }
++    for (int k = CHICK2; k <= CHICKEN2; k++)
++        for (int s = 0; s < 12; s++)
++            for (int d = 0; d < 12; d++)
++                if ((g_dst[k][s] >> (4 * d)) & 1) g_reach[k][d] |= (u_long)1 << (4 * s);
++}
++
++// 実験 f1_select_catch (precheck): 盤の 12 マスのうち, 駒 k がいるマスの集合 (マス s をビット 4s に置く).
++// k と XOR して 0 になるマス (今の try_flag の作りと同じ)
++static inline u_long komaSet(u_long b, u_long k) {
++    const u_long LO = 0x111111111111UL;
++    u_long z = b ^ (k * LO);
++    return ~(z | z >> 1 | z >> 2 | z >> 3) & LO;
+ }
+ 
+ // 後続の列と順番, 戻り値, *non_catch は nextBoardInvNormalNC (impl/34_unmove) と同じ (全局面で確かめる).
+ // 順番を保つ仕組み: 手番側の駒のマスを ctz で番号の小さい順に取り出し (今の src = 0, 4, …, 44 の走査と同じ順),
+ // その駒の行き先を ctz で番号の小さい順に取り出す (移動量の表はどれも昇順なので, 今の「表の順」と同じ).
+ // 空きマスも番号の小さい順に並べ, 打つ手は今のコードのまま最後に出す.
+-// 相手のライオンを取れる行き先に当たったら, 今と同じく走査の途中で return 0 (キャッチの先行判定はしない).
++// 相手のライオンを取れる行き先に当たったら, 今と同じく走査の途中で return 0.
++// 実験 f1_select_catch (precheck): その前に, 反転の直後でキャッチの先行判定をする (取れるなら利きの一覧も後続も作らずに return 0)
+ // トライ (相手のライオンが src % 16 == 12 の段) は全部の駒を見たあとで -1. return 0 が先に勝つのも今と同じ
+ int nextBoardInvNormalNC(u_long b, u_long *nbs, int *non_catch) {
+     const u_long LO = 0x111111111111UL;      // 各マスの4ビットの最下位
+@@ -644,6 +660,16 @@
+     unsigned att1 = 0, atkL = 0;
+     *non_catch = 0;
+     b = invBoard(b);
++    // 実験 f1_select_catch (precheck): キャッチの先行判定. 相手のライオンのマス L を出し, 駒の種類ごとに
++    // 「L へ動ける元のマスの集合」と「手番側のその種類の駒のマスの集合」を AND して OR でまとめる.
++    // 駒の種類は5つで固定なので, ループも, 局面ごとに回数の変わる取り出しも無い. 当たったら *non_catch は 0 のまま
++    {
++        int Lq = __builtin_ctzll(komaSet(b, LION1)) / 4;
++        u_long hit = (g_reach[CHICK2][Lq] & komaSet(b, CHICK2)) | (g_reach[GIRAFFE2][Lq] & komaSet(b, GIRAFFE2))
++                     | (g_reach[ELEPHANT2][Lq] & komaSet(b, ELEPHANT2)) | (g_reach[LION2][Lq] & komaSet(b, LION2))
++                     | (g_reach[CHICKEN2][Lq] & komaSet(b, CHICKEN2));
++        if (hit) return 0;
++    }
+     // 一覧: 相手の駒が届くマスの集合 att1 と, 手番側のライオンに届いている相手の駒のマスの集合 atkL (今のまま)
+     {
+         int Lsq = rankFindKoma(b & 0xffffffffffffUL, LION2);

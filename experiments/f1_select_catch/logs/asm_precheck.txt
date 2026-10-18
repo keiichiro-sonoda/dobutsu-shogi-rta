@@ -1,0 +1,26 @@
+# precheck: nextBoardInvNormalNC の機械語 (-g の .so。.text は -g なしと一致)
+命令 363 / tzcnt 6 / cmov 4 / set 4 / 条件分岐 20
+-Wall -Wextra の警告: 0
+条件分岐の行 (数 / 行 / 文):
+  2	100	if (col_A <= col_C) return b;
+  1	671	if (hit) return 0;
+  1	676	for (int sq = 0; sq < 12; sq++) {
+  2	689	while (x) {
+  2	694	while (t) {
+  2	698	if (dst_koma == LION1) return 0;
+  1	702	nb ^= ((b >> own_p) & 0b11 ? (u_long)0b11 << own_p : (u_long)0b01 << own_p) & -(u_long)(dst_koma != 
+  1	705	c = koma == LION2 ? (int)((att1 >> (dst / 4)) & 1u) : (atkL & ~(1u << (dst / 4))) != 0;
+  1	710	if (try_flag) return -1;
+  2	712	while (x) {
+  1	717	for (i = 0; i < 3; i++) {
+  1	720	if (!own_num) continue;
+  2	723	for (j = 0; j < emp_num; j++) {
+  1	730	}
+狙った3か所 (行の命令の数 / 条件分岐 / cmov / set。インライン展開された命令を行に寄せた数):
+  持ち駒の更新	行 702	命令 10 / 条件分岐 1 / cmov 1 / set 0
+  キャッチ抜きの数を選ぶ	行 705	命令 13 / 条件分岐 1 / cmov 0 / set 1
+  左右の正規化	行 100	命令 4 / 条件分岐 2 / cmov 0 / set 0
+3か所以外の三項演算 (変えない。条件分岐の数):
+  取った駒の持ち駒の位置	行 701	命令 4 / 条件分岐 0 / cmov 1 / set 0
+  打ったあとの持ち駒の数	行 721	命令 7 / 条件分岐 0 / cmov 1 / set 0
+先行判定 (行 663〜671 と komaSet の本体): 命令 80 / 条件分岐 1 / cmov 0 / set 0

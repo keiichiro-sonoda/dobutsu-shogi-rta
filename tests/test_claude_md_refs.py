@@ -16,10 +16,14 @@ from conftest import ROOT
 
 QUOTE = re.compile(r"CLAUDE\.md ?(?:の)?「([^」\n]+)」")
 
-# 引用元が凍結物か生ログで直せず、しかも最初から言い換えだったもの (引用 → CLAUDE.md の言い回し)
+# 引用元が凍結物か生ログで直せず、最初から言い換えだったか、あとで CLAUDE.md の言い回しを
+# 今の作りに合わせて書き直したもの (引用 → いまの CLAUDE.md の言い回し)
 PARAPHRASES = {
     # experiments/numa_bind/logs/n1b_fingerprint.txt (コミット済みの生ログ)
     "生ログを入れてコミットする": "生ログを `experiments/<名前>/logs/` に入れてコミットする",
+    # docs/records/20-prefetch.md (記録ノート). 後退解析の索引は #34 で無くなったので,
+    # 本走が引きうる振れの書き方を替えた (規則「門番は固定し、本走は固定しない」は同じ)
+    "本走は索引のページの振れを引きうる": "本走は、どちらのノードで走るかの振れを引きうる",
 }
 
 

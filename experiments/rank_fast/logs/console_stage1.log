@@ -1,0 +1,249 @@
+=== rank_fast 段1 開始 2026-10-18T15:52:49+00:00 ===
+--- perf と設定 ---
+perf version 6.8.12
+kernel.perf_event_paranoid = 1
+kernel.perf_event_max_sample_rate = 14000
+kernel.nmi_watchdog = 1
+--- 回す前の負荷 ---
+load average: 0.74, 0.56, 0.66
+CPU 使用率 (全 CPU, 1秒): 1%
+--- 回す前のノード0のメモリ (/proc/buddyinfo と meminfo) ---
+Node 0, zone      DMA      0      0      0      0      0      0      0      0      1      1      2 
+Node 0, zone    DMA32    526    364    259    171    122     65     45     23     16     22    759 
+Node 0, zone   Normal  37408  48970  28704  20143   8888   4546   1666   1185    740    851   3119 
+Node 0 MemFree:        22340824 kB
+Node 0 FilePages:       5959452 kB
+=== 開始 r1_l1 2026-10-18T15:52:50+00:00 ===
+--- r1_l1 の前のノード0: 2 MiB 以上の空きブロック 16.86 GiB (しきい値 8) ---
+=== 開始 r1_l1 (l1: r38: impl/38_precheck (so sha256 a712601ee2c9, py sha256 06cd838c803a, -g の .text は一致)) 2026-10-18T15:52:52+00:00 ===
+python3 pid を取った. U_loop と U_draw の perf を付ける
+=== 終了 r1_l1 2026-10-18T15:54:21+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:29.32
+	Maximum resident set size (kbytes): 3610188
+	Minor (reclaiming a frame) page faults: 2729060
+F1：45.6708 秒
+U_loop：33.0887 秒
+U_draw：1.8459 秒
+# samples	cycles:pp	74304
+# samples	mem_load_uops_retired.l1_miss:pp	18488
+event	where	chain	line	table	samples
+cycles:pp	animal_shogi.so	nextBoardInvNormalNC	650	-	7544
+# samples	cycles:pp	52725
+# samples	mem_load_uops_retired.l1_miss:pp	18742
+event	where	chain	line	table	samples
+cycles:pp	animal_shogi.so	unmoveStep	1154	-	9530
+# samples	cycles:pp	3038
+# samples	mem_load_uops_retired.l1_miss:pp	2161
+event	where	chain	line	table	samples
+cycles:pp	animal_shogi.so	unmoveDraws>rankOf	416	-	446
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #38 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #38 本走と照合 ---
+74 ラウンド（#38 は 74）/ 件数の列 一致
+=== 完了 r1_l1 2026-10-18T15:54:31+00:00 ===
+=== 開始 r1_l2 2026-10-18T15:54:31+00:00 ===
+--- r1_l2 の前のノード0: 2 MiB 以上の空きブロック 16.86 GiB (しきい値 8) ---
+=== 開始 r1_l2 (l2: r38: impl/38_precheck (so sha256 a712601ee2c9, py sha256 06cd838c803a, -g の .text は一致)) 2026-10-18T15:54:33+00:00 ===
+python3 pid を取った. U_loop と U_draw の perf を付ける
+=== 終了 r1_l2 2026-10-18T15:56:01+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:28.38
+	Maximum resident set size (kbytes): 3610524
+	Minor (reclaiming a frame) page faults: 2728969
+F1：45.2993 秒
+U_loop：32.5892 秒
+U_draw：1.8281 秒
+# samples	cycles:pp	74208
+# samples	mem_load_uops_retired.l2_hit:pp	13834
+event	where	chain	line	table	samples
+cycles:pp	animal_shogi.so	nextBoardInvNormalNC	650	-	6666
+# samples	cycles:pp	54485
+# samples	mem_load_uops_retired.l2_hit:pp	13581
+event	where	chain	line	table	samples
+cycles:pp	animal_shogi.so	unmoveStep	1154	-	9859
+# samples	cycles:pp	3039
+# samples	mem_load_uops_retired.l2_hit:pp	1619
+event	where	chain	line	table	samples
+cycles:pp	animal_shogi.so	unmoveDraws>rankOf	416	-	431
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #38 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #38 本走と照合 ---
+74 ラウンド（#38 は 74）/ 件数の列 一致
+=== 完了 r1_l2 2026-10-18T15:56:10+00:00 ===
+=== 開始 r2_l2 2026-10-18T15:56:10+00:00 ===
+--- r2_l2 の前のノード0: 2 MiB 以上の空きブロック 16.86 GiB (しきい値 8) ---
+=== 開始 r2_l2 (l2: r38: impl/38_precheck (so sha256 a712601ee2c9, py sha256 06cd838c803a, -g の .text は一致)) 2026-10-18T15:56:12+00:00 ===
+python3 pid を取った. U_loop と U_draw の perf を付ける
+=== 終了 r2_l2 2026-10-18T15:57:40+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:28.44
+	Maximum resident set size (kbytes): 3610424
+	Minor (reclaiming a frame) page faults: 2729031
+F1：45.4391 秒
+U_loop：32.4972 秒
+U_draw：1.8203 秒
+# samples	cycles:pp	74052
+# samples	mem_load_uops_retired.l2_hit:pp	14011
+event	where	chain	line	table	samples
+cycles:pp	animal_shogi.so	nextBoardInvNormalNC	650	-	6745
+# samples	cycles:pp	54366
+# samples	mem_load_uops_retired.l2_hit:pp	13380
+event	where	chain	line	table	samples
+cycles:pp	animal_shogi.so	unmoveStep	1154	-	9846
+# samples	cycles:pp	3037
+# samples	mem_load_uops_retired.l2_hit:pp	1640
+event	where	chain	line	table	samples
+cycles:pp	animal_shogi.so	unmoveDraws>rankOf	416	-	457
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #38 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #38 本走と照合 ---
+74 ラウンド（#38 は 74）/ 件数の列 一致
+=== 完了 r2_l2 2026-10-18T15:57:49+00:00 ===
+=== 開始 r2_l1 2026-10-18T15:57:49+00:00 ===
+--- r2_l1 の前のノード0: 2 MiB 以上の空きブロック 16.86 GiB (しきい値 8) ---
+=== 開始 r2_l1 (l1: r38: impl/38_precheck (so sha256 a712601ee2c9, py sha256 06cd838c803a, -g の .text は一致)) 2026-10-18T15:57:51+00:00 ===
+python3 pid を取った. U_loop と U_draw の perf を付ける
+=== 終了 r2_l1 2026-10-18T15:59:20+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:29.15
+	Maximum resident set size (kbytes): 3610924
+	Minor (reclaiming a frame) page faults: 2728832
+F1：45.8051 秒
+U_loop：32.7751 秒
+U_draw：1.8298 秒
+# samples	cycles:pp	74378
+# samples	mem_load_uops_retired.l1_miss:pp	17607
+event	where	chain	line	table	samples
+cycles:pp	animal_shogi.so	nextBoardInvNormalNC	650	-	6675
+# samples	cycles:pp	54506
+# samples	mem_load_uops_retired.l1_miss:pp	18758
+event	where	chain	line	table	samples
+cycles:pp	animal_shogi.so	unmoveStep	1154	-	9813
+# samples	cycles:pp	3046
+# samples	mem_load_uops_retired.l1_miss:pp	2163
+event	where	chain	line	table	samples
+cycles:pp	animal_shogi.so	unmoveDraws>rankOf	416	-	439
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #38 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #38 本走と照合 ---
+74 ラウンド（#38 は 74）/ 件数の列 一致
+=== 完了 r2_l1 2026-10-18T15:59:29+00:00 ===
+=== 開始 r3_l1 2026-10-18T15:59:29+00:00 ===
+--- r3_l1 の前のノード0: 2 MiB 以上の空きブロック 16.86 GiB (しきい値 8) ---
+=== 開始 r3_l1 (l1: r38: impl/38_precheck (so sha256 a712601ee2c9, py sha256 06cd838c803a, -g の .text は一致)) 2026-10-18T15:59:31+00:00 ===
+python3 pid を取った. U_loop と U_draw の perf を付ける
+=== 終了 r3_l1 2026-10-18T16:01:00+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:28.54
+	Maximum resident set size (kbytes): 3610620
+	Minor (reclaiming a frame) page faults: 2729028
+F1：45.1975 秒
+U_loop：32.7737 秒
+U_draw：1.8338 秒
+# samples	cycles:pp	73810
+# samples	mem_load_uops_retired.l1_miss:pp	17365
+event	where	chain	line	table	samples
+cycles:pp	animal_shogi.so	nextBoardInvNormalNC	650	-	6613
+# samples	cycles:pp	54910
+# samples	mem_load_uops_retired.l1_miss:pp	18856
+event	where	chain	line	table	samples
+cycles:pp	animal_shogi.so	unmoveStep	1154	-	10064
+# samples	cycles:pp	3053
+# samples	mem_load_uops_retired.l1_miss:pp	2099
+event	where	chain	line	table	samples
+cycles:pp	animal_shogi.so	unmoveDraws>rankOf	416	-	424
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #38 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #38 本走と照合 ---
+74 ラウンド（#38 は 74）/ 件数の列 一致
+=== 完了 r3_l1 2026-10-18T16:01:10+00:00 ===
+=== 開始 r3_l2 2026-10-18T16:01:10+00:00 ===
+--- r3_l2 の前のノード0: 2 MiB 以上の空きブロック 16.86 GiB (しきい値 8) ---
+=== 開始 r3_l2 (l2: r38: impl/38_precheck (so sha256 a712601ee2c9, py sha256 06cd838c803a, -g の .text は一致)) 2026-10-18T16:01:11+00:00 ===
+python3 pid を取った. U_loop と U_draw の perf を付ける
+=== 終了 r3_l2 2026-10-18T16:02:40+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:28.87
+	Maximum resident set size (kbytes): 3610860
+	Minor (reclaiming a frame) page faults: 2728958
+F1：45.4449 秒
+U_loop：32.8830 秒
+U_draw：1.8340 秒
+# samples	cycles:pp	74793
+# samples	mem_load_uops_retired.l2_hit:pp	14391
+event	where	chain	line	table	samples
+cycles:pp	animal_shogi.so	nextBoardInvNormalNC	650	-	6658
+# samples	cycles:pp	55085
+# samples	mem_load_uops_retired.l2_hit:pp	13660
+event	where	chain	line	table	samples
+cycles:pp	animal_shogi.so	unmoveStep	1154	-	9997
+# samples	cycles:pp	3041
+# samples	mem_load_uops_retired.l2_hit:pp	1640
+event	where	chain	line	table	samples
+cycles:pp	animal_shogi.so	unmoveDraws>rankOf	416	-	435
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #38 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #38 本走と照合 ---
+74 ラウンド（#38 は 74）/ 件数の列 一致
+=== 完了 r3_l2 2026-10-18T16:02:49+00:00 ===
+=== 開始 rankbench_base 2026-10-18T16:02:49+00:00 ===
+rank.so sha256 a1c69d5f26e0 / bench.so sha256 dd26c973f5a7
+=== 開始 rankbench 2026-10-18T16:02:51+00:00 ===
+周 1 完了 2026-10-18T16:03:03+00:00
+周 2 完了 2026-10-18T16:03:14+00:00
+周 3 完了 2026-10-18T16:03:25+00:00
+周 4 完了 2026-10-18T16:03:36+00:00
+周 5 完了 2026-10-18T16:03:48+00:00
+周 6 完了 2026-10-18T16:03:59+00:00
+周 7 完了 2026-10-18T16:04:10+00:00
+=== 完了 rankbench 2026-10-18T16:04:10+00:00 ===
+=== rank_fast 段1 完了 2026-10-18T16:04:10+00:00 ===

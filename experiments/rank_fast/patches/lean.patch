@@ -1,0 +1,68 @@
+--- a/animal_shogi.c
++++ b/animal_shogi.c
+@@ -1,3 +1,4 @@
++#include <immintrin.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <sys/mman.h>
+@@ -276,6 +277,9 @@
+ static uint32_t g_rank_rmul[27][27];     // 前半の順位に掛ける数 (= 後半の通り数 x 持ち駒の通り数)
+ static uint32_t g_rank_hand[27][27];     // 持ち駒の通り数 | (3 - ひよこ) << 8 | (3 - きりん) << 12
+ static uint64_t g_rank_range = 0;        // 値域の大きさ
++// 実験 rank_fast の腕 lean: 番号の値と上の表の中身は変えずに, rankOf の命令を減らすための表
++static uint64_t g_rank_keep[144];        // ライオンの組 -> 反転したあとのライオンの2マス (hi / lo) を抜く pext のマスク
++static uint8_t g_rank_hpart[27][64];     // 合わせた組 -> 持ち駒の下位 6 ビット -> 番号の持ち駒の部分
+ static int g_rank_ready = 0;
+ 
+ // 5マス (9進数の各桁) の駒の種類: 0 空き / 1 きりん / 2 ぞう / 3 ひよこ・にわとり
+@@ -374,6 +378,15 @@
+         g_rank_lion[i].hi = (uint8_t)(l1 > l2 ? l1 : l2);
+         g_rank_lion[i].lo = (uint8_t)(l1 > l2 ? l2 : l1);
+     }
++    // 実験 rank_fast の腕 lean: rankSqueeze を2回当てるのと同じく, 2マスを抜いて上の組を下へ詰める
++    for (i = 0; i < 144; i++)
++        g_rank_keep[i] = 0xffffffffffffUL & ~((u_long)0xf << (4 * g_rank_lion[i].hi))
++                         & ~((u_long)0xf << (4 * g_rank_lion[i].lo));
++    // 持ち駒の部分 (h & 3) + (3 - ひよこ) * (((h >> 2) & 3) + (3 - きりん) * ((h >> 4) & 3)). g_rank_hand の
++    // (3 - ひよこ) << 8 と (3 - きりん) << 12 と同じ値を, 合わせた組 s から出す
++    for (s = 0; s < 27; s++)
++        for (i = 0; i < 64; i++)
++            g_rank_hpart[s][i] = (uint8_t)((i & 3) + (3 - s % 3) * (((i >> 2) & 3) + (3 - s / 9) * ((i >> 4) & 3)));
+     g_rank_range = (uint64_t)cls * per_class;
+     g_rank_ready = 1;
+ }
+@@ -398,13 +411,21 @@
+ // ランク. 正しい盤面 (rankValid が真) に対してだけ意味がある. 分岐は使わない
+ // 記録 #32: always_inline で呼び出し元へ必ず展開させる. #30 では gcc -O2 が大きさの見積もりで展開せず,
+ // nextBoardSeenNormal() から後続ごとに call していた. 計算の中身は変えていない
++// 実験 rank_fast の腕 lean: 値は上と同じまま, 命令を減らす (3か所)
++//   1. ライオンの2マス: 4ビットの値の下位3ビットが 100 なのはライオン (4 と 12) だけなので, 1回で両方の印を作り,
++//      上のビット (持ち主) で分ける (rankFindKoma を2回呼ぶ代わり)
++//   2. 詰め: rankSqueeze を2回当てる代わりに, 2マスを抜くマスクで pext を1回
++//   3. 持ち駒の部分: 前後の組の和 s0 + s1 は合わせた組 (種類ごとに 2 以下なので桁上がりしない) なので, 表を1回引く
+ static inline __attribute__((always_inline)) uint64_t rankOf(u_long b) {
+-    u_long b48 = b & 0xffffffffffffUL, m, x, h;
+-    const RankLion *lt = &g_rank_lion[rankFindKoma(b48, LION1) * 12 + rankFindKoma(b48, LION2)];
++    u_long b48 = b & 0xffffffffffffUL, m, x, h, z, z2;
++    z = (b48 >> 2) & ~(b48 >> 1) & ~b48 & 0x111111111111UL;
++    z2 = z & (b48 >> 3);
++    int li = (__builtin_ctzl(z ^ z2) >> 2) * 12 + (__builtin_ctzl(z2) >> 2);
++    const RankLion *lt = &g_rank_lion[li];
+     uint32_t t0, t1, s0, s1, hs;
+     m = ((b48 & 0xffff) << 32) | (b48 & 0xffff0000UL) | (b48 >> 32);
+     b48 ^= (b48 ^ m) & lt->mirror;
+-    x = rankSqueeze(rankSqueeze(b48, lt->hi), lt->lo);
++    x = _pext_u64(b48, g_rank_keep[li]);
+     t0 = g_rank_half[rankHalf(x & 0xfffff)];
+     t1 = g_rank_half[rankHalf(x >> 20)];
+     s0 = t0 >> 16;
+@@ -412,8 +433,7 @@
+     hs = g_rank_hand[s0][s1];
+     h = b >> 48;
+     return lt->base + g_rank_split[s0][s1] + (uint64_t)(t0 & 0xffff) * g_rank_rmul[s0][s1]
+-           + (uint64_t)(t1 & 0xffff) * (hs & 0xff)
+-           + (h & 3) + ((hs >> 8) & 15) * (((h >> 2) & 3) + ((hs >> 12) & 15) * ((h >> 4) & 3));
++           + (uint64_t)(t1 & 0xffff) * (hs & 0xff) + g_rank_hpart[s0 + s1][h & 63];
+ }
+ 
+ // 盤面として正しいか (ライオンが盤上に1頭ずつ, ほかの駒は種類ごとに盤と持ち駒で2枚, 上位4ビットは 0)

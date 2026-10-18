@@ -173,7 +173,8 @@ def stage1(out: list[str]) -> dict[str, dict[str, list[float]]]:
             info.append(
                 f"{lb}: cycles の標本 {cyc_samples}（× 周期 ÷ 区間の秒 ＝ {ghz:.3f} GHz）、"
                 f"L1 の外れ {total[L1]}、L2 で当たり {total[L2H]}、"
-                f"THROTTLE {thr.group(1) if thr else '?'}、LOST_SAMPLES {lost[0] if lost else '?'}"
+                f"THROTTLE {thr.group(1) if thr else 0}、LOST_SAMPLES {lost[0] if lost else 0}"
+                "（perf report --stats に行が無いものは 0）"
             )
             cats: Counter[str] = Counter()
             for ev, _wh, ch, ln, _, n in rows:

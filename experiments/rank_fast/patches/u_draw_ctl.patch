@@ -1,0 +1,28 @@
+--- a/animal_shogi.py
++++ b/animal_shogi.py
+@@ -435,7 +435,7 @@
+ # 書くのは "enable" / "disable" の1行で, perf の "ack" を受け取るまで待つ (数えの境界を揃えるため)
+ _PERF_FDS = {
+     s: (os.open(os.environ["PERF_CTL_" + s], os.O_WRONLY), os.open(os.environ["PERF_ACK_" + s], os.O_RDONLY))
+-    for s in ("F1", "U_loop") if "PERF_CTL_" + s in os.environ
++    for s in ("F1", "U_loop", "U_draw") if "PERF_CTL_" + s in os.environ
+ }
+ 
+ def _perfCtl(stage: str, cmd: str) -> None:
+@@ -1037,6 +1037,8 @@
+     _perfCtl("U_loop", "disable")
+     printLogMain("展開した局面 (perf_34)：%d" % n_front)
+     _profMark("U_loop")
++    # 実験 rank_fast: U_draw も perf_34 と同じ作りで, 3つ目の perf が数える
++    _perfCtl("U_draw", "enable")
+ 
+     # 最後まで未知だった盤面 (＝引き分け) を成果物として書き出す. 未知局面の列の順に拾う
+     n_drawn = unmoveDraws(cast(uk_all.buffer_info()[0], POINTER(c_uint64)) if n_uk else None, n_uk)
+@@ -1045,6 +1047,7 @@
+     draws = array("Q")
+     if n_drawn:
+         draws.frombytes(memoryview((c_uint64 * n_drawn).from_address(unmoveDrawsPtr())).cast("B"))
++    _perfCtl("U_draw", "disable")
+     _profMark("U_draw")
+     writeUnknownChunks([draws])
+     _profMark("U_uk")

@@ -11,7 +11,8 @@
 
 - 差分の範囲 (`Makefile` は #33 とバイト同一。ファイルの顔ぶれは #33 と同じ)
 - 熱い関数の一覧がリンカースクリプトと同じで、全部が専用の区画に一覧の順で並ぶこと。
-  **詰め物の検査** (熱くない場所に関数を足しても、熱い関数の番地が動かない。#33 から写した)
+  (詰め物の検査は tests/test_hot_layout_padding.py が, `hot_layout.ld` の中身ごとに1回回す.
+  そのための道具 PAD_AT・PAD_SIZES・padded はここに置いてある)
 - 打ち切った全探索の出力 (ラウンドごとの件数・待ち行列・後退解析に渡す3本の列) が
   #33 と同じこと
 - 全探索が書く準備の配列が、展開した局面の全部で、いまの生成器から数え直した値と同じこと
@@ -175,31 +176,6 @@ def test_the_hot_functions_sit_in_their_own_section_before_text(
         fn.removesuffix(".localalias") for fn, (a, _s) in syms.items() if start <= a < start + size
     }
     assert sorted(inside) == sorted(HOT), "区画に一覧の外の関数がある"
-
-
-def test_padding_does_not_move_the_hot_functions(tools: None, tmp_path: pathlib.Path) -> None:
-    """★詰め物の検査 (#33 から写した)。熱くない関数をファイルの頭・熱い関数の間・末尾に足しても、
-    熱い関数の番地は1つも動かない。まだ使っていない libc の関数を呼んで `.plt` を伸ばしても、
-    熱い関数のページの中の位置は動かない。"""
-    c = text(IMPL_DIR / "animal_shogi.c")
-    base = hot_addresses(make(IMPL_DIR, tmp_path / "base"))
-    for where in ("top", "mid", "end"):
-        for n in PAD_SIZES:
-            got = hot_addresses(make(IMPL_DIR, tmp_path / f"{where}-{n}", padded(c, where, n)))
-            assert got == base, (where, n)
-    # `.plt` を伸ばすと, 区画の前の区画が 4 KiB の区切りをまたぐことがある (#34 ではまたいで,
-    # 区画ごと
-    # 1ページ後ろへずれる). リンカースクリプトが約束しているのは「ページの中の位置」なので,
-    # 区画の先頭からの
-    # 位置と, 先頭が 4 KiB の区切りであることを見る (#33 ではまたがず, 番地そのものが動かなかった)
-    plt = (
-        c
-        + "#include <unistd.h>\n"
-        + "__attribute__((used, noinline)) int layoutPadPid(void) { return (int)getpid(); }\n"
-    )
-    got = hot_addresses(make(IMPL_DIR, tmp_path / "plt", plt))
-    assert got[0] % 4096 == 0
-    assert [a - got[0] for a in got] == [a - base[0] for a in base]
 
 
 # --------------------------------------------------------------------------

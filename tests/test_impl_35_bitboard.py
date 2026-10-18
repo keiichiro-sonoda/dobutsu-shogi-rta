@@ -10,7 +10,7 @@
 - 差分の範囲 (C は「#34 ＋ bitboard_gen の bb_nibble.patch」そのもの。
   ほかのファイルは #34 とバイト同一)
 - 熱い関数の一覧がリンカースクリプトと同じで、全部が専用の区画に一覧の順で並ぶこと。
-  **詰め物の検査** (#33 から写した)
+  (詰め物の検査は tests/test_hot_layout_padding.py が, `hot_layout.ld` の中身ごとに1回回す)
 - 生成器が、打ち切った全探索で展開した全局面で、#34 と戻り値・後続の列 (並びまで)・
   キャッチ抜きの数が同じ
 - 打ち切った全探索の出力 (ラウンドごとの件数・待ち行列・後退解析に渡す3本の列・全探索の側の dat/) が
@@ -35,7 +35,7 @@ import pytest
 from conftest import ROOT, chdir, load_impl
 from test_impl_22_in_memory import ROUNDS
 from test_impl_33_hot_layout import make, sections, symbols
-from test_impl_34_unmove import HOT, PAD_SIZES, hot_addresses, limited_forward, padded
+from test_impl_34_unmove import HOT, limited_forward
 
 IMPL = "35_bitboard"
 PREV = "34_unmove"
@@ -139,25 +139,6 @@ def test_the_hot_functions_sit_in_their_own_section_before_text(
         fn.removesuffix(".localalias") for fn, (a, _s) in syms.items() if start <= a < start + size
     }
     assert sorted(inside) == sorted(HOT), "区画に一覧の外の関数がある"
-
-
-def test_padding_does_not_move_the_hot_functions(tools: None, tmp_path: pathlib.Path) -> None:
-    """★詰め物の検査 (#33 から写した)。熱くない関数をファイルの頭・熱い関数の間・末尾に足しても、
-    熱い関数の番地は1つも動かない。`.plt` を伸ばしても、熱い関数のページの中の位置は動かない。"""
-    c = text(IMPL_DIR / "animal_shogi.c")
-    base = hot_addresses(make(IMPL_DIR, tmp_path / "base"))
-    for where in ("top", "mid", "end"):
-        for n in PAD_SIZES:
-            got = hot_addresses(make(IMPL_DIR, tmp_path / f"{where}-{n}", padded(c, where, n)))
-            assert got == base, (where, n)
-    plt = (
-        c
-        + "#include <unistd.h>\n"
-        + "__attribute__((used, noinline)) int layoutPadPid(void) { return (int)getpid(); }\n"
-    )
-    got = hot_addresses(make(IMPL_DIR, tmp_path / "plt", plt))
-    assert got[0] % 4096 == 0
-    assert [a - got[0] for a in got] == [a - base[0] for a in base]
 
 
 # --------------------------------------------------------------------------

@@ -1,0 +1,245 @@
+=== 門番 #38 開始 2026-10-18T07:01:52+00:00 ===
+# gcc: gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+# gcc -march=native -Q --help=target の -march= / -mtune=
+ -march= broadwell
+ -mtune= broadwell
+# -march=native で増える事前定義マクロ (__AVX2__ など, 命令セットのものだけ)
+__ABM__ __ADX__ __AES__ __AVX__ __AVX2__ __BMI__ __BMI2__ __F16C__ __FMA__ __FSGSBASE__ __LAHF_SAHF__ __LZCNT__ __MOVBE__ __PCLMUL__ __POPCNT__ __PRFCHW__ __RDRND__ __RDSEED__ __RTM__ __SSE3__ __SSE4_1__ __SSE4_2__ __XSAVE__ __XSAVEOPT__ 
+--- 回す前の負荷 ---
+load average: 1.14, 0.62, 0.42
+CPU 使用率 (全 CPU, 1秒): 1%
+--- 回す前のノード0のメモリ (/proc/buddyinfo と meminfo) ---
+Node 0, zone      DMA      0      0      0      0      0      0      0      0      1      1      2 
+Node 0, zone    DMA32    531    385    263    184    125     68     43     23     15     22    759 
+Node 0, zone   Normal   6381   6328   7819   6389   4859   3559   2475   1734   1210    848   4697 
+Node 0 MemFree:        28143624 kB
+Node 0 FilePages:        603908 kB
+--- r1a_old の前のノード0: 2 MiB 以上の空きブロック 23.02 GiB (しきい値 16) ---
+=== 開始 r1a_old (old: impl/37_mirror1 (so sha256 1730c3fdcb0b)) 2026-10-18T07:01:54+00:00 ===
+=== 終了 r1a_old 2026-10-18T07:03:24+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:29.98
+	Maximum resident set size (kbytes): 3603156
+	Minor (reclaiming a frame) page faults: 2427068
+全探索の所要時間：53.8408 秒 / 後退解析の所要時間：35.9715 秒
+--- thp_fault_fallback の前後差: 0 ---
+--- 巨大ページ (表と配列) ---
+r1a_old (old): anonhuge_seen_kB 940,032 / anonhuge_init_kB 1,671,168 / anonhuge_loop_kB 1,671,168
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え (old) ---
+ファイル 213 個. md5 一覧の sha256: a982b554596c / #37 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #37 本走と照合 ---
+r1a_old_forward.tsv: 74 ラウンド（#37 は 74）/ 件数の列 一致
+=== 完了 r1a_old 2026-10-18T07:03:29+00:00 ===
+--- r1b_new の前のノード0: 2 MiB 以上の空きブロック 22.95 GiB (しきい値 16) ---
+=== 開始 r1b_new (new: impl/38_precheck (so sha256 a712601ee2c9)) 2026-10-18T07:03:30+00:00 ===
+=== 終了 r1b_new 2026-10-18T07:04:56+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:26.08
+	Maximum resident set size (kbytes): 3603568
+	Minor (reclaiming a frame) page faults: 2427077
+全探索の所要時間：49.8001 秒 / 後退解析の所要時間：36.1434 秒
+--- thp_fault_fallback の前後差: 0 ---
+--- 巨大ページ (表と配列) ---
+r1b_new (new): anonhuge_seen_kB 940,032 / anonhuge_init_kB 1,671,168 / anonhuge_loop_kB 1,671,168
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え (new) ---
+ファイル 213 個. md5 一覧の sha256: a982b554596c / #37 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #37 本走と照合 ---
+r1b_new_forward.tsv: 74 ラウンド（#37 は 74）/ 件数の列 一致
+=== 完了 r1b_new 2026-10-18T07:05:01+00:00 ===
+--- r1c_new の前のノード0: 2 MiB 以上の空きブロック 22.90 GiB (しきい値 16) ---
+=== 開始 r1c_new (new: impl/38_precheck (so sha256 a712601ee2c9)) 2026-10-18T07:05:02+00:00 ===
+=== 終了 r1c_new 2026-10-18T07:06:28+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:26.00
+	Maximum resident set size (kbytes): 3603364
+	Minor (reclaiming a frame) page faults: 2427076
+全探索の所要時間：49.7906 秒 / 後退解析の所要時間：36.0755 秒
+--- thp_fault_fallback の前後差: 0 ---
+--- 巨大ページ (表と配列) ---
+r1c_new (new): anonhuge_seen_kB 940,032 / anonhuge_init_kB 1,671,168 / anonhuge_loop_kB 1,671,168
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え (new) ---
+ファイル 213 個. md5 一覧の sha256: a982b554596c / #37 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #37 本走と照合 ---
+r1c_new_forward.tsv: 74 ラウンド（#37 は 74）/ 件数の列 一致
+=== 完了 r1c_new 2026-10-18T07:06:33+00:00 ===
+--- r1d_old の前のノード0: 2 MiB 以上の空きブロック 22.87 GiB (しきい値 16) ---
+=== 開始 r1d_old (old: impl/37_mirror1 (so sha256 1730c3fdcb0b)) 2026-10-18T07:06:33+00:00 ===
+=== 終了 r1d_old 2026-10-18T07:08:03+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:29.93
+	Maximum resident set size (kbytes): 3603560
+	Minor (reclaiming a frame) page faults: 2427076
+全探索の所要時間：53.7011 秒 / 後退解析の所要時間：36.0924 秒
+--- thp_fault_fallback の前後差: 0 ---
+--- 巨大ページ (表と配列) ---
+r1d_old (old): anonhuge_seen_kB 940,032 / anonhuge_init_kB 1,671,168 / anonhuge_loop_kB 1,671,168
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え (old) ---
+ファイル 213 個. md5 一覧の sha256: a982b554596c / #37 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #37 本走と照合 ---
+r1d_old_forward.tsv: 74 ラウンド（#37 は 74）/ 件数の列 一致
+=== 完了 r1d_old 2026-10-18T07:08:08+00:00 ===
+--- r2a_old の前のノード0: 2 MiB 以上の空きブロック 22.83 GiB (しきい値 16) ---
+=== 開始 r2a_old (old: impl/37_mirror1 (so sha256 1730c3fdcb0b)) 2026-10-18T07:08:09+00:00 ===
+=== 終了 r2a_old 2026-10-18T07:09:40+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:30.94
+	Maximum resident set size (kbytes): 3603368
+	Minor (reclaiming a frame) page faults: 2427068
+全探索の所要時間：54.3661 秒 / 後退解析の所要時間：36.4360 秒
+--- thp_fault_fallback の前後差: 0 ---
+--- 巨大ページ (表と配列) ---
+r2a_old (old): anonhuge_seen_kB 940,032 / anonhuge_init_kB 1,671,168 / anonhuge_loop_kB 1,671,168
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え (old) ---
+ファイル 213 個. md5 一覧の sha256: a982b554596c / #37 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #37 本走と照合 ---
+r2a_old_forward.tsv: 74 ラウンド（#37 は 74）/ 件数の列 一致
+=== 完了 r2a_old 2026-10-18T07:09:45+00:00 ===
+--- r2b_new の前のノード0: 2 MiB 以上の空きブロック 22.76 GiB (しきい値 16) ---
+=== 開始 r2b_new (new: impl/38_precheck (so sha256 a712601ee2c9)) 2026-10-18T07:09:45+00:00 ===
+=== 終了 r2b_new 2026-10-18T07:11:11+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:25.77
+	Maximum resident set size (kbytes): 3603168
+	Minor (reclaiming a frame) page faults: 2427070
+全探索の所要時間：49.4969 秒 / 後退解析の所要時間：36.1396 秒
+--- thp_fault_fallback の前後差: 0 ---
+--- 巨大ページ (表と配列) ---
+r2b_new (new): anonhuge_seen_kB 940,032 / anonhuge_init_kB 1,671,168 / anonhuge_loop_kB 1,671,168
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え (new) ---
+ファイル 213 個. md5 一覧の sha256: a982b554596c / #37 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #37 本走と照合 ---
+r2b_new_forward.tsv: 74 ラウンド（#37 は 74）/ 件数の列 一致
+=== 完了 r2b_new 2026-10-18T07:11:16+00:00 ===
+--- r2c_new の前のノード0: 2 MiB 以上の空きブロック 22.72 GiB (しきい値 16) ---
+=== 開始 r2c_new (new: impl/38_precheck (so sha256 a712601ee2c9)) 2026-10-18T07:11:17+00:00 ===
+=== 終了 r2c_new 2026-10-18T07:12:43+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:26.07
+	Maximum resident set size (kbytes): 3603564
+	Minor (reclaiming a frame) page faults: 2427073
+全探索の所要時間：49.8201 秒 / 後退解析の所要時間：36.1151 秒
+--- thp_fault_fallback の前後差: 0 ---
+--- 巨大ページ (表と配列) ---
+r2c_new (new): anonhuge_seen_kB 940,032 / anonhuge_init_kB 1,671,168 / anonhuge_loop_kB 1,671,168
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え (new) ---
+ファイル 213 個. md5 一覧の sha256: a982b554596c / #37 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #37 本走と照合 ---
+r2c_new_forward.tsv: 74 ラウンド（#37 は 74）/ 件数の列 一致
+=== 完了 r2c_new 2026-10-18T07:12:48+00:00 ===
+--- r2d_old の前のノード0: 2 MiB 以上の空きブロック 22.69 GiB (しきい値 16) ---
+=== 開始 r2d_old (old: impl/37_mirror1 (so sha256 1730c3fdcb0b)) 2026-10-18T07:12:49+00:00 ===
+=== 終了 r2d_old 2026-10-18T07:14:20+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:30.94
+	Maximum resident set size (kbytes): 3603564
+	Minor (reclaiming a frame) page faults: 2427070
+全探索の所要時間：54.0469 秒 / 後退解析の所要時間：36.7602 秒
+--- thp_fault_fallback の前後差: 0 ---
+--- 巨大ページ (表と配列) ---
+r2d_old (old): anonhuge_seen_kB 940,032 / anonhuge_init_kB 1,671,168 / anonhuge_loop_kB 1,671,168
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え (old) ---
+ファイル 213 個. md5 一覧の sha256: a982b554596c / #37 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #37 本走と照合 ---
+r2d_old_forward.tsv: 74 ラウンド（#37 は 74）/ 件数の列 一致
+=== 完了 r2d_old 2026-10-18T07:14:24+00:00 ===
+--- r3a_old の前のノード0: 2 MiB 以上の空きブロック 22.64 GiB (しきい値 16) ---
+=== 開始 r3a_old (old: impl/37_mirror1 (so sha256 1730c3fdcb0b)) 2026-10-18T07:14:25+00:00 ===
+=== 終了 r3a_old 2026-10-18T07:15:56+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:30.64
+	Maximum resident set size (kbytes): 3603764
+	Minor (reclaiming a frame) page faults: 2427076
+全探索の所要時間：53.9004 秒 / 後退解析の所要時間：36.6090 秒
+--- thp_fault_fallback の前後差: 0 ---
+--- 巨大ページ (表と配列) ---
+r3a_old (old): anonhuge_seen_kB 940,032 / anonhuge_init_kB 1,671,168 / anonhuge_loop_kB 1,671,168
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え (old) ---
+ファイル 213 個. md5 一覧の sha256: a982b554596c / #37 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #37 本走と照合 ---
+r3a_old_forward.tsv: 74 ラウンド（#37 は 74）/ 件数の列 一致
+=== 完了 r3a_old 2026-10-18T07:16:01+00:00 ===
+--- r3b_new の前のノード0: 2 MiB 以上の空きブロック 22.59 GiB (しきい値 16) ---
+=== 開始 r3b_new (new: impl/38_precheck (so sha256 a712601ee2c9)) 2026-10-18T07:16:01+00:00 ===
+=== 終了 r3b_new 2026-10-18T07:17:29+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:27.10
+	Maximum resident set size (kbytes): 3603564
+	Minor (reclaiming a frame) page faults: 2427078
+全探索の所要時間：50.2968 秒 / 後退解析の所要時間：36.6544 秒
+--- thp_fault_fallback の前後差: 0 ---
+--- 巨大ページ (表と配列) ---
+r3b_new (new): anonhuge_seen_kB 940,032 / anonhuge_init_kB 1,671,168 / anonhuge_loop_kB 1,671,168
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え (new) ---
+ファイル 213 個. md5 一覧の sha256: a982b554596c / #37 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #37 本走と照合 ---
+r3b_new_forward.tsv: 74 ラウンド（#37 は 74）/ 件数の列 一致
+=== 完了 r3b_new 2026-10-18T07:17:33+00:00 ===
+--- r3c_new の前のノード0: 2 MiB 以上の空きブロック 22.49 GiB (しきい値 16) ---
+=== 開始 r3c_new (new: impl/38_precheck (so sha256 a712601ee2c9)) 2026-10-18T07:17:34+00:00 ===
+=== 終了 r3c_new 2026-10-18T07:19:01+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:26.14
+	Maximum resident set size (kbytes): 3603680
+	Minor (reclaiming a frame) page faults: 2427072
+全探索の所要時間：49.8159 秒 / 後退解析の所要時間：36.1899 秒
+--- thp_fault_fallback の前後差: 0 ---
+--- 巨大ページ (表と配列) ---
+r3c_new (new): anonhuge_seen_kB 940,032 / anonhuge_init_kB 1,671,168 / anonhuge_loop_kB 1,671,168
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え (new) ---
+ファイル 213 個. md5 一覧の sha256: a982b554596c / #37 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #37 本走と照合 ---
+r3c_new_forward.tsv: 74 ラウンド（#37 は 74）/ 件数の列 一致
+=== 完了 r3c_new 2026-10-18T07:19:05+00:00 ===
+--- r3d_old の前のノード0: 2 MiB 以上の空きブロック 22.47 GiB (しきい値 16) ---
+=== 開始 r3d_old (old: impl/37_mirror1 (so sha256 1730c3fdcb0b)) 2026-10-18T07:19:06+00:00 ===
+=== 終了 r3d_old 2026-10-18T07:20:36+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:30.11
+	Maximum resident set size (kbytes): 3603604
+	Minor (reclaiming a frame) page faults: 2427076
+全探索の所要時間：54.0129 秒 / 後退解析の所要時間：35.9589 秒
+--- thp_fault_fallback の前後差: 0 ---
+--- 巨大ページ (表と配列) ---
+r3d_old (old): anonhuge_seen_kB 940,032 / anonhuge_init_kB 1,671,168 / anonhuge_loop_kB 1,671,168
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え (old) ---
+ファイル 213 個. md5 一覧の sha256: a982b554596c / #37 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #37 本走と照合 ---
+r3d_old_forward.tsv: 74 ラウンド（#37 は 74）/ 件数の列 一致
+=== 完了 r3d_old 2026-10-18T07:20:41+00:00 ===
+=== 全12本 完了 2026-10-18T07:20:41+00:00 ===

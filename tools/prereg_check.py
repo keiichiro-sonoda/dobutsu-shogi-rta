@@ -11,39 +11,24 @@
 | ID | 内容 |
 |----|------|
 | R1 | 登録した節の行が、登録のコミットのあとで書き換わった・消えた (`※` を足しただけの行は R0) |
-| R2 | 予測の節が、登録の時点でこの実験の `logs/` にあった数 (＝見たあとの数) を引いている |
+| R2 | 登録の時点で、この実験の `logs/` にファイルが既にあった (見たあとの数を予測に使えた) |
 | R3 | 回す前のはずの本が、登録より前に始まっている (`logs/console*.log` の「開始」) |
-| R3 | 登録の時点で `logs/` にファイルが既にあった (時刻の無いログも捕まえる) |
 | R0 | 参考: `※` の注記を足しただけの行 (注記に「あとで足した」と書いてあるかを目で見る) |
 
 「登録した節」は、見出しに「〜前に書いた」「〜前に決めた」「〜前に数えた」を含む `##` の節。
 「登録のコミット」は、その見出しの行を初めて足したコミット。
 
-R2 は「見たあとの数」を次のように絞る。
-- 予測の節 (見出しに「予測」「見込み」「事前登録」) の数を、登録の版から取る
-- 登録のコミットの時点で `<実験>/logs/` にあったファイルの数と、丸めの桁を合わせて比べる
-  (予測の 9.8 は、ログの 9.773 と同じ数として扱う)
-- ログの側の数が、登録のコミットの親の時点で、この実験の外 (記録・ほかの実験) に既に
-  書いてあったなら、前から知っていた数なので外す (辺の総数 938671869 など)
-- 3桁以下の整数と、有効数字1桁の小数は見ない (記録の番号や「0.5〜1.5」のような幅で鳴りすぎる)
-- 予測の行が出どころを名指ししている (`#28`・`gate_18_opt` のような、ほかの記録・実験・
-  `results/`) なら外す。「gate_18_opt の −3.75 と同程度」は、たまたまこの実験のログにも
-  3.747 があっても、前から知っていた数
+R2 は、予測が見たあとの数を使ったかを**機械では決めない**。登録の時点で `logs/` が空なら、
+見たあとの数は無いので鳴らない (ふつうの実験はこれ)。ファイルがあったときだけ、登録のコミットごとに
+1件、そのファイルを並べて出す。見る人は、予測の節が何を根拠にしたか (回す前に数えたもの・
+前の段の結果・前からリポジトリにあった数) が README に書いてあるかを確かめる。
+以前は予測の数をログの数と丸めの桁を合わせて突き合わせていたが、型の無いテキストの中では
+短い小数ほど偶然に一致し (実験 rank_fast の段2で 117 件のほぼ全部)、本物が埋もれた。
+R2 が鳴りうる場面はもともと「登録の時点でログがあった」ときだけなので、その事実だけを出す。
 
-R2 が見ないもの (目で見る):
-- **前から知っていた数から計算できる数。** 探すのはログの値そのもので、割り算や和は見ない。
-  実験 unmove_bench の「平均 3.8」は辺の総数 ÷ 全局面 (938,671,869 ÷ 246,803,167) で回す前に
-  出せたが、ログの 3.803 はリポジトリに無いので鳴る。README に出どころを書けば読む人には分かる
-- **出どころを1つ名指しした行の、ほかの数。** 名指しは行単位で見るので、`#33` が1つある行は
-  同じ行の見たあとの数もまとめて外れる
-- **ログから計算した数** (「候補の 61% が捨てられる」) と、数でない見立て
-
-R3 の2つめの形は、回す前に数えたもの (番地・命令の数・単射の検査) を予測と同じコミットに
-入れた門番でも鳴る。それが回す前に数えたものか、本を回した結果かを README で確かめる。
-
-⚠️ R2 に出た数が、すべて悪いわけではない。「回す前に数えた」節 (番地・命令の数) を予測が
-   引くのは正しい使い方。見るのは、**その数を回す前に知り得たと README に書いてあるか**。
-   書いてなければ、事前の見込みではなく、見たあとの見込みになっている。
+R2 は、回す前に数えたもの (番地・命令の数・単射の検査) を予測と同じコミットに入れた門番でも、
+段を分けた実験の2つめの段でも鳴る。どちらも正しい使い方で、見るのは
+**何を見てから書いたかが README に書いてあるか**。
 
 使い方:
 
@@ -65,24 +50,17 @@ import sys
 from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass
 from datetime import datetime
-from decimal import ROUND_HALF_UP, Decimal
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
 REGISTERED = re.compile(r"^## .*前に(?:書いた|決めた|数えた)")
-PREDICTION = re.compile(r"予測|見込み|事前登録")
 H2 = re.compile(r"^## ")
-NUMBER = re.compile(
-    r"(?<![\d.,])\d{1,3}(?:,\d{3})+(?:\.\d+)?(?![\d,])|(?<![\d.,])\d+(?:\.\d+)?(?![\d])"
-)
 # ※ の注記: 括弧ごと足したもの (「（※ …）」) と、記号だけを足したもの.
 # 括弧ごとの注記は, 開き括弧に対応する閉じ括弧までを入れ子を数えて読む (注記の中のリンク
 # 「[stage1.md](stage1.md)」の閉じ括弧で注記を終わらせない). 全角と半角の括弧は同じに数える
 NOTE_OPEN = re.compile(r"\s*[（(]※")
 NOTE_MARK = re.compile(r"\s*※")
 OPENS, CLOSES = "（(", "）)"
-# 予測の行が、数の出どころとして名指しするもの (この実験の外の記録・実験・証拠)
-CITE = re.compile(r"#\d+|gate_\w+|lever_scan\w*|gen_bench|unmove_bench|numa_bind|results/|\w+_\w+/")
 ISO = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:[+-]\d{2}:\d{2}|Z)")
 
 
@@ -171,65 +149,6 @@ def line_changes(old: list[str], new: list[str]) -> Iterator[tuple[str, str, str
                 yield "removed", line, ""
 
 
-def numbers(text: str) -> Iterator[tuple[str, Decimal]]:
-    """数を (書いてあるとおりの文字列, 値) で返す。カンマ区切りも1つの数として読む。"""
-    for m in NUMBER.finditer(text):
-        word = m.group(0)
-        yield word, Decimal(word.replace(",", ""))
-
-
-def decimals(word: str) -> int:
-    return len(word.split(".", 1)[1]) if "." in word else 0
-
-
-def worth_checking(word: str, value: Decimal) -> bool:
-    """鳴りすぎる数を外す: 3桁以下の整数と、有効数字1桁の小数。"""
-    if decimals(word) == 0:
-        return len(word.replace(",", "")) >= 4
-    return len(word.replace(",", "").replace(".", "").lstrip("0")) >= 2 and value != 0
-
-
-def same_number(pred: str, pred_value: Decimal, log_value: Decimal) -> bool:
-    """予測の桁に丸めたら同じか。ログのほうが粗い (桁が少ない) ときは比べない。"""
-    places = decimals(pred)
-    if places == 0:
-        return log_value == pred_value
-    return log_value.quantize(Decimal(1).scaleb(-places), rounding=ROUND_HALF_UP) == pred_value
-
-
-def cites_elsewhere(line: str, own: str) -> bool:
-    """予測の行が、この実験の外の出どころを名指ししているか。"""
-    return any(m.group(0).rstrip("/") != own for m in CITE.finditer(line))
-
-
-def seen_numbers(
-    prediction: str, logs: dict[str, str], own: str = ""
-) -> Iterator[tuple[str, str, int, str]]:
-    """予測の数のうち、ログにも出てくるものを (予測の数, ログ, 行番号, ログの数) で返す。
-
-    出どころを名指しした行の数は外す (`cites_elsewhere`)。`own` はこの実験の名前。
-    """
-    wanted = [
-        (t, v)
-        for line in prediction.splitlines()
-        if not cites_elsewhere(line, own)
-        for t, v in numbers(line)
-        if worth_checking(t, v)
-    ]
-    seen: set[tuple[str, str]] = set()
-    for path, text in sorted(logs.items()):
-        for lineno, line in enumerate(text.splitlines(), 1):
-            for log_word, log_value in numbers(line):
-                for word, value in wanted:
-                    if decimals(log_word) < decimals(word):
-                        continue
-                    if (word, log_word) in seen:
-                        continue
-                    if same_number(word, value, log_value):
-                        seen.add((word, log_word))
-                        yield word, path, lineno, log_word
-
-
 def run_starts(text: str) -> Iterator[datetime]:
     """進行ログの「開始」の行の時刻。"""
     for line in text.splitlines():
@@ -261,19 +180,6 @@ def show(git: Git, commit: str, path: str) -> str:
     return git(["show", f"{commit}:{path}"])
 
 
-def known_before(git: Git, commit: str, word: str, directory: str) -> bool:
-    """ログの数が、登録のコミットの親の時点で、この実験の外に書いてあったか。"""
-    plain = word.replace(",", "")
-    forms = {re.escape(plain), re.escape(word)}
-    pattern = "(^|[^0-9.,])(" + "|".join(sorted(forms)) + ")([^0-9]|$)"
-    try:
-        out = git(["grep", "-l", "-E", "-e", pattern, f"{commit}^", "--", ".", f":!{directory}"])
-    except GitError:
-        # git grep は見つからないとき終了コード 1 を返す。親が無いコミットもここに来る
-        return False
-    return bool(out.strip())
-
-
 def check_experiment(git: Git, directory: str) -> list[Finding]:
     readme = f"{directory}/README.md"
     now = show(git, "HEAD", readme)
@@ -299,24 +205,6 @@ def check_experiment(git: Git, directory: str) -> list[Finding]:
             else:
                 found.append(Finding("R1", where, f"{short} のあとで消した: {before.strip()}"))
 
-        if PREDICTION.search(heading):
-            logs = {
-                path: show(git, commit, path) for path in files_at(git, commit, f"{directory}/logs")
-            }
-            for word, path, lineno, log_word in seen_numbers(
-                "\n".join(then), logs, pathlib.PurePosixPath(directory).name
-            ):
-                if known_before(git, commit, log_word, directory):
-                    continue
-                found.append(
-                    Finding(
-                        "R2",
-                        where,
-                        f"予測の {word} は、登録 ({short}) の時点で既にあった "
-                        f"{path}:{lineno} の {log_word} と同じ数",
-                    )
-                )
-
         registered.append((at, short))
         with_logs = files_at(git, commit, f"{directory}/logs")
         if with_logs and commit not in seen_commits:
@@ -325,10 +213,11 @@ def check_experiment(git: Git, directory: str) -> list[Finding]:
             more = f" ほか {len(with_logs) - 8} 件" if len(with_logs) > 8 else ""
             found.append(
                 Finding(
-                    "R3",
+                    "R2",
                     where,
-                    f"登録の時点 ({short}) で logs/ にファイルが既にあった: "
-                    f"{names}{more}。回す前に数えたものか、本を回した結果かを README で確かめる",
+                    f"登録の時点 ({short}) で logs/ にファイルが既にあった: {names}{more}。"
+                    "予測の節が何を根拠にしたか (回す前に数えたもの・前の段の結果) を"
+                    " README で確かめる",
                 )
             )
 

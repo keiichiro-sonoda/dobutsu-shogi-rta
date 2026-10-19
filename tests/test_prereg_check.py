@@ -1,8 +1,9 @@
 """tools/prereg_check.py: 事前登録の節を、回したあとで読み直す道具。
 
 実験 unmove_bench で、見込みが「一致の検査で見たあとの数」(候補が平均 9.8 個) を根拠に
-使っていたのを、レビューが時刻の順だけを見て通した。同じ形を小さな git リポジトリで作り、
-鳴ること (R1〜R3) と、鳴らないこと (出どころを名指しした数・前から知っていた数) を固定する。
+使っていたのを、レビューが時刻の順だけを見て通した。同じ形を小さな git リポジトリで作り,
+鳴ること (R1〜R3) と、鳴らないこと (登録の時点で logs/ が空の実験) を固定する。
+R2 は数を突き合わせない (登録の時点で logs/ にあったファイルを1件にまとめて出すだけ)。
 """
 
 from __future__ import annotations
@@ -12,7 +13,6 @@ import os
 import pathlib
 import subprocess
 import sys
-from decimal import Decimal
 
 import pytest
 
@@ -91,61 +91,6 @@ def test_a_bare_reference_mark_is_a_note_too() -> None:
     assert list(prereg_check.line_changes(["重い。"], ["重い※。"])) == [
         ("note", "重い。", "重い※。")
     ]
-
-
-def test_numbers_read_commas_and_decimals() -> None:
-    got = list(prereg_check.numbers("候補 2,412,035,001 個、平均 9.8 個、938671869 本"))
-    assert got == [
-        ("2,412,035,001", Decimal("2412035001")),
-        ("9.8", Decimal("9.8")),
-        ("938671869", Decimal("938671869")),
-    ]
-
-
-@pytest.mark.parametrize(
-    ("word", "want"),
-    [("9.8", True), ("0.5", False), ("1.5", True), ("16", False), ("4,096", True), ("0.0", False)],
-)
-def test_noisy_numbers_are_not_checked(word: str, want: bool) -> None:
-    assert prereg_check.worth_checking(word, Decimal(word.replace(",", ""))) is want
-
-
-@pytest.mark.parametrize(
-    ("pred", "log", "want"),
-    [("9.8", "9.773", True), ("9.9", "9.85", True), ("9.8", "9.85", False), ("4096", "4096", True)],
-)
-def test_numbers_are_compared_at_the_prediction_s_precision(
-    pred: str, log: str, want: bool
-) -> None:
-    assert prereg_check.same_number(pred, Decimal(pred), Decimal(log)) is want
-
-
-def test_a_line_that_names_its_source_is_prior_knowledge() -> None:
-    assert prereg_check.cites_elsewhere("F1 は gate_18_opt の −3.75 と同程度", "lever_scan")
-    assert prereg_check.cites_elsewhere("#28 の 3.75", "x")
-    assert not prereg_check.cites_elsewhere("候補が平均 9.8 個", "unmove_bench")
-    assert not prereg_check.cites_elsewhere("unmove_bench の 9.8", "unmove_bench")
-
-
-def test_seen_numbers_skip_cited_lines_and_coarser_logs() -> None:
-    prediction = "候補が平均 9.8 個\ngate_18_opt の 3.75 と同程度\n残りは 3.80 本"
-    logs = {"e/logs/v.txt": "9.773 3.747 3.8\n9.773"}
-    got = list(prereg_check.seen_numbers(prediction, logs, "e"))
-    # 9.8 は 9.773 と同じ (重ねて出さない)。3.75 は出どころを名指し。3.80 にはログの 3.8 が粗すぎる
-    assert got == [("9.8", "e/logs/v.txt", 1, "9.773")]
-
-
-def test_naming_one_source_drops_every_number_on_that_line() -> None:
-    """限界を固定する: 名指しは行単位なので、同じ行の見たあとの数も外れる。"""
-    logs = {"e/logs/v.txt": "9.773"}
-    assert list(prereg_check.seen_numbers("#33 と同じ形で、候補が平均 9.8 個", logs, "e")) == []
-    assert list(prereg_check.seen_numbers("候補が平均 9.8 個", logs, "e")) != []
-
-
-def test_a_number_derived_from_prior_numbers_still_rings() -> None:
-    """限界を固定する: 割り算は見ないので、前から知っていた2つの数の比 (3.803) でも鳴る。"""
-    logs = {"e/logs/v.txt": "前任 3.803 本 / 局面"}
-    assert [w for w, *_ in prereg_check.seen_numbers("残った前任 (平均 3.8)", logs, "e")] == ["3.8"]
 
 
 def test_run_starts_read_only_the_start_lines() -> None:
@@ -240,20 +185,20 @@ def test_the_unmove_bench_shape_is_caught(repo: pathlib.Path) -> None:
     found = prereg_check.check_experiment(git_in(repo), "experiments/e")
     by_rule = {f.rule: [x.message for x in found if x.rule == f.rule] for f in found}
     assert sorted(by_rule) == ["R0", "R1", "R2", "R3"]
-    # 見たあとの 9.8 だけが出る。前から知っていた 938,671,869 と、出どころを名指しした 3.75 は出ない
-    assert len(by_rule["R2"]) == 1 and "9.8" in by_rule["R2"][0] and "9.773" in by_rule["R2"][0]
+    # 登録の時点で logs/ にあった一致の検査のログ (時刻の無い verify.txt) が,
+    # 登録のコミットごとに1件だけ出る (予測の節と止める条件の節は同じコミット). 数は突き合わせない
+    assert len(by_rule["R2"]) == 1 and "既にあった: verify.txt" in by_rule["R2"][0]
+    assert "9.8" not in by_rule["R2"][0]
     assert any("消した: 消す行" in m for m in by_rule["R1"])
     # 止める条件の節も見る (数の照合は予測の節だけ)
     assert any("書き換えた: 区間の上端が 0 以上なら止める" in m for m in by_rule["R1"])
     assert any("※" in m for m in by_rule["R0"])
-    # 時刻のある本は時刻で、時刻の無いログ (一致の検査の verify.txt) は
-    # 登録の時点で logs/ に既にあったことで出る
-    assert any("02:50:00" in m for m in by_rule["R3"])
-    assert any("既にあった: verify.txt" in m for m in by_rule["R3"])
+    # 時刻のある本は, 登録より前に始まったことで R3 に出る
+    assert len(by_rule["R3"]) == 1 and "02:50:00" in by_rule["R3"][0]
 
 
 def test_logs_added_before_the_registering_commit_also_ring(tmp_path: pathlib.Path) -> None:
-    """R3 は「登録の時点で logs/ にあったか」を見る。同じコミットで足したものに限らない。"""
+    """R2 は「登録の時点で logs/ にあったか」を見る。同じコミットで足したものに限らない。"""
     subprocess.run(["git", "init", "-q", "-b", "main"], cwd=tmp_path, check=True)
     email = "t" + "@" + "example.invalid"
     subprocess.run(["git", "config", "user.email", email], cwd=tmp_path, check=True)
@@ -262,7 +207,7 @@ def test_logs_added_before_the_registering_commit_also_ring(tmp_path: pathlib.Pa
     readme = "# e\n## 予測（回す前に書いた）\n下がる\n"
     commit(tmp_path, {"experiments/e/README.md": readme}, "2026-10-05T02:00:00+00:00", "予測")
     found = prereg_check.check_experiment(git_in(tmp_path), "experiments/e")
-    assert [f.rule for f in found] == ["R3"]
+    assert [f.rule for f in found] == ["R2"]
     assert "既にあった: v.txt" in found[0].message
 
 
@@ -308,13 +253,6 @@ def test_a_git_failure_is_not_a_clean_result(
 def test_a_heading_without_an_adding_commit_is_an_error() -> None:
     with pytest.raises(prereg_check.GitError):
         prereg_check.registration(lambda args: "", "r/README.md", PRED)
-
-
-def test_a_root_registration_has_no_prior_knowledge() -> None:
-    def failing(args: list[str]) -> str:
-        raise prereg_check.GitError("no parent")
-
-    assert prereg_check.known_before(failing, "abc", "9.773", "experiments/e") is False
 
 
 def test_a_report_with_only_notes_is_clean(capsys: pytest.CaptureFixture[str]) -> None:

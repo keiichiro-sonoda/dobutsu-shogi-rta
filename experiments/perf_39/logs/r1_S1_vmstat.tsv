@@ -1,0 +1,3 @@
+when	thp_fault_alloc	thp_fault_fallback	thp_collapse_alloc	compact_stall	compact_success	compact_fail	numa_hint_faults	numa_hint_faults_local	numa_pages_migrated	numa_local	numa_other	pgmigrate_success	pgmigrate_fail
+before	165863296	2397	343936	327181	8268	318913	1237335287	762696565	2734248535	47371818040	72485869	2814411139	33428679
+after	165864163	2397	343936	327181	8268	318913	1237347351	762707896	2734248733	47375036636	72485874	2814411337	33428679

@@ -1,0 +1,754 @@
+=== perf_39 開始 2026-10-19T15:47:37+00:00 ===
+--- perf と設定 ---
+perf version 6.8.12
+kernel.perf_event_paranoid = 1
+kernel.perf_event_max_sample_rate = 14000
+kernel.nmi_watchdog = 1
+--- 回す前の負荷 ---
+load average: 1.36, 1.26, 0.72
+CPU 使用率 (全 CPU, 1秒): 1%
+--- 回す前のノード0のメモリ (/proc/buddyinfo と meminfo) ---
+Node 0, zone      DMA      0      0      0      0      0      0      0      0      1      1      2 
+Node 0, zone    DMA32    409    295    220    149    119     70     53     20     19     22    759 
+Node 0, zone   Normal  10846  35760  14524   7952   3276   3863   1602    744    326    563   2694 
+Node 0 MemFree:        18070188 kB
+Node 0 FilePages:      10217732 kB
+--- r1_T1 の前のノード0: 2 MiB 以上の空きブロック 14.64 GiB (しきい値 8) ---
+=== 開始 r1_T1 (stat:T1: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T15:47:41+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r1_T1 2026-10-19T15:49:03+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:22.16
+	Maximum resident set size (kbytes): 3583200
+	Minor (reclaiming a frame) page faults: 2592352
+F1：41.8915 秒
+U_loop：30.7683 秒
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 r1_T1 2026-10-19T15:49:08+00:00 ===
+--- r1_T2 の前のノード0: 2 MiB 以上の空きブロック 14.52 GiB (しきい値 8) ---
+=== 開始 r1_T2 (stat:T2: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T15:49:10+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r1_T2 2026-10-19T15:50:33+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:21.79
+	Maximum resident set size (kbytes): 3582872
+	Minor (reclaiming a frame) page faults: 2592341
+F1：41.4616 秒
+U_loop：30.8597 秒
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 r1_T2 2026-10-19T15:50:37+00:00 ===
+--- r1_M1 の前のノード0: 2 MiB 以上の空きブロック 14.47 GiB (しきい値 8) ---
+=== 開始 r1_M1 (stat:M1: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T15:50:40+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r1_M1 2026-10-19T15:52:02+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:21.70
+	Maximum resident set size (kbytes): 3582804
+	Minor (reclaiming a frame) page faults: 2592350
+F1：41.5523 秒
+U_loop：30.7320 秒
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 r1_M1 2026-10-19T15:52:07+00:00 ===
+--- r1_M2 の前のノード0: 2 MiB 以上の空きブロック 14.47 GiB (しきい値 8) ---
+=== 開始 r1_M2 (stat:M2: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T15:52:10+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r1_M2 2026-10-19T15:53:32+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:21.57
+	Maximum resident set size (kbytes): 3582896
+	Minor (reclaiming a frame) page faults: 2592349
+F1：41.3754 秒
+U_loop：30.7271 秒
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 r1_M2 2026-10-19T15:53:36+00:00 ===
+--- r1_M3 の前のノード0: 2 MiB 以上の空きブロック 14.44 GiB (しきい値 8) ---
+=== 開始 r1_M3 (stat:M3: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T15:53:39+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r1_M3 2026-10-19T15:55:01+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:21.78
+	Maximum resident set size (kbytes): 3583248
+	Minor (reclaiming a frame) page faults: 2592346
+F1：41.5120 秒
+U_loop：30.8054 秒
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 r1_M3 2026-10-19T15:55:06+00:00 ===
+--- r1_C1 の前のノード0: 2 MiB 以上の空きブロック 14.41 GiB (しきい値 8) ---
+=== 開始 r1_C1 (stat:C1: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T15:55:09+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r1_C1 2026-10-19T15:56:31+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:21.84
+	Maximum resident set size (kbytes): 3583120
+	Minor (reclaiming a frame) page faults: 2592339
+F1：41.5317 秒
+U_loop：30.8523 秒
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 r1_C1 2026-10-19T15:56:36+00:00 ===
+--- r1_C2 の前のノード0: 2 MiB 以上の空きブロック 14.36 GiB (しきい値 8) ---
+=== 開始 r1_C2 (stat:C2: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T15:56:38+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r1_C2 2026-10-19T15:58:01+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:22.03
+	Maximum resident set size (kbytes): 3583444
+	Minor (reclaiming a frame) page faults: 2592345
+F1：41.6549 秒
+U_loop：30.8670 秒
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 r1_C2 2026-10-19T15:58:05+00:00 ===
+--- r1_S1 の前のノード0: 2 MiB 以上の空きブロック 14.34 GiB (しきい値 8) ---
+=== 開始 r1_S1 (stat:S1: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T15:58:08+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r1_S1 2026-10-19T15:59:30+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:21.78
+	Maximum resident set size (kbytes): 3582836
+	Minor (reclaiming a frame) page faults: 2592339
+F1：41.4924 秒
+U_loop：30.8375 秒
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 r1_S1 2026-10-19T15:59:35+00:00 ===
+--- r1_cyc の前のノード0: 2 MiB 以上の空きブロック 14.27 GiB (しきい値 8) ---
+=== 開始 r1_cyc (record:cyc: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T15:59:37+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r1_cyc 2026-10-19T16:01:01+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:23.75
+	Maximum resident set size (kbytes): 3583208
+	Minor (reclaiming a frame) page faults: 2592783
+F1：42.7049 秒
+U_loop：31.4597 秒
+# samples	cycles:pp	70264
+event	where	chain	line	table	samples
+cycles:pp	animal_shogi.so	nextBoardInvNormalNC	670	-	7557
+cycles:pp	animal_shogi.so	nextBoardSeenNormal>seenTestAndSet	490	-	4984
+# samples	cycles:pp	52744
+event	where	chain	line	table	samples
+cycles:pp	animal_shogi.so	unmoveStep	1174	-	10085
+cycles:pp	animal_shogi.so	unmoveStep>rankOf	436	-	2772
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 r1_cyc 2026-10-19T16:01:07+00:00 ===
+--- r1_l2m の前のノード0: 2 MiB 以上の空きブロック 14.23 GiB (しきい値 8) ---
+=== 開始 r1_l2m (record:l2m: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T16:01:09+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r1_l2m 2026-10-19T16:02:32+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:22.67
+	Maximum resident set size (kbytes): 3583188
+	Minor (reclaiming a frame) page faults: 2592548
+F1：42.4097 秒
+U_loop：30.7447 秒
+# samples	mem_load_uops_retired.l2_miss:pp	8122
+event	where	chain	line	table	samples
+mem_load_uops_retired.l2_miss:pp	animal_shogi.so	nextBoardSeenNormal>rankOf	429	g_rank_half	3028
+mem_load_uops_retired.l2_miss:pp	animal_shogi.so	nextBoardSeenNormal>rankOf	430	g_rank_half	2522
+# samples	mem_load_uops_retired.l2_miss:pp	10003
+event	where	chain	line	table	samples
+mem_load_uops_retired.l2_miss:pp	animal_shogi.so	unmoveStep>rankOf	429	g_rank_half	3822
+mem_load_uops_retired.l2_miss:pp	animal_shogi.so	unmoveStep>rankOf	430	g_rank_half	3230
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 r1_l2m 2026-10-19T16:02:37+00:00 ===
+--- r2_M2 の前のノード0: 2 MiB 以上の空きブロック 14.19 GiB (しきい値 8) ---
+=== 開始 r2_M2 (stat:M2: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T16:02:40+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r2_M2 2026-10-19T16:04:03+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:22.21
+	Maximum resident set size (kbytes): 3582552
+	Minor (reclaiming a frame) page faults: 2592348
+F1：41.8481 秒
+U_loop：30.8909 秒
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 r2_M2 2026-10-19T16:04:08+00:00 ===
+--- r2_M3 の前のノード0: 2 MiB 以上の空きブロック 14.15 GiB (しきい値 8) ---
+=== 開始 r2_M3 (stat:M3: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T16:04:10+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r2_M3 2026-10-19T16:05:33+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:21.78
+	Maximum resident set size (kbytes): 3583012
+	Minor (reclaiming a frame) page faults: 2592343
+F1：41.6178 秒
+U_loop：30.6933 秒
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 r2_M3 2026-10-19T16:05:37+00:00 ===
+--- r2_C1 の前のノード0: 2 MiB 以上の空きブロック 14.11 GiB (しきい値 8) ---
+=== 開始 r2_C1 (stat:C1: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T16:05:40+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r2_C1 2026-10-19T16:07:03+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:22.45
+	Maximum resident set size (kbytes): 3583200
+	Minor (reclaiming a frame) page faults: 2592342
+F1：41.8543 秒
+U_loop：31.0346 秒
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 r2_C1 2026-10-19T16:07:08+00:00 ===
+--- r2_C2 の前のノード0: 2 MiB 以上の空きブロック 14.10 GiB (しきい値 8) ---
+=== 開始 r2_C2 (stat:C2: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T16:07:11+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r2_C2 2026-10-19T16:08:32+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:21.17
+	Maximum resident set size (kbytes): 3582792
+	Minor (reclaiming a frame) page faults: 2592344
+F1：41.3339 秒
+U_loop：30.4528 秒
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 r2_C2 2026-10-19T16:08:37+00:00 ===
+--- r2_S1 の前のノード0: 2 MiB 以上の空きブロック 14.08 GiB (しきい値 8) ---
+=== 開始 r2_S1 (stat:S1: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T16:08:39+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r2_S1 2026-10-19T16:10:02+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:21.56
+	Maximum resident set size (kbytes): 3583204
+	Minor (reclaiming a frame) page faults: 2592350
+F1：41.4654 秒
+U_loop：30.6714 秒
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 r2_S1 2026-10-19T16:10:06+00:00 ===
+--- r2_cyc の前のノード0: 2 MiB 以上の空きブロック 14.03 GiB (しきい値 8) ---
+=== 開始 r2_cyc (record:cyc: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T16:10:09+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r2_cyc 2026-10-19T16:11:33+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:23.58
+	Maximum resident set size (kbytes): 3582840
+	Minor (reclaiming a frame) page faults: 2592711
+F1：42.7061 秒
+U_loop：31.1362 秒
+# samples	cycles:pp	69897
+event	where	chain	line	table	samples
+cycles:pp	animal_shogi.so	nextBoardInvNormalNC	670	-	7312
+cycles:pp	animal_shogi.so	nextBoardSeenNormal>seenTestAndSet	490	-	4914
+# samples	cycles:pp	51793
+event	where	chain	line	table	samples
+cycles:pp	animal_shogi.so	unmoveStep	1174	-	10162
+cycles:pp	animal_shogi.so	unmoveStep>rankOf	436	-	2770
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 r2_cyc 2026-10-19T16:11:38+00:00 ===
+--- r2_l2m の前のノード0: 2 MiB 以上の空きブロック 14.00 GiB (しきい値 8) ---
+=== 開始 r2_l2m (record:l2m: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T16:11:41+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r2_l2m 2026-10-19T16:13:04+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:22.95
+	Maximum resident set size (kbytes): 3582888
+	Minor (reclaiming a frame) page faults: 2592544
+F1：42.3713 秒
+U_loop：30.9249 秒
+# samples	mem_load_uops_retired.l2_miss:pp	7780
+event	where	chain	line	table	samples
+mem_load_uops_retired.l2_miss:pp	animal_shogi.so	nextBoardSeenNormal>rankOf	429	g_rank_half	2954
+mem_load_uops_retired.l2_miss:pp	animal_shogi.so	nextBoardSeenNormal>rankOf	430	g_rank_half	2437
+# samples	mem_load_uops_retired.l2_miss:pp	9954
+event	where	chain	line	table	samples
+mem_load_uops_retired.l2_miss:pp	animal_shogi.so	unmoveStep>rankOf	429	g_rank_half	3841
+mem_load_uops_retired.l2_miss:pp	animal_shogi.so	unmoveStep>rankOf	430	g_rank_half	3295
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 r2_l2m 2026-10-19T16:13:09+00:00 ===
+--- r2_T1 の前のノード0: 2 MiB 以上の空きブロック 13.99 GiB (しきい値 8) ---
+=== 開始 r2_T1 (stat:T1: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T16:13:11+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r2_T1 2026-10-19T16:14:33+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:22.04
+	Maximum resident set size (kbytes): 3582828
+	Minor (reclaiming a frame) page faults: 2592336
+F1：41.5863 秒
+U_loop：30.9054 秒
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 r2_T1 2026-10-19T16:14:38+00:00 ===
+--- r2_T2 の前のノード0: 2 MiB 以上の空きブロック 13.95 GiB (しきい値 8) ---
+=== 開始 r2_T2 (stat:T2: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T16:14:41+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r2_T2 2026-10-19T16:16:03+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:21.53
+	Maximum resident set size (kbytes): 3583348
+	Minor (reclaiming a frame) page faults: 2592335
+F1：41.4063 秒
+U_loop：30.6399 秒
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 r2_T2 2026-10-19T16:16:08+00:00 ===
+--- r2_M1 の前のノード0: 2 MiB 以上の空きブロック 13.90 GiB (しきい値 8) ---
+=== 開始 r2_M1 (stat:M1: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T16:16:10+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r2_M1 2026-10-19T16:17:33+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:21.50
+	Maximum resident set size (kbytes): 3582996
+	Minor (reclaiming a frame) page faults: 2592354
+F1：41.4150 秒
+U_loop：30.6398 秒
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 r2_M1 2026-10-19T16:17:37+00:00 ===
+--- r3_C2 の前のノード0: 2 MiB 以上の空きブロック 13.87 GiB (しきい値 8) ---
+=== 開始 r3_C2 (stat:C2: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T16:17:40+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r3_C2 2026-10-19T16:19:03+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:22.44
+	Maximum resident set size (kbytes): 3582868
+	Minor (reclaiming a frame) page faults: 2592341
+F1：41.7494 秒
+U_loop：31.1411 秒
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 r3_C2 2026-10-19T16:19:08+00:00 ===
+--- r3_S1 の前のノード0: 2 MiB 以上の空きブロック 13.82 GiB (しきい値 8) ---
+=== 開始 r3_S1 (stat:S1: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T16:19:10+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r3_S1 2026-10-19T16:20:34+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:22.41
+	Maximum resident set size (kbytes): 3583200
+	Minor (reclaiming a frame) page faults: 2592342
+F1：41.9291 秒
+U_loop：30.9683 秒
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 r3_S1 2026-10-19T16:20:38+00:00 ===
+--- r3_cyc の前のノード0: 2 MiB 以上の空きブロック 13.79 GiB (しきい値 8) ---
+=== 開始 r3_cyc (record:cyc: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T16:20:41+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r3_cyc 2026-10-19T16:22:04+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:23.12
+	Maximum resident set size (kbytes): 3583028
+	Minor (reclaiming a frame) page faults: 2592653
+F1：42.5345 秒
+U_loop：31.0358 秒
+# samples	cycles:pp	69930
+event	where	chain	line	table	samples
+cycles:pp	animal_shogi.so	nextBoardInvNormalNC	670	-	7536
+cycles:pp	animal_shogi.so	nextBoardSeenNormal>seenTestAndSet	490	-	4978
+# samples	cycles:pp	51982
+event	where	chain	line	table	samples
+cycles:pp	animal_shogi.so	unmoveStep	1174	-	10170
+cycles:pp	animal_shogi.so	unmoveStep>rankOf	436	-	2755
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 r3_cyc 2026-10-19T16:22:10+00:00 ===
+--- r3_l2m の前のノード0: 2 MiB 以上の空きブロック 13.74 GiB (しきい値 8) ---
+=== 開始 r3_l2m (record:l2m: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T16:22:12+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r3_l2m 2026-10-19T16:23:35+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:22.58
+	Maximum resident set size (kbytes): 3583460
+	Minor (reclaiming a frame) page faults: 2592556
+F1：42.2773 秒
+U_loop：30.7451 秒
+# samples	mem_load_uops_retired.l2_miss:pp	8163
+event	where	chain	line	table	samples
+mem_load_uops_retired.l2_miss:pp	animal_shogi.so	nextBoardSeenNormal>rankOf	429	g_rank_half	2932
+mem_load_uops_retired.l2_miss:pp	animal_shogi.so	nextBoardSeenNormal>rankOf	430	g_rank_half	2561
+# samples	mem_load_uops_retired.l2_miss:pp	10329
+event	where	chain	line	table	samples
+mem_load_uops_retired.l2_miss:pp	animal_shogi.so	unmoveStep>rankOf	429	g_rank_half	3936
+mem_load_uops_retired.l2_miss:pp	animal_shogi.so	unmoveStep>rankOf	430	g_rank_half	3206
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 r3_l2m 2026-10-19T16:23:40+00:00 ===
+--- r3_T1 の前のノード0: 2 MiB 以上の空きブロック 13.71 GiB (しきい値 8) ---
+=== 開始 r3_T1 (stat:T1: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T16:23:43+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r3_T1 2026-10-19T16:25:05+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:21.22
+	Maximum resident set size (kbytes): 3583196
+	Minor (reclaiming a frame) page faults: 2592340
+F1：41.1656 秒
+U_loop：30.6535 秒
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 r3_T1 2026-10-19T16:25:10+00:00 ===
+--- r3_T2 の前のノード0: 2 MiB 以上の空きブロック 13.67 GiB (しきい値 8) ---
+=== 開始 r3_T2 (stat:T2: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T16:25:12+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r3_T2 2026-10-19T16:26:35+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:21.60
+	Maximum resident set size (kbytes): 3582840
+	Minor (reclaiming a frame) page faults: 2592340
+F1：41.3213 秒
+U_loop：30.8271 秒
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 r3_T2 2026-10-19T16:26:39+00:00 ===
+--- r3_M1 の前のノード0: 2 MiB 以上の空きブロック 13.67 GiB (しきい値 8) ---
+=== 開始 r3_M1 (stat:M1: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T16:26:42+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r3_M1 2026-10-19T16:28:04+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:21.98
+	Maximum resident set size (kbytes): 3583048
+	Minor (reclaiming a frame) page faults: 2592338
+F1：41.6298 秒
+U_loop：30.8015 秒
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 r3_M1 2026-10-19T16:28:09+00:00 ===
+--- r3_M2 の前のノード0: 2 MiB 以上の空きブロック 13.63 GiB (しきい値 8) ---
+=== 開始 r3_M2 (stat:M2: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T16:28:11+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r3_M2 2026-10-19T16:29:34+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:21.92
+	Maximum resident set size (kbytes): 3582936
+	Minor (reclaiming a frame) page faults: 2592346
+F1：41.5590 秒
+U_loop：30.8442 秒
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 r3_M2 2026-10-19T16:29:39+00:00 ===
+--- r3_M3 の前のノード0: 2 MiB 以上の空きブロック 13.59 GiB (しきい値 8) ---
+=== 開始 r3_M3 (stat:M3: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T16:29:42+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r3_M3 2026-10-19T16:31:04+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:21.61
+	Maximum resident set size (kbytes): 3582408
+	Minor (reclaiming a frame) page faults: 2592340
+F1：41.4676 秒
+U_loop：30.6948 秒
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 r3_M3 2026-10-19T16:31:08+00:00 ===
+--- r3_C1 の前のノード0: 2 MiB 以上の空きブロック 13.59 GiB (しきい値 8) ---
+=== 開始 r3_C1 (stat:C1: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T16:31:11+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 r3_C1 2026-10-19T16:32:33+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:21.77
+	Maximum resident set size (kbytes): 3582772
+	Minor (reclaiming a frame) page faults: 2592354
+F1：41.5416 秒
+U_loop：30.7285 秒
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 r3_C1 2026-10-19T16:32:38+00:00 ===
+=== 全30本 完了 2026-10-19T16:32:38+00:00 ===

@@ -1,0 +1,7 @@
+# started on Mon Oct 19 15:52:10 2026
+
+103478390035,,cycles,30701608736,100.00,,
+168911038216,,instructions,30701608736,100.00,1.63,insn per cycle
+70036714505,,uops_executed.cycles_ge_1_uop_exec,30701608736,100.00,,
+54862359130,,uops_executed.cycles_ge_2_uops_exec,30701608736,100.00,,
+34106631083,,uops_executed.cycles_ge_3_uops_exec,30701608736,100.00,,

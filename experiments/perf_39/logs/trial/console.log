@@ -1,0 +1,101 @@
+=== perf_39 の試し 開始 2026-10-19T15:42:43+00:00 ===
+--- perf と設定 ---
+perf version 6.8.12
+kernel.perf_event_paranoid = 1
+kernel.perf_event_max_sample_rate = 14000
+kernel.nmi_watchdog = 1
+--- 回す前の負荷 ---
+load average: 0.31, 0.25, 0.28
+CPU 使用率 (全 CPU, 1秒): 1%
+--- 回す前のノード0のメモリ (/proc/buddyinfo と meminfo) ---
+Node 0, zone      DMA      0      0      0      0      0      0      0      0      1      1      2 
+Node 0, zone    DMA32    409    295    220    149    119     70     53     20     19     22    759 
+Node 0, zone   Normal  21659  34417  14151   7103   2792   3517   1538    632    228    536   2803 
+Node 0 MemFree:        18211456 kB
+Node 0 FilePages:      10212188 kB
+--- t_S1 の前のノード0: 2 MiB 以上の空きブロック 15.01 GiB (しきい値 8) ---
+=== 開始 t_S1 (stat:S1: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T15:42:47+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 t_S1 2026-10-19T15:44:09+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:21.74
+	Maximum resident set size (kbytes): 3583488
+	Minor (reclaiming a frame) page faults: 2592343
+F1：41.5810 秒
+U_loop：30.7072 秒
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 t_S1 2026-10-19T15:44:14+00:00 ===
+--- t_cyc の前のノード0: 2 MiB 以上の空きブロック 14.82 GiB (しきい値 8) ---
+=== 開始 t_cyc (record:cyc: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T15:44:16+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 t_cyc 2026-10-19T15:45:40+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:23.48
+	Maximum resident set size (kbytes): 3582568
+	Minor (reclaiming a frame) page faults: 2592702
+F1：42.7583 秒
+U_loop：31.0500 秒
+# samples	cycles:pp	70358
+event	where	chain	line	table	samples
+cycles:pp	animal_shogi.so	nextBoardInvNormalNC	670	-	7582
+cycles:pp	animal_shogi.so	nextBoardSeenNormal>seenTestAndSet	490	-	5094
+# samples	cycles:pp	52224
+event	where	chain	line	table	samples
+cycles:pp	animal_shogi.so	unmoveStep	1174	-	10482
+cycles:pp	animal_shogi.so	unmoveStep>rankOf	436	-	2778
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 t_cyc 2026-10-19T15:45:45+00:00 ===
+--- t_l2m の前のノード0: 2 MiB 以上の空きブロック 14.68 GiB (しきい値 8) ---
+=== 開始 t_l2m (record:l2m: r39: impl/39_rank_lean (so sha256 7b76775652aa, py sha256 7e091af9395d, -g の .text は一致)) 2026-10-19T15:45:48+00:00 ===
+python3 pid を取った. U_loop の perf を付ける
+=== 終了 t_l2m 2026-10-19T15:47:11+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:22.67
+	Maximum resident set size (kbytes): 3583112
+	Minor (reclaiming a frame) page faults: 2592554
+F1：42.3662 秒
+U_loop：30.7576 秒
+# samples	mem_load_uops_retired.l2_miss:pp	7844
+event	where	chain	line	table	samples
+mem_load_uops_retired.l2_miss:pp	animal_shogi.so	nextBoardSeenNormal>rankOf	429	g_rank_half	2915
+mem_load_uops_retired.l2_miss:pp	animal_shogi.so	nextBoardSeenNormal>rankOf	430	g_rank_half	2506
+# samples	mem_load_uops_retired.l2_miss:pp	10018
+event	where	chain	line	table	samples
+mem_load_uops_retired.l2_miss:pp	animal_shogi.so	unmoveStep>rankOf	429	g_rank_half	3958
+mem_load_uops_retired.l2_miss:pp	animal_shogi.so	unmoveStep>rankOf	430	g_rank_half	3214
+--- 巨大ページと thp_fault_fallback ---
+thp_fault_fallback の前後差: 0
+anonhuge_seen_kB: 940032 kB (要 104448 kB 以上)
+anonhuge_init_kB: 1671168 kB (要 1671168 kB 以上)
+anonhuge_loop_kB: 1671168 kB (要 1671168 kB 以上)
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え ---
+md5 一覧の sha256: a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+74 ラウンド（#39 は 74）/ 件数の列 一致
+=== 完了 t_l2m 2026-10-19T15:47:16+00:00 ===
+=== 試し 完了 2026-10-19T15:47:16+00:00 ===

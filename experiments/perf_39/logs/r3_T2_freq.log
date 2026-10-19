@@ -1,0 +1,3 @@
+time_jst	freq_max_mhz	freq_mean_mhz	pkg_temp_c	throttle	mem_free_kb	mem_cached_kb	mem_available_kb
+2026-10-20T01:25:12	2296	1437	61.0	0	44181116	11733060	56455352
+2026-10-20T01:26:12	3399	1285	67.0	0	39359080	13163452	53081532

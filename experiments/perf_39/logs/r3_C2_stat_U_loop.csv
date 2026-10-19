@@ -1,0 +1,7 @@
+# started on Mon Oct 19 16:17:40 2026
+
+103838384716,,cycles,31113582980,100.00,,
+168909064455,,instructions,31113582980,100.00,1.63,insn per cycle
+2802469,,dtlb_load_misses.miss_causes_a_walk,31113582980,100.00,,
+72930285,,dtlb_load_misses.walk_duration,31113582980,100.00,,
+231025329,,dtlb_load_misses.stlb_hit,31113582980,100.00,,

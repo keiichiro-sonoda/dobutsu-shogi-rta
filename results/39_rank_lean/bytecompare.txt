@@ -1,0 +1,18 @@
+# 記録 #38 (impl/38_precheck) の成果物との照合 (バイト単位)
+# diff -rq <#38 の dat/> <#39 の dat/>  と  md5sum 一覧 (LC_ALL=C sort) の sha256
+#   cd <dat>; find . -type f -print0 | LC_ALL=C sort -z | xargs -0 md5sum | sha256sum
+#   (dat/ の中へ cd せず, 同じ値を外から出した. experiments/gate_39_rank_lean/lib.sh の md5_list_sha)
+#
+# #39 は局面の番号の計算 rankOf の命令を減らしたが, 番号の値は1つも変わらない
+# (experiments/rank_fast が到達可能な全局面・その全候補・乱数の盤 1 億で確かめた). 発見済みの表・準備の配列・
+# 手数の配列の添字も, 全探索の待ち行列も, 後退解析が局面を決める順も変わらないので, dat/ は #38 とバイト一致する.
+#
+# ⚠️ #38 本走の dat/ は runs/ にあり git に入っていない. その md5 一覧の sha256 は,
+#    results/38_precheck/bytecompare.txt の #38 の行の値 (a982b554596c…) と同じ.
+#
+files:        #38 213 / #39 213
+bytes:        #38 1974425336 / #39 1974425336
+md5_list_sha256: #38 a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce
+                 #39 a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce
+diff -rq:     exit=0 (0 行)
+md5 list:     一致

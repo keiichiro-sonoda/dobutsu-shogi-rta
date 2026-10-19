@@ -75,8 +75,12 @@ H2 = re.compile(r"^## ")
 NUMBER = re.compile(
     r"(?<![\d.,])\d{1,3}(?:,\d{3})+(?:\.\d+)?(?![\d,])|(?<![\d.,])\d+(?:\.\d+)?(?![\d])"
 )
-# ※ の注記: 括弧ごと足したもの (「（※ …）」) と、記号だけを足したもの
-NOTE = re.compile(r"\s*[（(]※[^）)]*[）)]|\s*※")
+# ※ の注記: 括弧ごと足したもの (「（※ …）」) と、記号だけを足したもの.
+# 括弧ごとの注記は, 開き括弧に対応する閉じ括弧までを入れ子を数えて読む (注記の中のリンク
+# 「[stage1.md](stage1.md)」の閉じ括弧で注記を終わらせない). 全角と半角の括弧は同じに数える
+NOTE_OPEN = re.compile(r"\s*[（(]※")
+NOTE_MARK = re.compile(r"\s*※")
+OPENS, CLOSES = "（(", "）)"
 # 予測の行が、数の出どころとして名指しするもの (この実験の外の記録・実験・証拠)
 CITE = re.compile(r"#\d+|gate_\w+|lever_scan\w*|gen_bench|unmove_bench|numa_bind|results/|\w+_\w+/")
 ISO = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:[+-]\d{2}:\d{2}|Z)")
@@ -125,7 +129,27 @@ def sections(text: str) -> dict[str, list[str]]:
 
 
 def strip_notes(line: str) -> str:
-    return NOTE.sub("", line)
+    out = []
+    i = 0
+    while (m := NOTE_OPEN.search(line, i)) is not None:
+        depth = 0
+        end = None
+        for j in range(m.end() - 2, len(line)):
+            if line[j] in OPENS:
+                depth += 1
+            elif line[j] in CLOSES:
+                depth -= 1
+                if depth == 0:
+                    end = j + 1
+                    break
+        if end is None:  # 閉じていない括弧は注記として読まない (記号だけを落とす)
+            out.append(line[i : m.end() - 1])
+            i = m.end()
+            continue
+        out.append(line[i : m.start()])
+        i = end
+    out.append(line[i:])
+    return NOTE_MARK.sub("", "".join(out))
 
 
 def line_changes(old: list[str], new: list[str]) -> Iterator[tuple[str, str, str]]:

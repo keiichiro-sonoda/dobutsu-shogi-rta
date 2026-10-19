@@ -67,6 +67,26 @@ def test_line_changes_tell_a_note_from_a_rewrite() -> None:
     assert all(before != "足した行" and after != "足した行" for _, before, after in got)
 
 
+def test_a_note_may_contain_parentheses() -> None:
+    # 注記の中のリンクの閉じ括弧で注記を終わらせない (実験 rank_fast で R1 と読み違えた形)
+    line = "| `cycles` | 2,000,003 | 400,009 |"
+    noted = "| `cycles` | 2,000,003 | 400,009（※ 試しで直した。[`stage1.md`](stage1.md) の節） |"
+    assert prereg_check.strip_notes(noted) == line
+    assert list(prereg_check.line_changes([line], [noted])) == [("note", line, noted)]
+    half = "条件 (※ 直した (理由は (stage1.md))) のまま"
+    assert prereg_check.strip_notes(half) == "条件 のまま"
+
+
+def test_a_rewrite_next_to_a_note_with_parentheses_is_still_a_rewrite() -> None:
+    old = "周期 2,003 で取る。"
+    new = "周期 20,011 で取る。（※ 試しで直した。[`stage1.md`](stage1.md)）"
+    assert list(prereg_check.line_changes([old], [new])) == [("changed", old, new)]
+
+
+def test_an_unclosed_note_drops_only_the_mark() -> None:
+    assert prereg_check.strip_notes("重い（※ 閉じていない") == "重い（ 閉じていない"
+
+
 def test_a_bare_reference_mark_is_a_note_too() -> None:
     assert list(prereg_check.line_changes(["重い。"], ["重い※。"])) == [
         ("note", "重い。", "重い※。")

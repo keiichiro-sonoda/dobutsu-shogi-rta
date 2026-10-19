@@ -1,0 +1,55 @@
+--- a/animal_shogi.py
++++ b/animal_shogi.py
+@@ -988,7 +988,10 @@
+     depth = 0
+     n_cand = n_kept = 0
+     n_front = 0  # 実験 perf_34: 展開した局面 (フロンティア) の延べ数
++    # 実験 perf_39: 手数ごとの数と時間. 1段につき getrusage と時計を4回だけ読む (.so は変えない)
++    _u_rows = []
+     for _ in range(LOOP_MAX):
++        _u_a = (time.perf_counter(), resource.getrusage(resource.RUSAGE_SELF))
+         t1 = time.time()
+         printLogSub("#" * 100)
+         printLogMain("#" * 100)
+@@ -999,10 +1002,12 @@
+         n_front += front_n
+         if _PERF_DUMP and front_n:
+             _perfDump("u_%03d" % nd, try_loses if nd == 1 else found_buf[front_lo:front_lo + front_n], front_n)
++        _u_b = (time.perf_counter(), resource.getrusage(resource.RUSAGE_SELF))
+         rc = unmoveStep(
+             front_ptr, front_n, depth % 2, nd,
+             cast(found_base + 8 * cursor, POINTER(c_uint64)), n_uk - cursor, step_out,
+         )
++        _u_c = (time.perf_counter(), resource.getrusage(resource.RUSAGE_SELF))
+         if rc != 0:
+             raise RuntimeError("後退解析の1段を進められない：%d (手数 %d)" % (rc, nd))
+         cursor += step_out[0]
+@@ -1024,6 +1029,8 @@
+         else:
+             printLogMain("%3d手負け盤面総数：%d" % (nd, len(wl)))
+         printLogMain("所要時間：{0:02d}時間{1:02d}分{2:02d}秒".format(*s2hms(time.time() - t1)))
++        _u_d = (time.perf_counter(), resource.getrusage(resource.RUSAGE_SELF))
++        _u_rows.append((nd, front_n, step_out[1], step_out[2], step_out[0], cursor - start, _u_a, _u_b, _u_c, _u_d))
+         # 盤面が増えなかった
+         if not wl:
+             printLogMain("完全解析終了")
+@@ -1035,6 +1042,19 @@
+         depth = nd
+     printLogMain("前任の候補：%d (手数が未定で残ったもの %d)" % (n_cand, n_kept))
+     _perfCtl("U_loop", "disable")
++    # 実験 perf_39: 手数ごとの表. step は unmoveStep の呼び出しだけ, py はその段のほか (書き出し・ログ・スライス)
++    with open("./kaiseki_log/u_loop_depth.tsv", "w") as f:
++        f.write("nd\tfront\tcand\tkept\tstep_found\tfound\tt_step\tut_step\tst_step\tmin_step"
++                "\tt_py\tut_py\tst_py\tmin_py\n")
++        for nd_, fr, ca, ke, sf, fo, a, b, c, d in _u_rows:
++            f.write("%d\t%d\t%d\t%d\t%d\t%d\t%.6f\t%.6f\t%.6f\t%d\t%.6f\t%.6f\t%.6f\t%d\n" % (
++                nd_, fr, ca, ke, sf, fo,
++                c[0] - b[0], c[1].ru_utime - b[1].ru_utime, c[1].ru_stime - b[1].ru_stime,
++                c[1].ru_minflt - b[1].ru_minflt,
++                (b[0] - a[0]) + (d[0] - c[0]),
++                (b[1].ru_utime - a[1].ru_utime) + (d[1].ru_utime - c[1].ru_utime),
++                (b[1].ru_stime - a[1].ru_stime) + (d[1].ru_stime - c[1].ru_stime),
++                (b[1].ru_minflt - a[1].ru_minflt) + (d[1].ru_minflt - c[1].ru_minflt)))
+     printLogMain("展開した局面 (perf_34)：%d" % n_front)
+     _profMark("U_loop")
+ 

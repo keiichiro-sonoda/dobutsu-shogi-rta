@@ -1,0 +1,53 @@
+--- a/animal_shogi.c
++++ b/animal_shogi.c
+@@ -1153,22 +1153,42 @@
+ // 0 になったら負けで手数 nd). 前任の候補は, 手数が未定のものだけを残す (到達しない番号・決まった局面は捨てる).
+ // out[0] 書いた数 / out[1] 候補の数 / out[2] 未定で残った候補の数.
+ // 返り値: 0 / -1 引数 / -2 found があふれた / -4 残りの数を 0 から減らそうとした (数え方の誤り)
++// 候補と番号の配列を2組持ち, 局面 i の候補をふるう前に局面 i + 1 の候補を作って番号を出し, 手数の行を取り寄せる
++// (取り寄せから読みまでに局面1つ分の仕事が入る). 候補を作ることと番号を出すことは手数の配列を見ず, 局面 i をふるう・決めるのは
++// 局面 i − 1 を決め終えたあとなので, 決める順も found に積む順も1局面ずつ作っていたときと同じ
+ int unmoveStep(const u_long *frontier, size_t n, int odd, int nd, u_long *found, size_t found_cap,
+                uint64_t *out) {
+-    u_long cand[UNMOVE_MAX];
+-    uint64_t r[UNMOVE_MAX];
++    u_long cand2[2][UNMOVE_MAX];
++    uint64_t r2[2][UNMOVE_MAX];
+     size_t nf = 0;
+     uint64_t n_cand = 0, n_kept = 0;
++    int nc_next = 0;
+     if (!out) return -1;
+     out[0] = out[1] = out[2] = 0;
+     if (!g_dtm || !g_prep || (n && !frontier) || !found) return -1;
++    // 先頭の局面の候補は, ループに入る前に作っておく
++    if (n) {
++        nc_next = unmoveCandidates(frontier[0], cand2[0]);
++        n_cand += (uint64_t)nc_next;
++        for (int j = 0; j < nc_next; j++) {
++            r2[0][j] = rankOf(cand2[0][j]);
++            __builtin_prefetch(&g_dtm[r2[0][j]], 1, 3);
++        }
++    }
+     for (size_t i = 0; i < n; i++) {
+-        int nc = unmoveCandidates(frontier[i], cand), m = 0;
+-        n_cand += (uint64_t)nc;
+-        // 候補のランクを全部出して手数の行を取り寄せてから, 未定のものだけを残す (#20 / #30 と同じ形)
+-        for (int j = 0; j < nc; j++) {
+-            r[j] = rankOf(cand[j]);
+-            __builtin_prefetch(&g_dtm[r[j]], 1, 3);
++        u_long *cand = cand2[i & 1];
++        uint64_t *r = r2[i & 1];
++        int nc = nc_next, m = 0;
++        // 次の局面の候補のランクを全部出して手数の行を取り寄せてから, この局面の未定の候補だけを残す. 最後の局面では作らない
++        if (i + 1 < n) {
++            u_long *cn = cand2[(i + 1) & 1];
++            uint64_t *rn = r2[(i + 1) & 1];
++            nc_next = unmoveCandidates(frontier[i + 1], cn);
++            n_cand += (uint64_t)nc_next;
++            for (int j = 0; j < nc_next; j++) {
++                rn[j] = rankOf(cn[j]);
++                __builtin_prefetch(&g_dtm[rn[j]], 1, 3);
++            }
+         }
+         for (int j = 0; j < nc; j++) {
+             if (g_dtm[r[j]] != DTM_UNDECIDED) continue;

@@ -15,6 +15,7 @@ import pytest
 from conftest import ROOT
 
 sys.path.insert(0, str(ROOT / "tools"))
+import run_tests
 import select_tests
 
 
@@ -106,32 +107,37 @@ def test_main_prints_the_selection(capsys: pytest.CaptureFixture[str]) -> None:
 
 
 def test_main_staged_and_run(monkeypatch: pytest.MonkeyPatch) -> None:
-    """--staged は git の差分から選び, --run はそれで pytest を起動する (起動は差し替えて見る)。"""
+    """--staged は git の差分から選び, --run はそれを run_tests.run で回す
+    (起動は差し替えて見る)。"""
     calls: list[list[str]] = []
+    runs: list[tuple[list[str], list[str]]] = []
 
-    def fake_run(cmd: list[str], **kw: Any) -> subprocess.CompletedProcess[str]:
-        calls.append(cmd)
-        if cmd[:2] == ["git", "diff"]:
-            return subprocess.CompletedProcess(cmd, 0, "README.md\nimpl/38_precheck/Makefile\n", "")
-        return subprocess.CompletedProcess(cmd, 0, "", "")
+    def fake_git(out: str) -> Any:
+        def fake(cmd: list[str], **kw: Any) -> subprocess.CompletedProcess[str]:
+            calls.append(cmd)
+            return subprocess.CompletedProcess(cmd, 0, out, "")
 
-    monkeypatch.setattr(subprocess, "run", fake_run)
+        return fake
+
+    def fake_tests(code: int) -> Any:
+        def fake(paths: list[str], extra: list[str]) -> int:
+            runs.append((paths, extra))
+            return code
+
+        return fake
+
+    monkeypatch.setattr(subprocess, "run", fake_git("README.md\nimpl/38_precheck/Makefile\n"))
+    monkeypatch.setattr(run_tests, "run", fake_tests(0))
     assert select_tests.main(["--staged", "--run", "--", "-q"]) == 0
     assert calls[0][:2] == ["git", "diff"]
-    run = calls[1]
-    assert run[1:4] == ["-m", "pytest", "-q"]
-    assert "tests/test_impl_38_precheck.py" in run
-    calls.clear()
+    paths, extra = runs[0]
+    assert extra == ["-q"]
+    assert "tests/test_impl_38_precheck.py" in paths
 
-    def fake_run_full(cmd: list[str], **kw: Any) -> subprocess.CompletedProcess[str]:
-        calls.append(cmd)
-        if cmd[:2] == ["git", "diff"]:
-            return subprocess.CompletedProcess(cmd, 0, "uv.lock\n", "")
-        return subprocess.CompletedProcess(cmd, 3, "", "")
-
-    monkeypatch.setattr(subprocess, "run", fake_run_full)
+    monkeypatch.setattr(subprocess, "run", fake_git("uv.lock\n"))
+    monkeypatch.setattr(run_tests, "run", fake_tests(3))
     assert select_tests.main(["--staged", "--run"]) == 3
-    assert calls[1][-1] == "tests"
+    assert runs[1] == (["tests"], [])
 
 
 def test_staged_reads_git(monkeypatch: pytest.MonkeyPatch) -> None:

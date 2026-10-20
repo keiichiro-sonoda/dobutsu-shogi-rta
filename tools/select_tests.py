@@ -22,7 +22,9 @@
     python3 tools/select_tests.py --staged             # git に足したもの (pre-commit から)
     python3 tools/select_tests.py --staged --run [-- pytest の引数…]
     python3 tools/select_tests.py <変わったファイル>…   # 確かめる用
-出力は回すテストファイルを1行に1つ (全部なら `tests` の1行)。--run なら pytest をそれで起動する。
+出力は回すテストファイルを1行に1つ (全部なら `tests` の1行)。
+--run ならそれを `tools/run_tests.py` で回す (`make check` と同じく, `.so` を読み込むテストの
+ファイルは1ファイル1プロセス。プロセスごとのピークの RSS に上限)。
 """
 
 from __future__ import annotations
@@ -33,6 +35,8 @@ import pathlib
 import re
 import subprocess
 import sys
+
+import run_tests
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 TESTS = ROOT / "tests"
@@ -49,6 +53,7 @@ FULL_TRIGGERS = (
     "Makefile",
     ".pre-commit-config.yaml",
     "tools/select_tests.py",
+    "tools/run_tests.py",
 )
 FULL_PREFIXES = ("baseline/", "oracle/")
 # 分類できる場所。ここに当たらないものが変わったら全部回す
@@ -146,7 +151,7 @@ def main(argv: list[str] | None = None) -> int:
     n_heavy = sum(1 for c in chosen if SELECTIVE.match(pathlib.Path(c).name))
     label = "全部" if chosen == ["tests"] else f"{len(chosen)} ファイル (うち重いテスト {n_heavy})"
     print(f"select_tests: 変わったファイル {len(changed)} 個から {label} を回す", file=sys.stderr)
-    return subprocess.run([sys.executable, "-m", "pytest", *extra, *chosen], cwd=ROOT).returncode
+    return run_tests.run(chosen, extra)
 
 
 if __name__ == "__main__":

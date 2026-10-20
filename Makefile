@@ -40,14 +40,17 @@ doc:  ## 文書を検査する (doc_lint / noise_table)
 	$(UV) run python tools/doc_lint.py
 	$(UV) run python tools/noise_table.py
 
-test:  ## テストを走らせる (pytest)
-	$(UV) run pytest
+# .so を読み込むテストのファイルは1ファイル1プロセスで回し, プロセスごとのピークの RSS に上限を付ける
+# (tools/run_tests.py。1つのプロセスで版のテストを続けて回すと .so の配列が積み上がる. docs/lessons.md)
+test:  ## テストを走らせる (pytest を tools/run_tests.py でプロセスに分けて)
+	$(UV) run python tools/run_tests.py
 
 test-staged:  ## git に足した変更に関係するテストだけを回す (コミットのときと同じ選び方)
 	$(UV) run python tools/select_tests.py --staged --run -- -q
 
 cov:  ## カバレッジ付きでテストし HTML レポートも出す
-	$(UV) run pytest --cov --cov-report=term-missing --cov-report=html
+	$(UV) run python tools/run_tests.py
+	$(UV) run coverage html
 	@echo "HTML レポート: htmlcov/index.html"
 
 check: lint lint-sh type doc test  ## CI と同じ一式を回す

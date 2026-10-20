@@ -1,0 +1,8 @@
+# 記録 #40 (impl/40_dtm_ahead) の成果物の照合
+# python3 tools/fingerprint_dat.py <#40 の dat/> --against oracle/fingerprint.tsv
+#
+# #40 は dat/ が #39 本走と全213ファイルでバイト一致する (bytecompare.txt)。指紋は参考に並べる。
+# 指紋は深さごとの (件数, 総和 mod 2^64, XOR)。異なる集合でも同じ指紋になりうるので、
+# PASS は集合の完全一致を証明しない (集合の一致はバイト一致で見ている)。
+PASS: 176 項目の指紋が一致 (oracle/fingerprint.tsv と照合) (集合の完全一致を証明するものではない)
+  照合した局面数の合計: 246,803,167

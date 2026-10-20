@@ -143,6 +143,7 @@ python3 tools/fingerprint_dat.py <dat> --against oracle/fingerprint.tsv  # 固�
 | 37 | `impl/37_mirror1/` | 1スレッド | **0:01:29** | **357.73×** | 2026-10-17 | [ログ](results/37_mirror1/) [ノート](docs/records/37-mirror1.md) 逆向きの生成器で鏡像の側から手を戻すのをやめ、q だけから戻して正規化した（q が対称でなければ対称な候補を2回出す。実験 [`mirror1_keep`](experiments/mirror1_keep/) の `mirror1`）。前任の候補の多重集合は #36 と同じで、並びは変わる。[門番](experiments/gate_37_mirror1/)で **完走 −9.97 s（区間 −10.47〜−9.47）**、ほぼ全部 `U_loop` のユーザー時間（−9.76 s）。全探索 0:00:53 / 残り 0:00:36（後退解析）。後退解析の側の `dat/` は並びが #36 と違い、**手数ごとに束ねた 176 束が #36 と一致**（[出力](results/37_mirror1/bytecompare.txt)） |
 | 38 | `impl/38_precheck/` | 1スレッド | **0:01:25** | **374.92×** | 2026-10-18 | [ログ](results/38_precheck/) [ノート](docs/records/38-precheck.md) 全探索の生成器にキャッチの先行判定を入れた（反転の直後に、`g_dst` を裏返した表と駒の種類ごとのマスの集合の AND を5つ並べて「相手のライオンを取れるか」だけを決め、取れれば後続を作らずに返す。実験 [`f1_select_catch`](experiments/f1_select_catch/) の `precheck`）。後続の列は並びまで #37 と同じ。[門番](experiments/gate_38_precheck/)で **完走 −4.23 s（区間 −4.83〜−3.63）**、ほぼ全部 F1 のユーザー時間（−4.18 s）で、生成器だけのベンチの換算（−7.49 s）の 56%。全探索 0:00:49 / 残り 0:00:36（後退解析）。**`dat/` は #37 と全213ファイルでバイト一致**（[出力](results/38_precheck/bytecompare.txt)） |
 | 39 | `impl/39_rank_lean/` | 1スレッド | **0:01:21** | **391.89×** | 2026-10-19 | [ログ](results/39_rank_lean/) [ノート](docs/records/39-rank-lean.md) 局面の番号の計算 `rankOf` の命令を、番号の値を変えずに減らした（ライオン探しを1回の印づけに、2マスを抜いて詰めるのを `pext` 1回に、持ち駒の部分を表1回の読みに。実験 [`rank_fast`](experiments/rank_fast/) の `lean`。BMI2 を使う）。[門番](experiments/gate_39_rank_lean/)で **完走 −4.13 s（区間 −5.65〜−2.61）**、F1 −2.00 s・`U_loop` −1.80 s・`U_draw` −0.32 s で、生成器だけのベンチの換算の 92%。全探索 0:00:47 / 残り 0:00:34（後退解析）。**`dat/` は #38 と全213ファイルでバイト一致**（[出力](results/39_rank_lean/bytecompare.txt)） |
+| 40 | `impl/40_dtm_ahead/` | 1スレッド | **0:01:18** | **409.16×** | 2026-10-20 | [ログ](results/40_dtm_ahead/) [ノート](docs/records/40-dtm-ahead.md) 後退解析のループで、手数の配列 `g_dtm` の先読みを1局面先にした（局面 i の候補をふるう前に局面 i + 1 の候補を作って先読みを頼む。実験 [`dtm_ahead`](experiments/dtm_ahead/) の `ahead1`）。[門番](experiments/gate_40_dtm_ahead/)で **完走 −2.66 s（区間 −3.11〜−2.20）**、`U_loop` −2.66 s、ほかの段は ±0.04 s。全探索 0:00:47 / 残り 0:00:31（後退解析）。**`dat/` は #39 と全213ファイルでバイト一致**（[出力](results/40_dtm_ahead/bytecompare.txt)） |
 
 各試行の分析は [`docs/records/`](docs/records/) に1本ずつ置いてある
 （[索引](docs/records/README.md)）。
@@ -189,11 +190,11 @@ Python が集合演算とファイル分割を担当し、C が指し手生成�
 
 ## 次の標的
 
-段ごとの大きい順は **F1 展開 42.0 s（51.2%）、`U_loop` 後退解析のループ 30.6 s（37.4%）**、
-F6 2.4 s、`U_init` 後退解析の初期化 2.0 s、`U_draw` 引き分けを拾う 1.5 s、F0＋F2＋F5 2.2 s
-（[`forward_summary.tsv`](results/39_rank_lean/forward_summary.tsv) と
-[`retreat_summary.tsv`](results/39_rank_lean/retreat_summary.tsv)）。
-#39 で局面の番号の計算 `rankOf` の命令を減らした（門番で F1 −2.0 s・`U_loop` −1.8 s）。
+段ごとの大きい順は **F1 展開 41.4 s（52.7%）、`U_loop` 後退解析のループ 27.9 s（35.5%）**、
+F6 2.4 s、`U_init` 後退解析の初期化 1.8 s、`U_draw` 引き分けを拾う 1.5 s、F0＋F2＋F5 2.2 s
+（[`forward_summary.tsv`](results/40_dtm_ahead/forward_summary.tsv) と
+[`retreat_summary.tsv`](results/40_dtm_ahead/retreat_summary.tsv)）。
+#40 で後退解析のループの `g_dtm` の先読みを1局面先にした（門番で `U_loop` −2.7 s）。
 **残っているのは全部 C の中**で、F1 の生成器と `U_loop` の逆向きの生成器が2本の柱。
 
 残っているレバー（中身と実測は [`docs/levers.md`](docs/levers.md) のレバー表）:
@@ -201,6 +202,7 @@ F6 2.4 s、`U_init` 後退解析の初期化 2.0 s、`U_draw` 引き分けを拾
 - 生成器に残った分岐を減らす（全探索の三項演算2つと `normalBoard` は #38 の上でベンチを
   測り直してから、逆向きの打てるか・持ち駒・正規形）
 - 生成器のビット集合を取り出すループの抜け（F1 の生成器に残った予測ミスの最大）
+- 後退解析のループで `g_prep` の先読みも早める
 - 後退解析のループの到達しない候補を減らす
 - 逆向きの生成器で盤の反転を1回にする（実験では遅くなった。理由を分けてから）
 - 番号の付け方そのものを変える（鏡像でまとめない、前後の組で区切らない）

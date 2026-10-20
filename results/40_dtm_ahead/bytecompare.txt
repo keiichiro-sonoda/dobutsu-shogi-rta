@@ -1,0 +1,18 @@
+# 記録 #39 (impl/39_rank_lean) の成果物との照合 (バイト単位)
+# diff -rq <#39 の dat/> <#40 の dat/>  と  md5sum 一覧 (LC_ALL=C sort) の sha256
+#   cd <dat>; find . -type f -print0 | LC_ALL=C sort -z | xargs -0 md5sum | sha256sum
+#   (dat/ の中へ cd せず, 同じ値を外から出した. experiments/gate_40_dtm_ahead/lib.sh の md5_list_sha)
+#
+# #40 は後退解析の unmoveStep で, 局面 i の候補をふるう前に局面 i + 1 の候補を作って g_dtm の先読みを頼むようにした.
+# 候補を作ることと番号を出すことは g_dtm も g_prep も見ず, ふるう・決めるの中身は変えていないので,
+# 決める順も found に積む順も変わらない. dat/ は #39 とバイト一致する.
+#
+# ⚠️ #39 本走の dat/ は runs/ にあり git に入っていない. その md5 一覧の sha256 は,
+#    results/39_rank_lean/bytecompare.txt の #39 の行の値 (a982b554596c…) と同じ.
+#
+files:        #39 213 / #40 213
+bytes:        #39 1974425336 / #40 1974425336
+md5_list_sha256: #39 a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce
+                 #40 a982b554596caf672211d80eed4b0d2940405fdbc7873806388dfcfb290e43ce
+diff -rq:     exit=0 (0 行)
+md5 list:     一致

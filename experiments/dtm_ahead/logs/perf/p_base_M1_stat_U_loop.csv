@@ -1,0 +1,7 @@
+# started on Tue Oct 20 13:03:58 2026
+
+99738525793,,cycles,29847983651,100.00,,
+166257945457,,instructions,29847983651,100.00,1.67,insn per cycle
+24551464640,,cycle_activity.stalls_mem_any,29847983651,100.00,,
+31385263785,,cycle_activity.stalls_total,29847983651,100.00,,
+1907711325,,resource_stalls.sb,29847983651,100.00,,

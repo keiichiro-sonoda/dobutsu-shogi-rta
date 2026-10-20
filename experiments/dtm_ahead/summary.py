@@ -92,7 +92,8 @@ def marks(arm: str) -> dict[str, object]:
     kept = line_of(arm, "n_kept += (uint64_t)m;", sieve)
     decide = (line_of(arm, "for (int j = 0; j < m; j++) {", kept), line_of(arm, "found[nf++] = cand[j];", kept))
     pref = {i + 1 for i in range(step, end) if "__builtin_prefetch(&g_dtm[" in SRC[arm][i]}
-    return {"sieve_line": sieve, "sieve": (sieve - 1, kept), "decide": decide, "pref": pref}
+    prep = line_of(arm, "if (g_prep[rr] == 0) return -4;", kept)
+    return {"sieve_line": sieve, "prep_line": prep, "sieve": (sieve - 1, kept), "decide": decide, "pref": pref}
 
 
 MARKS = {a: marks(a) for a in ARMS}
@@ -286,6 +287,7 @@ def perf_section(labels: list[str]) -> None:  # noqa: PLR0915
     print()
     share: dict[str, dict[str, float]] = {}
     sieve_line: dict[str, float] = {}
+    prep_line: dict[str, float] = {}
     total: dict[str, int] = {}
     for arm in ARMS:
         rows = record(d, lbs[(arm, "cyc")])
@@ -295,14 +297,15 @@ def perf_section(labels: list[str]) -> None:  # noqa: PLR0915
         for r in rows:
             acc[bucket(arm, r["where"], r["chain"], r["line"])] += int(r["samples"])
         share[arm] = {k: v / n for k, v in acc.items()}
-        ln = str(MARKS[arm]["sieve_line"])
-        sieve_line[arm] = sum(
-            int(r["samples"]) for r in rows if r["where"] == "animal_shogi.so" and r["chain"] == "unmoveStep"
-            and r["line"] == ln
-        ) / n  # fmt: skip
+        for key, out in (("sieve_line", sieve_line), ("prep_line", prep_line)):
+            ln = str(MARKS[arm][key])
+            out[arm] = sum(
+                int(r["samples"]) for r in rows if r["where"] == "animal_shogi.so" and r["chain"] == "unmoveStep"
+                and r["line"] == ln
+            ) / n  # fmt: skip
         stats = (d / f"{lbs[(arm, 'cyc')]}_record_stats_U_loop.txt").read_text(encoding="utf-8")
         thr = re.findall(r"^\s*(\w*THROTTLE|LOST\w*) events:\s+(\d+)", stats, re.M)
-        print(f"- {arm}: 標本 {n:,}、ふるいの読みの行は {MARKS[arm]['sieve_line']} 行、"
+        print(f"- {arm}: 標本 {n:,}、ふるいの読みの行は {MARKS[arm]['sieve_line']} 行、g_prep の読みの行は {MARKS[arm]['prep_line']} 行、"
               f"THROTTLE・LOST {', '.join(f'{k} {v}' for k, v in thr) or 'の行なし（0 回）'}")  # fmt: skip
     print()
     cyc = {a: per[a]["cycles / フロンティア（T1）"] for a in ARMS}
@@ -310,9 +313,10 @@ def perf_section(labels: list[str]) -> None:  # noqa: PLR0915
     keys = sorted(set(share["base"]) | set(share["ahead1"]), key=lambda k: -share["base"].get(k, 0.0))
     print("| 区分 | `base` の割合 | `ahead1` の割合 | `base` cycles / フロンティア | `ahead1` | 差 | 差（秒） |")
     print("|---|---|---|---|---|---|---|")
-    for k in [*keys, "（ふるいの読みの1行）"]:
-        a = sieve_line["base"] if k.startswith("（") else share["base"].get(k, 0.0)
-        b = sieve_line["ahead1"] if k.startswith("（") else share["ahead1"].get(k, 0.0)
+    lines = {"（ふるいの読みの1行）": sieve_line, "（決めるの g_prep の読みの1行）": prep_line}
+    for k in [*keys, *lines]:
+        a = lines[k]["base"] if k in lines else share["base"].get(k, 0.0)
+        b = lines[k]["ahead1"] if k in lines else share["ahead1"].get(k, 0.0)
         ca, cb = a * cyc["base"], b * cyc["ahead1"]
         print(f"| {k} | {100 * a:.1f}% | {100 * b:.1f}% | {ca:.1f} | {cb:.1f} | {cb - ca:+.1f} | "
               f"{b * sec['ahead1'] - a * sec['base']:+.2f} |")  # fmt: skip

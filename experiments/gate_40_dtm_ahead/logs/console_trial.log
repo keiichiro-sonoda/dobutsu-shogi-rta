@@ -1,0 +1,26 @@
+=== 門番 #40 の前の確かめ 開始 2026-10-20T16:14:53+00:00 ===
+--- 回す前の負荷 ---
+load average: 1.08, 1.01, 0.89
+CPU 使用率 (全 CPU, 1秒): 2%
+--- trial_new の前のノード0: 2 MiB 以上の空きブロック 14.56 GiB (しきい値 8) ---
+=== 開始 trial_new (new: impl/40_dtm_ahead (so sha256 db2ea39f8828)) 2026-10-20T16:14:55+00:00 ===
+=== 終了 trial_new 2026-10-20T16:16:14+00:00 (exit=0) ===
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:18.44
+	Maximum resident set size (kbytes): 3603564
+	Minor (reclaiming a frame) page faults: 2427072
+全探索の所要時間：46.9379 秒 / 後退解析の所要時間：31.3614 秒
+--- thp_fault_fallback の前後差: 0 ---
+--- 巨大ページ (表と配列) ---
+trial_new (new): anonhuge_seen_kB 940,032 / anonhuge_init_kB 1,671,168 / anonhuge_loop_kB 1,671,168
+--- オラクル 174行 ---
+PASS: 174 行すべて一致
+  手数別局面数の合計: 96802868
+--- 答え (new) ---
+ファイル 213 個. md5 一覧の sha256: a982b554596c / #39 本走 a982b554596c => 一致
+答えの検査: PASS
+--- 件数の列を #39 本走と照合 ---
+trial_new_forward.tsv: 74 ラウンド（#39 は 74）/ 件数の列 一致
+--- dat/ を #39 本走の dat/ と diff -rq ---
+diff -rq: exit=0 (0 行)
+=== 完了 trial_new 2026-10-20T16:16:20+00:00 ===
+=== 門番 #40 の前の確かめ 終了 2026-10-20T16:16:20+00:00 ===

@@ -4,7 +4,8 @@
     python3 experiments/gate_40_dtm_ahead/summary.py > experiments/gate_40_dtm_ahead/logs/summary.txt
 
 判定は stop_rule.py (完走の秒) で行う。ここでは腕ごとの平均と範囲 (最小〜最大) と,
-平均の差 (new − old) を並べる (門番 #39 の写し. 差を手で引かないため):
+平均の差 (new − old) と Welch の 95% 区間 (gate_stats.welch. 判定には使わない) を並べる
+(門番 #39 の写しに区間の列を足した. 差と区間を手で出さないため):
 - 完走の秒・ユーザー時間・カーネル時間・minor fault・ピーク RSS (/usr/bin/time -v)
 - 全探索の合計・F1・F1 のユーザー時間とカーネル時間・F5・F6・F1 の minor fault (forward_summary.tsv)
 - 後退解析 (retreat_wall ＝ 完走 − forward_total) と段の合計 retreat_total・段 (retreat_summary.tsv。両腕とも U_init〜U_uk) と,
@@ -18,6 +19,9 @@ import pathlib
 import re
 import statistics
 import sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+from gate_stats import welch  # noqa: E402
 
 HERE = pathlib.Path(__file__).resolve().parent
 LOGS = HERE / "logs"
@@ -83,13 +87,13 @@ def main() -> int:
     rows = {a: [row(lb) for lb, x in started.items() if x == a] for a in ("old", "new")}
     print(f"本数: old {len(rows['old'])} / new {len(rows['new'])}")
     print()
-    print("| 量 | `old`（平均と範囲） | `new`（平均と範囲） | new − old |")
-    print("|---|---|---|---|")
+    print("| 量 | `old`（平均と範囲） | `new`（平均と範囲） | new − old | 95% 区間 |")
+    print("|---|---|---|---|---|")
     for key in ("elapsed", "user", "system", "minflt", "rss_gb", *FORWARD, *_RETREAT):
         fmt = ".0f" if "minflt" in key else ".3f" if key == "rss_gb" else ".2f"
         a, b = [r[key] for r in rows["old"]], [r[key] for r in rows["new"]]
-        d = statistics.mean(b) - statistics.mean(a)
-        print(f"| {key} | {span(a, fmt)} | {span(b, fmt)} | {d:+{fmt}} |")
+        d, _, _, _, lo, hi = welch(a, b)
+        print(f"| {key} | {span(a, fmt)} | {span(b, fmt)} | {d:+{fmt}} | {lo:+{fmt}} … {hi:+{fmt}} |")
     for arm in ("old", "new"):
         print()
         print(f"### `{arm}` の後退解析の段（秒）")

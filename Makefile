@@ -41,7 +41,7 @@ doc:  ## 文書を検査する (doc_lint / noise_table)
 	$(UV) run python tools/noise_table.py
 
 # .so を読み込むテストのファイルは1ファイル1プロセスで回し, プロセスごとのピークの RSS に上限を付ける
-# (tools/run_tests.py。1つのプロセスで版のテストを続けて回すと .so の配列が積み上がる. docs/lessons.md)
+# (tools/run_tests.py。1つのプロセスで版のテストを続けて回すと .so の配列が積み上がる. docs/lessons-tests.md)
 test:  ## テストを走らせる (pytest を tools/run_tests.py でプロセスに分けて)
 	$(UV) run python tools/run_tests.py
 

@@ -156,7 +156,7 @@
 
 ```bash
 make setup && make hooks   # 新しい作業コピーで最初に一度 (pre-commit フックは clone に付いてこない)
-make check                 # ruff / shellcheck / mypy / doc_lint / pytest。CI と同じ
+make check                 # ruff / shellcheck / mypy / doc_lint / pytest (run_tests.py)。CI と同じ
 make test-staged           # 足した変更に関係するテストだけ (コミットのフックと同じ選び方)
 make publish-check         # push の前だけ。取り消せないものだけを見る
 make prereg-check          # 門番・実験を足したとき。事前登録の節を読み直す (止めない)
@@ -165,6 +165,12 @@ make prereg-check          # 門番・実験を足したとき。事前登録の
 コミットのフックは `tools/select_tests.py` で、変わったファイルに関係する重いテストだけを回す。
 **ディレクトリを丸ごと走査する重いテストを足したら、その前置きを `SCANS` に足す**
 （名前で当てられず、変わっても飛ばされる）。
+
+**テストは `tools/run_tests.py` が、`.so` を読み込むファイルを1ファイル1プロセスで回す。**
+1つのプロセスで版の `.so` を積み上げない（#34 からの版は1つで約 1.8 GB の配列を埋め、外れない）。
+プロセスごとのピークの RSS が 8 GiB を超えたら落ちる。超えたら上限を上げずに、そのファイルを分ける。
+`make check` や一式を手で回すときは `free` を見て、上限を付ける
+（`systemd-run --user --scope -p MemoryMax=12G -p MemorySwapMax=0 -- make check`）。計測中は回さない
 
 `make publish-check`（`tools/publish_lint.py`）が落とすのは、鍵・計測機や個人の同定情報・
 凍結物の変更・記録の証拠の欠損・`Claude-Session:` 行だけ。説明の誤りや命名は**わざと見ない**

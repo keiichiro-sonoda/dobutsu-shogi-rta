@@ -1,0 +1,49 @@
+# 静的な確かめ 2026-10-21T13:17:36+00:00 (gcc: gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0)
+base: impl/40_dtm_ahead (so sha256 db2ea39f8828, py sha256 ecfa9555420b)
+base: -Wall -Wextra の警告 0 個
+prep1: impl/40_dtm_ahead + prep1.patch (so sha256 9680267acfb7, py sha256 ecfa9555420b)
+prep1: -Wall -Wextra の警告 0 個
+--- 関数の記号 (nm の t / T) ---
+2腕で同じ (54 個)
+--- 番地か大きさが変わった関数 (base → prep1. 番地の差と大きさの差はバイト) ---
+dstTableBuild                0x5410 (0x1e0 バイト) → 0x53d0 (0x1e0 バイト)  番地 -64 / 大きさ +0
+expandFreeBuffer             0x6f60 (0x51 バイト) → 0x6f20 (0x51 バイト)  番地 -64 / 大きさ +0
+expandNewCount               0x6f50 (0xc バイト) → 0x6f10 (0xc バイト)  番地 -64 / 大きさ +0
+expandNewPtr                 0x6f30 (0xc バイト) → 0x6ef0 (0xc バイト)  番地 -64 / 大きさ +0
+expandNewRankPtr             0x6f40 (0xc バイト) → 0x6f00 (0xc バイト)  番地 -64 / 大きさ +0
+hugeFill                     0x6440 (0x72 バイト) → 0x6400 (0x72 バイト)  番地 -64 / 大きさ +0
+main                         0x5370 (0x9d バイト) → 0x5330 (0x9d バイト)  番地 -64 / 大きさ +0
+normalBoard                  0x6400 (0x31 バイト) → 0x63c0 (0x31 バイト)  番地 -64 / 大きさ +0
+prepFree                     0x6ec0 (0x51 バイト) → 0x6e80 (0x51 バイト)  番地 -64 / 大きさ +0
+prepInit                     0x6cf0 (0x1be バイト) → 0x6cb0 (0x1be バイト)  番地 -64 / 大きさ +0
+prepInit.localalias          0x6cf0 (0x1be バイト) → 0x6cb0 (0x1be バイト)  番地 -64 / 大きさ +0
+prepPtr                      0x6eb0 (0xc バイト) → 0x6e70 (0xc バイト)  番地 -64 / 大きさ +0
+prepZeroCount                0x6f20 (0xc バイト) → 0x6ee0 (0xc バイト)  番地 -64 / 大きさ +0
+rankBoard                    0x64c0 (0x1ed バイト) → 0x6480 (0x1ed バイト)  番地 -64 / 大きさ +0
+rankRange                    0x66b0 (0x41 バイト) → 0x6670 (0x41 バイト)  番地 -64 / 大きさ +0
+rankTablesBuild.part.0       0x57c0 (0x956 バイト) → 0x5780 (0x956 バイト)  番地 -64 / 大きさ +0
+rankValid                    0x56b0 (0x10b バイト) → 0x5670 (0x10b バイト)  番地 -64 / 大きさ +0
+seenContains                 0x6ac0 (0x201 バイト) → 0x6a80 (0x201 バイト)  番地 -64 / 大きさ +0
+seenCount                    0x6ab0 (0xc バイト) → 0x6a70 (0xc バイト)  番地 -64 / 大きさ +0
+seenFree                     0x6700 (0x3a バイト) → 0x66c0 (0x3a バイト)  番地 -64 / 大きさ +0
+seenInit                     0x6740 (0xbb バイト) → 0x6700 (0xbb バイト)  番地 -64 / 大きさ +0
+seenInit.localalias          0x6740 (0xbb バイト) → 0x6700 (0xbb バイト)  番地 -64 / 大きさ +0
+seenInsert                   0x6800 (0x22f バイト) → 0x67c0 (0x22f バイト)  番地 -64 / 大きさ +0
+seenInsert.localalias        0x6800 (0x22f バイト) → 0x67c0 (0x22f バイト)  番地 -64 / 大きさ +0
+seenInsertMany               0x6a30 (0x7e バイト) → 0x69f0 (0x7e バイト)  番地 -64 / 大きさ +0
+seenProbes                   0x6cd0 (0xc バイト) → 0x6c90 (0xc バイト)  番地 -64 / 大きさ +0
+seenRehashes                 0x6ce0 (0x7 バイト) → 0x6ca0 (0x7 バイト)  番地 -64 / 大きさ +0
+showBoard                    0x6220 (0x1df バイト) → 0x61e0 (0x1df バイト)  番地 -64 / 大きさ +0
+showBoard.localalias         0x6220 (0x1df バイト) → 0x61e0 (0x1df バイト)  番地 -64 / 大きさ +0
+unmoveDraws                  0x4cc0 (0x4fa バイト) → 0x4c80 (0x4fa バイト)  番地 -64 / 大きさ +0
+unmoveDrawsPtr               0x7010 (0xc バイト) → 0x6fd0 (0xc バイト)  番地 -64 / 大きさ +0
+unmoveSrcTableBuild          0x51c0 (0x18c バイト) → 0x5180 (0x18c バイト)  番地 -64 / 大きさ +0
+unmoveStep                   0x4480 (0x836 バイト) → 0x4480 (0x7dc バイト)  番地 +0 / 大きさ -90
+unmoveTableBuild.part.0      0x6120 (0xf7 バイト) → 0x60e0 (0xf7 バイト)  番地 -64 / 大きさ +0
+unmoveTableBuild.part.0.cold 0x534c (0x18 バイト) → 0x530c (0x18 バイト)  番地 -64 / 大きさ +0
+unmoveZeros                  0x6fc0 (0x49 バイト) → 0x6f80 (0x49 バイト)  番地 -64 / 大きさ +0
+.text.hot_layout の大きさ: 0x0031ba → 0x00317a
+.text の大きさ: 0x001e5c → 0x001e5c
+--- unmoveStep の機械語 ---
+base: 命令 488 個, prefetchw 3 個, unmoveCandidates の呼び出し 2 個
+prep1: 命令 481 個, prefetchw 4 個, unmoveCandidates の呼び出し 2 個

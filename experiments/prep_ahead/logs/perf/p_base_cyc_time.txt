@@ -1,0 +1,26 @@
+Couldn't record kernel reference relocation symbol
+Symbol resolution may be skewed if relocation was used (e.g. kexec).
+Check /proc/kallsyms permission or run as root.
+	Command being timed: "perf record -q -o <repo>/runs/prep_ahead/p_base_cyc/rec_F1.data -e cpu/cycles,period=2000003/pp -D -1 --control=fifo:<repo>/runs/prep_ahead/p_base_cyc/ctl_F1,<repo>/runs/prep_ahead/p_base_cyc/ack_F1 -- numactl --cpunodebind=0 --membind=0 python3 ./animal_shogi.py"
+	User time (seconds): 72.67
+	System time (seconds): 5.46
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:18.33
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 3554888
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 1469501
+	Voluntary context switches: 326
+	Involuntary context switches: 8651
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 3863040
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

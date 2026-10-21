@@ -1,0 +1,7 @@
+# started on Wed Oct 21 13:49:05 2026
+
+82775091969,,cycles,24706034441,100.00,,
+171871777913,,instructions,24706034441,100.00,2.08,insn per cycle
+1155361650,,l1d_pend_miss.fb_full,24706034441,100.00,,
+212498978,,load_hit_pre.sw_pf,24706034441,100.00,,
+133969850,,mem_load_uops_retired.hit_lfb,24706034441,100.00,,

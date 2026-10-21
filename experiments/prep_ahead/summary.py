@@ -335,6 +335,20 @@ def perf_section(labels: list[str]) -> None:  # noqa: PLR0915
           f"{sec['prep1'] - sec['base']:+.2f} |")  # fmt: skip
     print()
     print("- 区分の秒は 割合 × その腕の T1 の本の `U_loop` の秒（1本ずつなので幅は無い）")
+    print()
+    print("### `.so` の中で標本の多い行（一番内側の関数と行。上から8行。割合 × その腕の T1 の cycles / フロンティア）")
+    print()
+    for arm in ARMS:
+        rows = record(d, lbs[(arm, "cyc")])
+        n = sum(int(r["samples"]) for r in rows)
+        acc: dict[tuple[str, str], int] = defaultdict(int)
+        for r in rows:
+            if r["where"] == "animal_shogi.so":
+                acc[(r["chain"].split(">")[-1], r["line"])] += int(r["samples"])
+        top = sorted(acc.items(), key=lambda kv: -kv[1])[:8]
+        print(f"- {arm}: " + "、".join(
+            f"`{fn}` {ln} 行 {100 * v / n:.1f}%（{v / n * cyc[arm]:.1f}）" for (fn, ln), v in top
+        ))  # fmt: skip
 
 
 def main() -> int:

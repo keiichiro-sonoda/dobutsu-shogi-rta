@@ -1,0 +1,7 @@
+# started on Wed Oct 21 13:44:53 2026
+
+139636012535,,cycles,41682749677,100.00,,
+262292533534,,instructions,41682749677,100.00,1.88,insn per cycle
+14938591973,,cycle_activity.stalls_mem_any,41682749677,100.00,,
+44491023667,,cycle_activity.stalls_total,41682749677,100.00,,
+23941819686,,resource_stalls.sb,41682749677,100.00,,

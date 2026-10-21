@@ -1,0 +1,7 @@
+# started on Wed Oct 21 13:47:40 2026
+
+92165071647,,cycles,27506018383,100.00,,
+171508161459,,instructions,27506018383,100.00,1.86,insn per cycle
+1080224758,,l1d_pend_miss.fb_full,27506018383,100.00,,
+214463503,,load_hit_pre.sw_pf,27506018383,100.00,,
+224516315,,mem_load_uops_retired.hit_lfb,27506018383,100.00,,
